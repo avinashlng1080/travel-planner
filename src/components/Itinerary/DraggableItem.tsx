@@ -49,6 +49,7 @@ export function DraggableItem({ item, location }: DraggableItemProps) {
           item={item}
           locationName={location?.name}
           locationCategory={location?.category}
+          location={location}
           isDragging={isDragging}
         />
       </div>

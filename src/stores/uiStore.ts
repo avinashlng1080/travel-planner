@@ -17,6 +17,8 @@ interface UIState {
     timestamp: Date;
   }>;
   isAILoading: boolean;
+  authModalOpen: boolean;
+  authMode: 'login' | 'signup';
 
   // Actions
   selectLocation: (location: Location | null) => void;
@@ -29,6 +31,8 @@ interface UIState {
   addChatMessage: (role: 'user' | 'assistant', content: string) => void;
   clearChatMessages: () => void;
   setAILoading: (loading: boolean) => void;
+  setAuthModalOpen: (open: boolean) => void;
+  setAuthMode: (mode: 'login' | 'signup') => void;
 }
 
 const ALL_CATEGORIES = [
@@ -56,6 +60,8 @@ export const useUIStore = create<UIState>()(
       sidebarCollapsed: false,
       chatMessages: [],
       isAILoading: false,
+      authModalOpen: false,
+      authMode: 'login',
 
       // Actions
       selectLocation: (location) => set({ selectedLocation: location }),
@@ -84,6 +90,8 @@ export const useUIStore = create<UIState>()(
         })),
       clearChatMessages: () => set({ chatMessages: [] }),
       setAILoading: (loading) => set({ isAILoading: loading }),
+      setAuthModalOpen: (open) => set({ authModalOpen: open }),
+      setAuthMode: (mode) => set({ authMode: mode }),
     }),
     {
       name: 'malaysia-trip-ui-storage',

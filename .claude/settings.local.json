@@ -10,7 +10,11 @@
       "Bash(cat:*)",
       "Bash(curl:*)",
       "WebFetch(domain:docs.claude.com)",
-      "Bash(npx convex dev:*)"
+      "Bash(npx convex dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:docs.convex.dev)",
+      "WebFetch(domain:labs.convex.dev)"
     ]
   }
 }

@@ -8,7 +8,8 @@ interface PanelState {
   zIndex: number;
 }
 
-export type PanelId = 'days' | 'itinerary' | 'checklist' | 'alerts' | 'suggestions' | 'filters';
+// Simplified panel structure: tripPlanner combines days/itinerary/suggestions/alerts
+export type PanelId = 'tripPlanner' | 'checklist' | 'filters';
 
 interface FloatingPanelState {
   panels: Record<PanelId, PanelState>;
@@ -22,47 +23,29 @@ interface FloatingPanelState {
   bringToFront: (id: PanelId) => void;
 }
 
-// Default panel configurations with staggered positions
+// Default panel configurations
 const DEFAULT_PANELS: Record<PanelId, PanelState> = {
-  days: {
+  tripPlanner: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 70, y: 80 },
+    position: { x: 70, y: 70 },
     zIndex: 1,
-  },
-  itinerary: {
-    isOpen: false,
-    isMinimized: false,
-    position: { x: 90, y: 100 },
-    zIndex: 2,
   },
   checklist: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 110, y: 120 },
-    zIndex: 3,
-  },
-  alerts: {
-    isOpen: false,
-    isMinimized: false,
-    position: { x: 130, y: 140 },
-    zIndex: 4,
-  },
-  suggestions: {
-    isOpen: false,
-    isMinimized: false,
-    position: { x: 150, y: 160 },
-    zIndex: 5,
+    position: { x: 500, y: 100 },
+    zIndex: 2,
   },
   filters: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 170, y: 180 },
-    zIndex: 6,
+    position: { x: 70, y: 400 },
+    zIndex: 3,
   },
 };
 
-const INITIAL_Z_INDEX = 7;
+const INITIAL_Z_INDEX = 4;
 
 export const useFloatingPanelStore = create<FloatingPanelState>()(
   persist(

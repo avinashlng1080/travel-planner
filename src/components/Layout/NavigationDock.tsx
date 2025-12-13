@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  Calendar,
-  MapPin,
-  CheckSquare,
-  AlertTriangle,
-  Lightbulb,
-  Filter,
-} from 'lucide-react';
+import { Map, CheckSquare, Filter } from 'lucide-react';
 import { useFloatingPanelStore, type PanelId } from '../../stores/floatingPanelStore';
 
 interface NavIconProps {
@@ -61,11 +54,8 @@ export function NavigationDock() {
     icon: React.ElementType;
     label: string;
   }> = [
-    { id: 'days', icon: Calendar, label: 'Days' },
-    { id: 'itinerary', icon: MapPin, label: 'Itinerary' },
+    { id: 'tripPlanner', icon: Map, label: 'Trip Planner' },
     { id: 'checklist', icon: CheckSquare, label: 'Checklist' },
-    { id: 'alerts', icon: AlertTriangle, label: 'Alerts' },
-    { id: 'suggestions', icon: Lightbulb, label: 'Suggestions' },
     { id: 'filters', icon: Filter, label: 'Filters' },
   ];
 

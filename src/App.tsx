@@ -7,13 +7,11 @@ import { RightDetailPanel } from './components/layout/RightDetailPanel';
 import { AIChatWidget } from './components/layout/AIChatWidget';
 import { FullScreenMap } from './components/map/FullScreenMap';
 import {
-  DaysPanel,
-  ItineraryPanel,
+  TripPlannerPanel,
   ChecklistFloatingPanel,
-  AlertsPanel,
-  SuggestionsPanel,
   FiltersPanel,
 } from './components/floating';
+import { AuthModal } from './components/auth/AuthModal';
 
 function App() {
   const {
@@ -147,11 +145,8 @@ function App() {
       <NavigationDock />
 
       {/* Floating Panels */}
-      <DaysPanel />
-      <ItineraryPanel />
+      <TripPlannerPanel />
       <ChecklistFloatingPanel />
-      <AlertsPanel />
-      <SuggestionsPanel />
       <FiltersPanel />
 
       {/* Right Detail Panel */}

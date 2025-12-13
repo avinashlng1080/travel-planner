@@ -1,162 +1,141 @@
 # Convex Auth Implementation Plan
 
+## Overview
+Implement email/password sign-up and sign-in functionality using the existing Convex Auth backend. The UI will be a modal triggered from the FloatingHeader user button.
+
 ## Current State
 
 ### What's Already Set Up
 - `@convex-dev/auth` package installed
-- `convex/auth.ts` - Password provider configured
+- `convex/auth.ts` - Password provider configured with `signIn`/`signOut` mutations
 - `convex/auth.config.ts` - Basic auth config
 - `convex/schema.ts` - Auth tables included via `...authTables`
 - `src/main.tsx` - ConvexAuthProvider wrapping app
-- `src/App.tsx` - `useConvexAuth()` hook imported (but unused)
+- Data model: Tables have `userId` fields ready for user association
 
 ### What's Missing
 1. No Login/Signup UI components
 2. Auth state not used to control app access
-3. Backend functions have no auth checks
-4. No logout functionality in UI
-5. User data not associated with accounts
+3. No logout functionality in UI
 
 ---
 
-## Implementation Plan
+## Implementation Steps
 
-### Phase 1: Create Auth UI Components
+### 1. Create Auth UI Components
 
-#### 1.1 AuthModal.tsx
-**File:** `src/components/auth/AuthModal.tsx`
+**Files to create:**
+- `src/components/auth/AuthModal.tsx` - Modal container with backdrop
+- `src/components/auth/LoginForm.tsx` - Email/password login form
+- `src/components/auth/SignupForm.tsx` - Registration form
 
-Floating modal for login/signup with tabs:
+**Design approach:**
+- Use existing `GlassPanel`, `GlassButton`, `GlassInput` components
+- Match glassmorphic style: `bg-white/90 backdrop-blur-xl border-slate-200/50`
+- Pink-to-purple gradient for primary actions
+- Framer Motion animations for enter/exit
+
+### 2. Add Auth State to UI Store
+
+**File to modify:** `src/stores/uiStore.ts`
+
+Add:
+```typescript
+authModalOpen: boolean
+authMode: 'login' | 'signup'
+setAuthModalOpen: (open: boolean) => void
+setAuthMode: (mode: 'login' | 'signup') => void
+```
+
+### 3. Update FloatingHeader
+
+**File to modify:** `src/components/Layout/FloatingHeader.tsx`
+
+- Import `useConvexAuth` to check auth state
+- Show user email or "Sign In" based on auth status
+- Click handler opens auth modal (unauthenticated) or shows dropdown (authenticated)
+- Add sign-out option for authenticated users
+
+### 4. Integrate Modal into App
+
+**File to modify:** `src/App.tsx`
+
+- Import and render `AuthModal` component
+- Modal renders based on `authModalOpen` state from uiStore
+
+### 5. Wire Up Convex Auth Actions
+
+**In LoginForm.tsx and SignupForm.tsx:**
+```typescript
+import { useAuthActions } from "@convex-dev/auth/react";
+
+const { signIn } = useAuthActions();
+
+// For login:
+await signIn("password", { email, password, flow: "signIn" });
+
+// For signup:
+await signIn("password", { email, password, flow: "signUp" });
+```
+
+---
+
+## File Structure
+
+```
+src/components/auth/
+├── AuthModal.tsx      # Modal wrapper with backdrop, tabs for login/signup
+├── LoginForm.tsx      # Email + password form, submit calls signIn
+└── SignupForm.tsx     # Email + password + confirm, submit calls signUp
+```
+
+## Component Details
+
+### AuthModal.tsx
+- Fixed overlay with backdrop blur
+- Centered GlassPanel container
+- Tab switcher between Login/Signup
+- Close button (X)
+- AnimatePresence for smooth transitions
+
+### LoginForm.tsx
+- Email input (GlassInput)
+- Password input (GlassInput, type="password")
+- Submit button (GlassButton variant="primary")
+- Error message display
+- Loading state during auth
+
+### SignupForm.tsx
 - Email input
 - Password input
+- Confirm password input
 - Submit button
-- Toggle between Login/Signup
+- Validation (passwords match, email format)
 - Error message display
-- Loading state
 
-```typescript
-import { useAuthActions } from "@convex-dev/auth/react";
-
-function AuthModal({ isOpen, onClose }) {
-  const { signIn } = useAuthActions();
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await signIn("password", { email, password, flow: mode === 'signup' ? 'signUp' : 'signIn' });
-  };
-}
-```
-
-#### 1.2 UserMenu.tsx
-**File:** `src/components/auth/UserMenu.tsx`
-
-Dropdown menu in header showing:
-- User email/name when logged in
-- Logout button
-- Login button when logged out
-
-```typescript
-import { useAuthActions } from "@convex-dev/auth/react";
-
-function UserMenu() {
-  const { signOut } = useAuthActions();
-  const { isAuthenticated } = useConvexAuth();
-}
-```
-
-### Phase 2: Integrate Auth in App
-
-#### 2.1 Update FloatingHeader.tsx
-Add UserMenu component to the right side of header.
-
-#### 2.2 Auth Guard (Optional)
-**File:** `src/components/auth/AuthGuard.tsx`
-
-Wrap protected content:
-```typescript
-function AuthGuard({ children }) {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-
-  if (isLoading) return <LoadingSpinner />;
-  if (!isAuthenticated) return <AuthModal isOpen={true} />;
-
-  return children;
-}
-```
-
-### Phase 3: Backend Auth Integration
-
-#### 3.1 Add Auth Checks to Functions
-Update Convex functions to use authentication:
-
-```typescript
-// convex/checklists.ts
-import { auth } from "./auth";
-
-export const getMyChecklist = query({
-  args: { type: v.string() },
-  handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    return await ctx.db
-      .query("checklists")
-      .withIndex("by_user_and_type", (q) =>
-        q.eq("userId", userId).eq("type", args.type)
-      )
-      .first();
-  },
-});
-```
-
-#### 3.2 Update Schema Indexes
-Add indexes for user-based queries:
-```typescript
-checklists: defineTable({
-  userId: v.id("users"), // Make required, not optional
-  type: v.string(),
-  items: v.array(checklistItemSchema),
-}).index("by_user_and_type", ["userId", "type"]),
-```
-
-### Phase 4: User Data Migration
-
-#### 4.1 Associate Existing Data
-- Update chatMessages to include userId
-- Update userPreferences to require userId
-- Create default checklists for new users
+### FloatingHeader Changes
+- Check `isAuthenticated` from `useConvexAuth()`
+- If authenticated: show user indicator + sign-out dropdown
+- If not: show "Sign In" button that opens modal
 
 ---
 
-## Files to Create
+## Critical Files to Modify
 
-1. `src/components/auth/AuthModal.tsx` - Login/Signup modal
-2. `src/components/auth/UserMenu.tsx` - Header user dropdown
-3. `src/components/auth/AuthGuard.tsx` - Protected route wrapper
-
-## Files to Modify
-
-1. `src/components/layout/FloatingHeader.tsx` - Add UserMenu
-2. `convex/checklists.ts` - Add auth checks
-3. `convex/chatMessages.ts` - Add auth checks
-4. `convex/schema.ts` - Update indexes, make userId required
-5. `src/App.tsx` - Wrap with AuthGuard (optional)
+1. `src/stores/uiStore.ts` - Add auth modal state
+2. `src/components/Layout/FloatingHeader.tsx` - Add auth trigger
+3. `src/App.tsx` - Render AuthModal
 
 ---
 
-## Implementation Order
+## Testing Checklist
 
-| Step | Task | Priority |
-|------|------|----------|
-| 1 | Create AuthModal.tsx with login/signup | HIGH |
-| 2 | Create UserMenu.tsx with logout | HIGH |
-| 3 | Add UserMenu to FloatingHeader | HIGH |
-| 4 | Add auth checks to backend functions | MEDIUM |
-| 5 | Update schema indexes | MEDIUM |
-| 6 | Create AuthGuard wrapper | LOW (optional) |
+- [ ] Sign up with new email/password
+- [ ] Sign in with existing credentials
+- [ ] Sign out clears session
+- [ ] Error handling for invalid credentials
+- [ ] Modal closes on successful auth
+- [ ] Header updates to show authenticated state
 
 ---
 
@@ -167,11 +146,3 @@ Convex Auth Password provider supports:
 - `signIn("password", { email, password, flow: "signIn" })` - Login
 - `signIn("password", { email, password, flow: "signUp" })` - Register
 - `signOut()` - Logout
-
-### No React Query Needed
-Convex provides superior real-time data fetching:
-- `useQuery` - Real-time subscriptions
-- `useMutation` - Mutations with optimistic updates
-- Built-in caching and offline support
-
-React Query is for REST APIs; Convex's architecture is better suited for this app.
