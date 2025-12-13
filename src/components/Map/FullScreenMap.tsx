@@ -115,25 +115,25 @@ export function FullScreenMap({
             border: none !important;
           }
           .leaflet-container {
-            background: #0f172a;
+            background: #f8fafc;
           }
           .leaflet-control-attribution {
-            background: rgba(15, 23, 42, 0.8) !important;
-            color: #94a3b8 !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #64748b !important;
           }
           .leaflet-control-attribution a {
-            color: #94a3b8 !important;
+            color: #475569 !important;
           }
           .leaflet-control-zoom {
-            border: 1px solid rgba(71, 85, 105, 0.5) !important;
+            border: 1px solid rgba(203, 213, 225, 0.8) !important;
           }
           .leaflet-control-zoom a {
-            background: rgba(15, 23, 42, 0.9) !important;
-            color: white !important;
-            border-color: rgba(71, 85, 105, 0.5) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #334155 !important;
+            border-color: rgba(203, 213, 225, 0.8) !important;
           }
           .leaflet-control-zoom a:hover {
-            background: rgba(30, 41, 59, 0.9) !important;
+            background: rgba(241, 245, 249, 0.95) !important;
           }
         `}
       </style>
@@ -144,7 +144,7 @@ export function FullScreenMap({
         zoomControl={true}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
 
