@@ -1,0 +1,202 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Malaysia Family Trip" [level=1] [ref=e7]
+        - paragraph [ref=e8]: December 21, 2025 - January 6, 2026
+      - button "Close chat" [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+        - generic [ref=e14]: Close
+  - generic [ref=e15]:
+    - complementary [ref=e16]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - button "Daily Plans" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]:
+              - img [ref=e22]
+              - text: Daily Plans
+            - img [ref=e24]
+          - generic [ref=e26]:
+            - button "Sunday 2025-12-21" [ref=e27] [cursor=pointer]:
+              - generic [ref=e28]: Sunday
+              - generic [ref=e29]: 2025-12-21
+            - button "Monday 2025-12-22" [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: Monday
+              - generic [ref=e32]: 2025-12-22
+            - button "Tuesday 2025-12-23" [ref=e33] [cursor=pointer]:
+              - generic [ref=e34]: Tuesday
+              - generic [ref=e35]: 2025-12-23
+            - button "Wednesday 2025-12-24" [ref=e36] [cursor=pointer]:
+              - generic [ref=e37]: Wednesday
+              - generic [ref=e38]: 2025-12-24
+            - button "Thursday 2025-12-25" [ref=e39] [cursor=pointer]:
+              - generic [ref=e40]: Thursday
+              - generic [ref=e41]: 2025-12-25
+            - button "Fri-Mon 2025-12-26" [ref=e42] [cursor=pointer]:
+              - generic [ref=e43]: Fri-Mon
+              - generic [ref=e44]: 2025-12-26
+            - button "Monday 2025-12-29" [ref=e45] [cursor=pointer]:
+              - generic [ref=e46]: Monday
+              - generic [ref=e47]: 2025-12-29
+            - button "Tuesday 2025-12-30" [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]: Tuesday
+              - generic [ref=e50]: 2025-12-30
+            - button "Wednesday 2025-12-31" [ref=e51] [cursor=pointer]:
+              - generic [ref=e52]: Wednesday
+              - generic [ref=e53]: 2025-12-31
+            - button "Thursday 2026-01-01" [ref=e54] [cursor=pointer]:
+              - generic [ref=e55]: Thursday
+              - generic [ref=e56]: 2026-01-01
+            - button "Friday 2026-01-02" [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]: Friday
+              - generic [ref=e59]: 2026-01-02
+            - button "Saturday 2026-01-03" [ref=e60] [cursor=pointer]:
+              - generic [ref=e61]: Saturday
+              - generic [ref=e62]: 2026-01-03
+            - button "Sunday 2026-01-04" [ref=e63] [cursor=pointer]:
+              - generic [ref=e64]: Sunday
+              - generic [ref=e65]: 2026-01-04
+            - button "Monday 2026-01-05" [ref=e66] [cursor=pointer]:
+              - generic [ref=e67]: Monday
+              - generic [ref=e68]: 2026-01-05
+            - button "Tuesday 2026-01-06" [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: Tuesday
+              - generic [ref=e71]: 2026-01-06
+        - generic [ref=e72]:
+          - button "Categories" [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]: Categories
+            - img [ref=e75]
+          - generic [ref=e77]:
+            - button "All" [ref=e78] [cursor=pointer]
+            - button "None" [ref=e79] [cursor=pointer]
+          - generic [ref=e80]:
+            - generic [ref=e81] [cursor=pointer]:
+              - checkbox "Home Base" [checked] [ref=e82]
+              - generic [ref=e84]: Home Base
+            - generic [ref=e85] [cursor=pointer]:
+              - checkbox "Toddler Friendly" [checked] [ref=e86]
+              - generic [ref=e88]: Toddler Friendly
+            - generic [ref=e89] [cursor=pointer]:
+              - checkbox "Attractions" [checked] [ref=e90]
+              - generic [ref=e92]: Attractions
+            - generic [ref=e93] [cursor=pointer]:
+              - checkbox "Shopping" [checked] [ref=e94]
+              - generic [ref=e96]: Shopping
+            - generic [ref=e97] [cursor=pointer]:
+              - checkbox "Restaurants" [checked] [ref=e98]
+              - generic [ref=e100]: Restaurants
+            - generic [ref=e101] [cursor=pointer]:
+              - checkbox "Nature & Parks" [checked] [ref=e102]
+              - generic [ref=e104]: Nature & Parks
+            - generic [ref=e105] [cursor=pointer]:
+              - checkbox "Temples" [checked] [ref=e106]
+              - generic [ref=e108]: Temples
+            - generic [ref=e109] [cursor=pointer]:
+              - checkbox "Playgrounds" [checked] [ref=e110]
+              - generic [ref=e112]: Playgrounds
+            - generic [ref=e113] [cursor=pointer]:
+              - checkbox "Medical" [checked] [ref=e114]
+              - generic [ref=e116]: Medical
+            - generic [ref=e117] [cursor=pointer]:
+              - checkbox "Avoid" [checked] [ref=e118]
+              - generic [ref=e120]: Avoid
+        - generic [ref=e121]:
+          - button "Travel Plans" [ref=e122] [cursor=pointer]:
+            - generic [ref=e123]: Travel Plans
+            - img [ref=e124]
+          - generic [ref=e126]:
+            - generic [ref=e127] [cursor=pointer]:
+              - checkbox "Plan A - Main Itinerary" [checked] [ref=e128]
+              - generic [ref=e130]: Plan A - Main Itinerary
+            - generic [ref=e131] [cursor=pointer]:
+              - checkbox "Plan B - Rainy/Tired Day" [checked] [ref=e132]
+              - generic [ref=e134]: Plan B - Rainy/Tired Day
+            - generic [ref=e135] [cursor=pointer]:
+              - checkbox "Toddler Favorites" [ref=e136]
+              - generic [ref=e138]: Toddler Favorites
+            - generic [ref=e139] [cursor=pointer]:
+              - checkbox "Shopping" [ref=e140]
+              - generic [ref=e142]: Shopping
+            - generic [ref=e143] [cursor=pointer]:
+              - checkbox "Cultural" [ref=e144]
+              - generic [ref=e146]: Cultural
+            - generic [ref=e147] [cursor=pointer]:
+              - checkbox "Nature & Parks" [ref=e148]
+              - generic [ref=e150]: Nature & Parks
+            - generic [ref=e151] [cursor=pointer]:
+              - checkbox "Food & Dining" [ref=e152]
+              - generic [ref=e154]: Food & Dining
+            - generic [ref=e155] [cursor=pointer]:
+              - checkbox "Day Trips" [ref=e156]
+              - generic [ref=e158]: Day Trips
+            - generic [ref=e159] [cursor=pointer]:
+              - checkbox "Medical" [ref=e160]
+              - generic [ref=e162]: Medical
+    - main [ref=e163]:
+      - generic [ref=e165]:
+        - generic:
+          - generic:
+            - button [ref=e166] [cursor=pointer]
+            - button [ref=e169] [cursor=pointer]
+            - button [ref=e172] [cursor=pointer]
+            - button [ref=e175] [cursor=pointer]
+            - button [ref=e178] [cursor=pointer]
+            - button [ref=e181] [cursor=pointer]
+            - button [ref=e184] [cursor=pointer]
+            - button [ref=e187] [cursor=pointer]
+            - button [ref=e190] [cursor=pointer]
+            - button [ref=e193] [cursor=pointer]
+            - button [ref=e196] [cursor=pointer]
+            - button [ref=e199] [cursor=pointer]
+            - button [ref=e202] [cursor=pointer]
+            - button [ref=e205] [cursor=pointer]
+            - button [ref=e208] [cursor=pointer]
+            - button [ref=e211] [cursor=pointer]
+            - button [ref=e214] [cursor=pointer]
+            - button [ref=e217] [cursor=pointer]
+            - button [ref=e220] [cursor=pointer]
+            - button [ref=e223] [cursor=pointer]
+            - button [ref=e226] [cursor=pointer]
+            - button [ref=e229] [cursor=pointer]
+            - button [ref=e232] [cursor=pointer]
+        - generic:
+          - generic [ref=e235]:
+            - button "Zoom in" [ref=e236] [cursor=pointer]: +
+            - button "Zoom out" [ref=e237] [cursor=pointer]: −
+          - generic [ref=e238]:
+            - link "Leaflet" [ref=e239] [cursor=pointer]:
+              - /url: https://leafletjs.com
+              - img [ref=e240]
+              - text: Leaflet
+            - text: "| ©"
+            - link "OpenStreetMap" [ref=e244] [cursor=pointer]:
+              - /url: https://www.openstreetmap.org/copyright
+  - generic [ref=e245]:
+    - generic [ref=e246] [cursor=pointer]:
+      - generic [ref=e247]:
+        - generic [ref=e248]: AI
+        - generic [ref=e249]:
+          - heading "Malaysia Travel AI" [level=3] [ref=e250]
+          - paragraph [ref=e251]: Powered by Claude
+      - button [ref=e253]:
+        - img [ref=e254]
+    - generic [ref=e258]:
+      - generic [ref=e259]: Hello!
+      - heading "Welcome to Malaysia Travel AI" [level=4] [ref=e260]
+      - paragraph [ref=e261]: Ask me anything about your family trip!
+      - generic [ref=e262]:
+        - paragraph [ref=e263]: "Try asking:"
+        - button "What should we pack for Batu Caves with our toddler?" [ref=e264] [cursor=pointer]
+        - button "Is Aquaria KLCC stroller-friendly?" [ref=e265] [cursor=pointer]
+        - button "Best toddler-friendly restaurants near our hotel?" [ref=e266] [cursor=pointer]
+        - button "How do we get from M Vertica to KLCC?" [ref=e267] [cursor=pointer]
+    - generic [ref=e268]:
+      - generic [ref=e269]:
+        - textbox "Ask about your Malaysia trip..." [ref=e270]
+        - button [disabled] [ref=e271]:
+          - img [ref=e272]
+      - paragraph [ref=e275]: Press Enter to send, Shift+Enter for new line
+```
