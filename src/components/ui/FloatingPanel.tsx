@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Minus, Maximize2 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -33,6 +33,8 @@ export function FloatingPanel({
   onFocus,
   children,
 }: FloatingPanelProps) {
+  const dragControls = useDragControls();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -43,6 +45,21 @@ export function FloatingPanel({
             top: position.y,
             width: size.width,
             zIndex,
+          }}
+          drag
+          dragControls={dragControls}
+          dragListener={false}
+          dragMomentum={false}
+          dragElastic={0}
+          onDragEnd={(event, info) => {
+            const newX = position.x + info.offset.x;
+            const newY = position.y + info.offset.y;
+
+            // Ensure panel stays within viewport bounds
+            const boundedX = Math.max(0, Math.min(newX, window.innerWidth - size.width));
+            const boundedY = Math.max(0, Math.min(newY, window.innerHeight - 56));
+
+            onPositionChange({ x: boundedX, y: boundedY });
           }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{
@@ -56,22 +73,10 @@ export function FloatingPanel({
           onClick={onFocus}
         >
           <div className="bg-white/90 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
-            {/* Draggable Header */}
-            <motion.div
+            {/* Draggable Header - triggers drag on parent */}
+            <div
               className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-slate-200/50 cursor-move select-none"
-              drag
-              dragMomentum={false}
-              dragElastic={0}
-              onDragEnd={(event, info) => {
-                const newX = position.x + info.offset.x;
-                const newY = position.y + info.offset.y;
-
-                // Ensure panel stays within viewport bounds
-                const boundedX = Math.max(0, Math.min(newX, window.innerWidth - size.width));
-                const boundedY = Math.max(0, Math.min(newY, window.innerHeight - 56));
-
-                onPositionChange({ x: boundedX, y: boundedY });
-              }}
+              onPointerDown={(e) => dragControls.start(e)}
             >
               <div className="flex items-center gap-3 pointer-events-none">
                 <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg shadow-pink-500/30">
@@ -114,7 +119,7 @@ export function FloatingPanel({
                   <X className="w-4 h-4" />
                 </motion.button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Content Area */}
             <AnimatePresence>
