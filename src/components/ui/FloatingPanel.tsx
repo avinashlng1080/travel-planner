@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Minus, Maximize2 } from 'lucide-react';
+import { X, Minus, Maximize2, Minimize2, Square } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface FloatingPanelProps {
@@ -36,6 +36,7 @@ export function FloatingPanel({
 }: FloatingPanelProps) {
   const dragControls = useDragControls();
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Update window size on resize
   useEffect(() => {
@@ -46,13 +47,35 @@ export function FloatingPanel({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Calculate dimensions based on state
+  const HEADER_HEIGHT = 56;
+  const MAXIMIZED_PADDING = 20;
+  const NAV_DOCK_WIDTH = 56;
+
+  // Maximized dimensions (accounting for nav dock and some padding)
+  const maximizedDimensions = {
+    x: NAV_DOCK_WIDTH + MAXIMIZED_PADDING,
+    y: HEADER_HEIGHT + MAXIMIZED_PADDING,
+    width: windowSize.width - NAV_DOCK_WIDTH - (MAXIMIZED_PADDING * 2),
+    height: windowSize.height - HEADER_HEIGHT - (MAXIMIZED_PADDING * 2),
+  };
+
+  // Current dimensions based on state
+  const currentX = isMaximized ? maximizedDimensions.x : position.x;
+  const currentY = isMaximized ? maximizedDimensions.y : position.y;
+  const currentWidth = isMaximized ? maximizedDimensions.width : size.width;
+  const currentHeight = isMinimized ? HEADER_HEIGHT : (isMaximized ? maximizedDimensions.height : size.height);
+
   // Calculate drag constraints to keep panel within viewport
-  const panelHeight = isMinimized ? 56 : size.height;
-  const dragConstraints = {
+  const dragConstraints = isMaximized ? { top: 0, left: 0, right: 0, bottom: 0 } : {
     top: -position.y,
     left: -position.x,
     right: windowSize.width - position.x - size.width,
-    bottom: windowSize.height - position.y - panelHeight,
+    bottom: windowSize.height - position.y - currentHeight,
+  };
+
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized);
   };
 
   return (
@@ -61,43 +84,44 @@ export function FloatingPanel({
         <motion.div
           className="fixed"
           style={{
-            left: position.x,
-            top: position.y,
-            width: size.width,
-            zIndex,
+            zIndex: isMaximized ? zIndex + 100 : zIndex,
           }}
-          drag
+          drag={!isMaximized}
           dragControls={dragControls}
           dragListener={false}
           dragMomentum={false}
           dragElastic={0}
           dragConstraints={dragConstraints}
           onDragEnd={(event, info) => {
+            if (isMaximized) return;
             const newX = position.x + info.offset.x;
             const newY = position.y + info.offset.y;
 
             // Ensure panel stays within viewport bounds
             const boundedX = Math.max(0, Math.min(newX, windowSize.width - size.width));
-            const boundedY = Math.max(0, Math.min(newY, windowSize.height - panelHeight));
+            const boundedY = Math.max(0, Math.min(newY, windowSize.height - currentHeight));
 
             onPositionChange({ x: boundedX, y: boundedY });
           }}
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{
             opacity: 1,
             scale: 1,
-            y: 0,
-            height: panelHeight,
+            x: currentX,
+            y: currentY,
+            width: currentWidth,
+            height: currentHeight,
           }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
           onClick={onFocus}
         >
-          <div className="bg-white/90 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
+          <div className="bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
             {/* Draggable Header - triggers drag on parent */}
             <div
-              className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-slate-200/50 cursor-move select-none"
-              onPointerDown={(e) => dragControls.start(e)}
+              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}
+              onPointerDown={(e) => !isMaximized && dragControls.start(e)}
+              onDoubleClick={toggleMaximize}
             >
               <div className="flex items-center gap-3 pointer-events-none">
                 <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg shadow-pink-500/30">
@@ -105,28 +129,48 @@ export function FloatingPanel({
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-                  <p className="text-[10px] text-slate-600">Drag to move</p>
+                  <p className="text-[10px] text-slate-600">
+                    {isMaximized ? 'Double-click to restore' : 'Drag to move • Double-click to maximize'}
+                  </p>
                 </div>
               </div>
 
               {/* Control Buttons */}
               <div className="flex items-center gap-1 pointer-events-auto">
+                {/* Minimize button */}
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (isMaximized) setIsMaximized(false);
                     onMinimize();
                   }}
                   className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  title={isMinimized ? 'Maximize' : 'Minimize'}
+                  title="Minimize"
                 >
-                  {isMinimized ? (
-                    <Maximize2 className="w-4 h-4" />
+                  <Minus className="w-4 h-4" />
+                </motion.button>
+
+                {/* Maximize/Restore button */}
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMaximize();
+                  }}
+                  className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  title={isMaximized ? 'Restore' : 'Maximize'}
+                >
+                  {isMaximized ? (
+                    <Minimize2 className="w-4 h-4" />
                   ) : (
-                    <Minus className="w-4 h-4" />
+                    <Square className="w-4 h-4" />
                   )}
                 </motion.button>
+
+                {/* Close button */}
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
