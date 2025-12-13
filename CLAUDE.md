@@ -4,81 +4,121 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI-powered family travel planner for Malaysia, built with React + TypeScript + Vite. Features interactive mapping, drag-and-drop itinerary management, and Claude AI chat integration. Designed for planning a trip with a toddler (Dec 21, 2025 - Jan 6, 2026) based from M Vertica Residence in Cheras, KL.
+AI-powered family travel planner for Malaysia with a PostHog-inspired UI. Features full-screen interactive map, floating glassmorphic panels, drag-and-drop itinerary management, Plan A/B system, and Claude AI chat integration. Built for planning a trip with a toddler (Dec 21, 2025 - Jan 6, 2026).
 
 ## Development Commands
 
 ```bash
-npm run dev        # Start dev server on http://localhost:3000
-npm run build      # Production build to dist/
-npm run preview    # Preview production build
+npm run dev          # Start Vite dev server on http://localhost:3000
+npm run build        # Production build to dist/
+npx convex dev       # Start Convex dev server (run in separate terminal)
 ```
 
 ## Environment Setup
 
-Requires `VITE_ANTHROPIC_API_KEY` environment variable for AI chat functionality.
+Create `.env` with:
+```
+VITE_CONVEX_URL=https://your-project.convex.cloud
+VITE_POSTHOG_KEY=phc_...  # Optional
+```
+
+Set in Convex dashboard:
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ## Architecture
 
 ### Tech Stack
-- **React 18 + TypeScript 5** with Vite bundler
-- **Tailwind CSS** + Framer Motion for styling/animations
-- **React-Leaflet** for interactive maps (OpenStreetMap tiles)
-- **Zustand** with persist middleware for state management (localStorage key: `malaysia-trip-storage`)
-- **@dnd-kit** for drag-and-drop itinerary reordering
-- **@anthropic-ai/sdk** for Claude API integration
+- **Vite + React 18 + TypeScript** - Frontend framework
+- **Convex** - Real-time database, HTTP actions, auth
+- **Convex Auth** - Email/password authentication
+- **Tailwind CSS** + Framer Motion - Styling and animations
+- **React-Leaflet** - Interactive maps (OpenStreetMap/CARTO dark tiles)
+- **Zustand** - UI-only state management
+- **PostHog** - Analytics (optional)
 
-### Component Organization
-Components are organized by feature in `src/components/`:
-- `Chat/` - AI chat widget (AIChat, ChatMessage)
-- `Map/` - Leaflet map (MapView, CustomMarker)
-- `Itinerary/` - Day plans with drag-drop (DayPlan, DraggableItem, ScheduleItem)
-- `Filters/` - Category and plan filters
-- `Layout/` - Header and Sidebar
-- `Location/` - Location details panel
-- `Safety/` - Emergency info, weather
+### File Structure
+```
+src/
+├── components/
+│   ├── ui/              # GlassPanel, GlassButton, GlassCard, etc.
+│   ├── layout/          # FloatingHeader, LeftSidebar, RightDetailPanel,
+│   │                    # BottomItineraryBar, AIChatWidget
+│   ├── map/             # FullScreenMap with polylines
+│   ├── checklist/       # ChecklistPanel
+│   └── auth/            # LoginForm, SignupForm
+├── stores/uiStore.ts    # Zustand store for UI state
+├── data/tripData.ts     # Location data, day plans (used for Convex seeding)
+├── lib/posthog.ts       # Analytics integration
+├── App.tsx              # Main layout with floating panels
+└── main.tsx             # ConvexAuthProvider setup
 
-### Key Files
-- `src/stores/tripStore.ts` - Single Zustand store for all app state (locations, day plans, filters, UI state)
-- `src/data/tripData.ts` - All location data, day plans, safety info (25+ pre-populated locations)
-- `src/lib/claude.ts` - Claude API client with browser-to-API calls
-- `src/lib/prompts.ts` - System prompt generation with full trip context injection
-- `src/hooks/useAIChat.ts` - Chat state management with localStorage persistence
-
-### State Management Pattern
-Zustand store manages:
-- Location/day selection
-- 10 category filters (each with name + hex color)
-- Plan A/B visibility toggles
-- Chat open/closed state
-
-All state persists to localStorage automatically.
-
-### AI Integration
-- System prompt embeds full trip context (locations, plans, safety, toddler schedule)
-- Direct browser-to-Anthropic API calls require header: `anthropic-dangerous-direct-browser-access: true`
-- Model: claude-sonnet-4-20250514 with 1024 max tokens
-- Chat history persists in localStorage key: `malaysia-trip-chat-history`
-
-### Data Model
-```typescript
-Location { id, name, category, lat, lng, description, toddlerRating, tips, warnings, napFriendly }
-DayPlan { id, date, title, planA: ScheduleItem[], planB: ScheduleItem[], weatherConsideration }
-ScheduleItem { id, time, locationId, duration, notes }
+convex/
+├── schema.ts            # Database schema (locations, dayPlans, scheduleItems, etc.)
+├── auth.ts, auth.config.ts  # Convex Auth setup
+├── locations.ts         # Location queries
+├── dayPlans.ts          # Day plan queries with schedule items
+├── scheduleItems.ts     # Schedule item mutations (reorder, update)
+├── checklists.ts        # Checklist queries/mutations with defaults
+├── chatMessages.ts      # AI chat history
+├── claude.ts            # HTTP action for Claude API (server-side)
+├── http.ts              # HTTP router for /chat endpoint
+└── seed.ts              # Database seeding from tripData.ts
 ```
 
-### Layout
-Three-column responsive layout: Sidebar (filters, day plans) | Map (center) | Location Detail (right panel)
-- Chat widget: fixed position, expandable, full-width on mobile
+### UI Layout (PostHog-style)
+```
+z-50: FloatingHeader (top), AIChatWidget (bottom-right)
+z-40: LeftSidebar (collapsible), RightDetailPanel (location details)
+z-30: BottomItineraryBar (expandable)
+z-0:  FullScreenMap (fixed background)
+```
+
+### Key Patterns
+
+**Glassmorphic Components**:
+- `bg-slate-900/80 backdrop-blur-xl border border-slate-700/50`
+- Use `GlassPanel`, `GlassCard`, `GlassButton` from `src/components/ui/GlassPanel.tsx`
+
+**State Management**:
+- Zustand (`uiStore.ts`) for UI state: selectedLocation, activePlan, visibleCategories
+- Convex for persistent data: locations, dayPlans, scheduleItems, checklists, chatMessages
+
+**Claude API**:
+- Server-side HTTP action at `convex/claude.ts`
+- API key stored in Convex environment variables
+- Endpoint: POST to Convex HTTP `/chat`
+
+**Plan A/B System**:
+- Plan A: Solid green polyline (#10B981)
+- Plan B: Dashed blue polyline (#3B82F6)
+- Toggle in header updates map route and BottomItineraryBar
+
+### Data Model (Convex)
+```typescript
+locations { locationId, name, lat, lng, category, toddlerRating, tips, warnings, ... }
+dayPlans { planId, date, title, notes, weatherConsideration }
+scheduleItems { itemId, dayPlanId, locationId, planType: 'A'|'B', startTime, order }
+checklists { type: 'visa'|'health'|'documents'|'packing', items: [...] }
+chatMessages { sessionId, role, content, createdAt }
+```
 
 ## Testing
 
 ```bash
-npx playwright test              # Run all E2E tests
+npx playwright test              # Run E2E tests
 npx playwright test --ui         # Interactive test UI
 ```
 
-Playwright tests are in `tests/` directory.
+## First-Time Setup
+
+1. `npm install`
+2. `npx convex dev` - Follow prompts to create Convex project
+3. In Convex dashboard: Add `ANTHROPIC_API_KEY` to environment variables
+4. Create `.env` with `VITE_CONVEX_URL` from Convex dashboard
+5. Run seed: Call `seed.seedDatabase()` from Convex dashboard
+6. `npm run dev`
 
 ## Path Aliases
 
