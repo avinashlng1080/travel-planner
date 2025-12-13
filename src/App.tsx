@@ -1,30 +1,30 @@
 import { useMemo, useCallback } from 'react';
-import { useConvexAuth } from 'convex/react';
 import { useUIStore } from './stores/uiStore';
-import { LOCATIONS, DAILY_PLANS, TRAVEL_PLANS } from './data/tripData';
+import { LOCATIONS, DAILY_PLANS, HOME_BASE } from './data/tripData';
 import { FloatingHeader } from './components/layout/FloatingHeader';
-import { LeftSidebar } from './components/layout/LeftSidebar';
+import { NavigationDock } from './components/layout/NavigationDock';
 import { RightDetailPanel } from './components/layout/RightDetailPanel';
-import { BottomItineraryBar } from './components/layout/BottomItineraryBar';
 import { AIChatWidget } from './components/layout/AIChatWidget';
 import { FullScreenMap } from './components/map/FullScreenMap';
+import {
+  DaysPanel,
+  ItineraryPanel,
+  ChecklistFloatingPanel,
+  AlertsPanel,
+  SuggestionsPanel,
+  FiltersPanel,
+} from './components/floating';
 
 function App() {
-  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
-
   const {
     selectedLocation,
     selectedDayId,
     activePlan,
-    activeSection,
     visibleCategories,
     chatMessages,
     isAILoading,
     selectLocation,
-    selectDay,
     setActivePlan,
-    setActiveSection,
-    toggleCategory,
     addChatMessage,
     clearChatMessages,
     setAILoading,
@@ -56,53 +56,33 @@ function App() {
     return DAILY_PLANS.find((p) => p.id === selectedDayId);
   }, [selectedDayId, todayId]);
 
-  // Build route for current plan
+  // Build route for current plan - starting from home base
   const planRoute = useMemo(() => {
     if (!selectedDayPlan) return [];
 
     const scheduleItems = activePlan === 'A' ? selectedDayPlan.planA : selectedDayPlan.planB;
 
-    return scheduleItems
+    // Start from home base
+    const routePoints: Array<{ lat: number; lng: number }> = [
+      { lat: HOME_BASE.lat, lng: HOME_BASE.lng }
+    ];
+
+    // Add all scheduled locations
+    scheduleItems
       .filter((item) => !item.isNapTime)
-      .map((item) => {
+      .forEach((item) => {
         const location = LOCATIONS.find((l) => l.id === item.locationId);
-        return location ? { lat: location.lat, lng: location.lng } : null;
-      })
-      .filter((p): p is { lat: number; lng: number } => p !== null);
+        if (location) {
+          routePoints.push({ lat: location.lat, lng: location.lng });
+        }
+      });
+
+    // Return to home base at the end
+    routePoints.push({ lat: HOME_BASE.lat, lng: HOME_BASE.lng });
+
+    return routePoints;
   }, [selectedDayPlan, activePlan]);
 
-  // Prepare schedule items with location names for BottomItineraryBar
-  const prepareScheduleItems = useCallback(
-    (items: typeof selectedDayPlan.planA) => {
-      return items.map((item) => {
-        const location = LOCATIONS.find((l) => l.id === item.locationId);
-        return {
-          ...item,
-          locationName: location?.name || 'Unknown Location',
-        };
-      });
-    },
-    []
-  );
-
-  // Categories for filter
-  const categories = useMemo(() => {
-    return [
-      { id: 'home-base', name: 'Home Base', color: '#EC4899' },
-      { id: 'toddler-friendly', name: 'Toddler Friendly', color: '#F472B6' },
-      { id: 'attraction', name: 'Attraction', color: '#10B981' },
-      { id: 'shopping', name: 'Shopping', color: '#8B5CF6' },
-      { id: 'restaurant', name: 'Restaurant', color: '#F59E0B' },
-      { id: 'nature', name: 'Nature', color: '#22C55E' },
-      { id: 'temple', name: 'Temple', color: '#EF4444' },
-      { id: 'playground', name: 'Playground', color: '#06B6D4' },
-      { id: 'medical', name: 'Medical', color: '#DC2626' },
-      { id: 'avoid', name: 'Avoid', color: '#64748b' },
-    ].map((cat) => ({
-      ...cat,
-      visible: visibleCategories.includes(cat.id),
-    }));
-  }, [visibleCategories]);
 
   // Handle AI chat
   const handleSendMessage = useCallback(
@@ -143,16 +123,6 @@ function App() {
     [chatMessages, addChatMessage, setAILoading]
   );
 
-  const handleLocationClick = useCallback(
-    (locationId: string) => {
-      const location = LOCATIONS.find((l) => l.id === locationId);
-      if (location) {
-        selectLocation(location);
-      }
-    },
-    [selectLocation]
-  );
-
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
@@ -173,23 +143,16 @@ function App() {
         onPlanChange={setActivePlan}
       />
 
-      {/* Left Sidebar */}
-      <LeftSidebar
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        dayPlans={DAILY_PLANS.map((d) => ({
-          id: d.id,
-          date: d.date,
-          dayOfWeek: d.dayOfWeek,
-          title: d.title,
-        }))}
-        selectedDayId={selectedDayPlan?.id}
-        onDaySelect={selectDay}
-        todayId={todayId}
-        categories={categories}
-        onCategoryToggle={toggleCategory}
-        alertCount={2}
-      />
+      {/* Navigation Dock - replaces LeftSidebar */}
+      <NavigationDock />
+
+      {/* Floating Panels */}
+      <DaysPanel />
+      <ItineraryPanel />
+      <ChecklistFloatingPanel />
+      <AlertsPanel />
+      <SuggestionsPanel />
+      <FiltersPanel />
 
       {/* Right Detail Panel */}
       {selectedLocation && (
@@ -200,20 +163,6 @@ function App() {
             console.log(`Add ${selectedLocation.name} to Plan ${plan}`);
             // TODO: Implement add to plan
           }}
-        />
-      )}
-
-      {/* Bottom Itinerary Bar */}
-      {selectedDayPlan && (
-        <BottomItineraryBar
-          date={selectedDayPlan.date}
-          dayOfWeek={selectedDayPlan.dayOfWeek}
-          title={selectedDayPlan.title}
-          planA={prepareScheduleItems(selectedDayPlan.planA)}
-          planB={prepareScheduleItems(selectedDayPlan.planB)}
-          activePlan={activePlan}
-          weatherConsideration={selectedDayPlan.weatherConsideration}
-          onLocationClick={handleLocationClick}
         />
       )}
 
