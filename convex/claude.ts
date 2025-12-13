@@ -49,15 +49,28 @@ IMPORTANT RULES:
 5. Be concise but helpful`;
 }
 
+// CORS headers for browser requests
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type": "application/json",
+};
+
 // HTTP action for Claude API - keeps API key server-side
 export const chat = httpAction(async (ctx, request) => {
+  // Handle CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   const { messages } = await request.json();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: corsHeaders }
     );
   }
 
@@ -86,18 +99,16 @@ export const chat = httpAction(async (ctx, request) => {
       const error = await response.text();
       return new Response(
         JSON.stringify({ error: `Claude API error: ${error}` }),
-        { status: response.status, headers: { "Content-Type": "application/json" } }
+        { status: response.status, headers: corsHeaders }
       );
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify(data), { headers: corsHeaders });
   } catch (error) {
     return new Response(
       JSON.stringify({ error: `Network error: ${error}` }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: corsHeaders }
     );
   }
 });

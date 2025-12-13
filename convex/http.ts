@@ -10,4 +10,11 @@ http.route({
   handler: chat,
 });
 
+// CORS preflight handler
+http.route({
+  path: "/chat",
+  method: "OPTIONS",
+  handler: chat,
+});
+
 export default http;
