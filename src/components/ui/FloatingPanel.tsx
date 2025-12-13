@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Minus, Maximize2 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
@@ -34,6 +35,25 @@ export function FloatingPanel({
   children,
 }: FloatingPanelProps) {
   const dragControls = useDragControls();
+  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  // Update window size on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Calculate drag constraints to keep panel within viewport
+  const panelHeight = isMinimized ? 56 : size.height;
+  const dragConstraints = {
+    top: -position.y,
+    left: -position.x,
+    right: windowSize.width - position.x - size.width,
+    bottom: windowSize.height - position.y - panelHeight,
+  };
 
   return (
     <AnimatePresence>
@@ -51,13 +71,14 @@ export function FloatingPanel({
           dragListener={false}
           dragMomentum={false}
           dragElastic={0}
+          dragConstraints={dragConstraints}
           onDragEnd={(event, info) => {
             const newX = position.x + info.offset.x;
             const newY = position.y + info.offset.y;
 
             // Ensure panel stays within viewport bounds
-            const boundedX = Math.max(0, Math.min(newX, window.innerWidth - size.width));
-            const boundedY = Math.max(0, Math.min(newY, window.innerHeight - 56));
+            const boundedX = Math.max(0, Math.min(newX, windowSize.width - size.width));
+            const boundedY = Math.max(0, Math.min(newY, windowSize.height - panelHeight));
 
             onPositionChange({ x: boundedX, y: boundedY });
           }}
@@ -66,7 +87,7 @@ export function FloatingPanel({
             opacity: 1,
             scale: 1,
             y: 0,
-            height: isMinimized ? 56 : size.height,
+            height: panelHeight,
           }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
