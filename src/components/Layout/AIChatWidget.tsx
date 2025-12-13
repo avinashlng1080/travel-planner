@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minimize2, Maximize2, Send, Trash2, Sparkles } from 'lucide-react';
+import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles } from 'lucide-react';
 import { GlassButton, GlassInput } from '../ui/GlassPanel';
 
 interface ChatMessage {
@@ -74,13 +74,44 @@ export function AIChatWidget({
 }: AIChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  // Update window size on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // Calculate dimensions
+  const PADDING = 16;
+  const NAV_DOCK_WIDTH = 56;
+  const HEADER_HEIGHT = 56;
+
+  const normalSize = { width: 384, height: 500 };
+  const maximizedSize = {
+    width: windowSize.width - NAV_DOCK_WIDTH - (PADDING * 2),
+    height: windowSize.height - HEADER_HEIGHT - (PADDING * 2),
+  };
+
+  const currentWidth = isMaximized ? maximizedSize.width : normalSize.width;
+  const currentHeight = isMinimized ? 56 : (isMaximized ? maximizedSize.height : normalSize.height);
+  const messagesHeight = isMaximized ? maximizedSize.height - 180 : 360;
+
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized);
+    if (isMinimized) setIsMinimized(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,25 +143,32 @@ export function AIChatWidget({
 
   return (
     <motion.div
-      className="fixed bottom-4 right-4 z-50 w-96 bg-white backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+      className="fixed z-50 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{
         opacity: 1,
-        y: 0,
         scale: 1,
-        height: isMinimized ? 56 : 500,
+        width: currentWidth,
+        height: currentHeight,
+        right: isMaximized ? PADDING : 16,
+        bottom: isMaximized ? PADDING : 16,
       }}
       transition={{ duration: 0.2 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-b border-slate-200">
+      <div
+        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-b border-slate-200 cursor-pointer select-none"
+        onDoubleClick={toggleMaximize}
+      >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Travel Assistant</h3>
-            <p className="text-[10px] text-slate-600">Powered by Claude</p>
+            <p className="text-[10px] text-slate-600">
+              {isMaximized ? 'Double-click to restore' : 'Powered by Claude • Double-click to maximize'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -142,18 +180,33 @@ export function AIChatWidget({
             <Trash2 className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setIsMinimized(!isMinimized)}
+            onClick={() => {
+              if (isMaximized) setIsMaximized(false);
+              setIsMinimized(!isMinimized);
+            }}
             className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Minimize"
           >
-            {isMinimized ? (
-              <Maximize2 className="w-4 h-4" />
-            ) : (
+            <Minus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleMaximize}
+            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title={isMaximized ? 'Restore' : 'Maximize'}
+          >
+            {isMaximized ? (
               <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Square className="w-4 h-4" />
             )}
           </button>
           <button
-            onClick={() => setIsOpen(false)}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            onClick={() => {
+              setIsOpen(false);
+              setIsMaximized(false);
+            }}
+            className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -163,7 +216,10 @@ export function AIChatWidget({
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="h-[360px] overflow-y-auto p-4 space-y-4">
+          <div
+            className="overflow-y-auto p-4 space-y-4"
+            style={{ height: messagesHeight }}
+          >
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
