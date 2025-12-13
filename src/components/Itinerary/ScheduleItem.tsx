@@ -62,10 +62,10 @@ export function ScheduleItem({
   return (
     <div
       className={`
-        bg-slate-800 rounded-lg p-4 border border-slate-700
+        bg-white rounded-lg p-4 border border-slate-200
         transition-all duration-200
         ${isDragging ? 'opacity-50 shadow-xl scale-105' : 'hover:border-slate-600'}
-        ${item.isNapTime ? 'bg-slate-900 border-blue-900' : ''}
+        ${item.isNapTime ? 'bg-white border-blue-900' : ''}
         ${item.isFlexible ? 'border-dashed' : ''}
       `}
     >
@@ -73,11 +73,11 @@ export function ScheduleItem({
         <div className={`text-xl ${colorClass} flex-shrink-0`}>{icon}</div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="text-white font-medium truncate">
+          <h4 className="text-slate-900 font-medium truncate">
             {item.isNapTime ? 'Nap Time' : locationName}
           </h4>
 
-          <div className="flex items-center gap-4 mt-1 text-sm text-slate-400">
+          <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
             <div className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
               <span>{item.startTime} - {item.endTime}</span>
@@ -86,7 +86,7 @@ export function ScheduleItem({
           </div>
 
           {item.notes && (
-            <div className="mt-2 flex items-start gap-1.5 text-sm text-slate-300">
+            <div className="mt-2 flex items-start gap-1.5 text-sm text-slate-600">
               <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-cyan-500" />
               <span className="flex-1">{item.notes}</span>
             </div>

@@ -57,8 +57,8 @@ export default function EmergencyNumbers() {
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <h3 className={`font-semibold ${colorClasses.text} mb-1`}>{contact.name}</h3>
-                    <p className="text-2xl font-bold text-white mb-1">{contact.number}</p>
-                    <p className="text-sm text-slate-400">{contact.description}</p>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{contact.number}</p>
+                    <p className="text-sm text-slate-600">{contact.description}</p>
                   </div>
                 </div>
               </a>
@@ -74,25 +74,25 @@ export default function EmergencyNumbers() {
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-lg p-6 shadow-lg">
+      <div className="bg-white rounded-lg p-6 shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-3xl">Hospital</span>
-          <h2 className="text-xl font-bold text-white">Nearby Hospitals</h2>
+          <h2 className="text-xl font-bold text-slate-900">Nearby Hospitals</h2>
         </div>
 
         <div className="space-y-4">
           {hospitals.map((hospital, index) => (
-            <div key={index} className="bg-slate-750 border border-slate-700 rounded-lg p-4">
-              <h3 className="font-semibold text-white mb-2">{hospital.name}</h3>
+            <div key={index} className="bg-white border border-slate-200 rounded-lg p-4">
+              <h3 className="font-semibold text-slate-900 mb-2">{hospital.name}</h3>
               <div className="space-y-2 text-sm">
-                <p className="text-slate-300">
+                <p className="text-slate-600">
                   <span className="text-slate-500">Address:</span> {hospital.address}
                 </p>
-                <p className="text-slate-300">
+                <p className="text-slate-600">
                   <span className="text-slate-500">Distance:</span>{' '}
                   <span className="text-green-400">{hospital.distance}</span>
                 </p>
-                <p className="text-slate-300">
+                <p className="text-slate-600">
                   <span className="text-slate-500">Services:</span> {hospital.services}
                 </p>
                 <a

@@ -38,12 +38,12 @@ function ChecklistProgress({ completed, total }: { completed: number; total: num
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between text-sm mb-2">
-        <span className="text-slate-400">Progress</span>
-        <span className="text-white font-medium">
+        <span className="text-slate-600">Progress</span>
+        <span className="text-slate-900 font-medium">
           {completed}/{total} completed
         </span>
       </div>
-      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-2 bg-white rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
           initial={{ width: 0 }}
@@ -80,9 +80,9 @@ function ChecklistSection({
   };
 
   return (
-    <div className="border-b border-slate-700/50 last:border-b-0">
+    <div className="border-b border-slate-200/50 last:border-b-0">
       <button
-        className="w-full flex items-center justify-between p-3 hover:bg-slate-800/40 transition-colors"
+        className="w-full flex items-center justify-between p-3 hover:bg-slate-100/40 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
@@ -92,13 +92,13 @@ function ChecklistSection({
           >
             <Icon className="w-4 h-4" style={{ color: category.color }} />
           </div>
-          <span className="font-medium text-white">{category.name}</span>
+          <span className="font-medium text-slate-900">{category.name}</span>
           <GlassBadge color={completedCount === category.items.length ? 'green' : 'slate'}>
             {completedCount}/{category.items.length}
           </GlassBadge>
         </div>
         <ChevronDown
-          className={`w-5 h-5 text-slate-400 transition-transform ${expanded ? 'rotate-0' : '-rotate-90'}`}
+          className={`w-5 h-5 text-slate-600 transition-transform ${expanded ? 'rotate-0' : '-rotate-90'}`}
         />
       </button>
 
@@ -113,7 +113,7 @@ function ChecklistSection({
             {category.items.map((item) => (
               <button
                 key={item.id}
-                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800/40 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100/40 transition-colors text-left"
                 onClick={() => onToggleItem(item.id)}
               >
                 {item.checked ? (
@@ -122,7 +122,7 @@ function ChecklistSection({
                   <Square className="w-5 h-5 text-slate-500 flex-shrink-0" />
                 )}
                 <span
-                  className={`text-sm ${item.checked ? 'text-slate-500 line-through' : 'text-slate-300'}`}
+                  className={`text-sm ${item.checked ? 'text-slate-500 line-through' : 'text-slate-600'}`}
                 >
                   {item.text}
                 </span>
@@ -147,7 +147,7 @@ function ChecklistSection({
               </div>
             ) : (
               <button
-                className="flex items-center gap-2 text-sm text-slate-400 hover:text-white p-2"
+                className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 p-2"
                 onClick={() => setShowAddInput(true)}
               >
                 <Plus className="w-4 h-4" />
@@ -227,9 +227,9 @@ export function ChecklistPanel({
 
   return (
     <GlassPanel className="w-full max-w-md">
-      <div className="p-4 border-b border-slate-700/50">
-        <h2 className="text-lg font-semibold text-white mb-1">Travel Checklist</h2>
-        <p className="text-sm text-slate-400">Track your pre-trip preparations</p>
+      <div className="p-4 border-b border-slate-200/50">
+        <h2 className="text-lg font-semibold text-slate-900 mb-1">Travel Checklist</h2>
+        <p className="text-sm text-slate-600">Track your pre-trip preparations</p>
       </div>
 
       <div className="p-4">

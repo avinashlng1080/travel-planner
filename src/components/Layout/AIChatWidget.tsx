@@ -34,13 +34,13 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           max-w-[80%] rounded-2xl px-4 py-3
           ${isUser
             ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-            : 'bg-slate-700/80 text-slate-200'
+            : 'bg-slate-100 text-slate-900'
           }
         `}
       >
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
         <p className="text-[10px] mt-1 opacity-60">
-          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
     </div>
@@ -49,7 +49,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-4 py-3 bg-slate-700/80 rounded-2xl w-fit">
+    <div className="flex items-center gap-1 px-4 py-3 bg-slate-100 rounded-2xl w-fit">
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
@@ -112,7 +112,7 @@ export function AIChatWidget({
 
   return (
     <motion.div
-      className="fixed bottom-4 right-4 z-50 w-96 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+      className="fixed bottom-4 right-4 z-50 w-96 bg-white backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{
         opacity: 1,
@@ -123,27 +123,27 @@ export function AIChatWidget({
       transition={{ duration: 0.2 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-b border-slate-700/50">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-b border-slate-200">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">Travel Assistant</h3>
-            <p className="text-[10px] text-slate-400">Powered by Claude</p>
+            <h3 className="text-sm font-semibold text-slate-900">Travel Assistant</h3>
+            <p className="text-[10px] text-slate-600">Powered by Claude</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={onClearHistory}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Clear history"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
           >
             {isMinimized ? (
               <Maximize2 className="w-4 h-4" />
@@ -153,7 +153,7 @@ export function AIChatWidget({
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -169,15 +169,15 @@ export function AIChatWidget({
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
                   <MessageSquare className="w-8 h-8 text-pink-400" />
                 </div>
-                <h4 className="text-white font-medium mb-2">How can I help?</h4>
-                <p className="text-sm text-slate-400 mb-4">
+                <h4 className="text-slate-900 font-medium mb-2">How can I help?</h4>
+                <p className="text-sm text-slate-600 mb-4">
                   Ask me anything about your Malaysia trip!
                 </p>
                 <div className="space-y-2">
                   {SUGGESTED_QUESTIONS.map((question, i) => (
                     <button
                       key={i}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-300 bg-slate-800/60 hover:bg-slate-700/60 rounded-lg transition-colors"
+                      className="w-full text-left px-3 py-2 text-sm text-slate-600 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
                       onClick={() => onSendMessage(question)}
                     >
                       {question}
@@ -193,7 +193,7 @@ export function AIChatWidget({
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-slate-700/50">
+          <form onSubmit={handleSubmit} className="p-4 border-t border-slate-200">
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
@@ -202,7 +202,7 @@ export function AIChatWidget({
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about your trip..."
                 rows={1}
-                className="flex-1 bg-slate-800/60 backdrop-blur-lg border border-slate-700/50 rounded-xl px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none max-h-24"
+                className="flex-1 bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none max-h-24"
                 style={{ minHeight: '44px' }}
               />
               <GlassButton

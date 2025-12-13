@@ -48,13 +48,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className={`flex-1 max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           className={`rounded-lg px-4 py-3 ${
-            isUser ? 'bg-pink-500 text-white ml-auto' : 'bg-slate-700 text-slate-100'
+            isUser ? 'bg-pink-500 text-white ml-auto' : 'bg-slate-100 text-slate-900'
           }`}
         >
           <div className="text-sm leading-relaxed">{renderContent(message.content)}</div>
         </div>
 
-        <div className={`text-xs text-slate-500 mt-1 px-1 ${isUser ? 'text-right' : 'text-left'}`}>
+        <div className={`text-xs text-slate-600 mt-1 px-1 ${isUser ? 'text-right' : 'text-left'}`}>
           {formatTime(message.timestamp)}
         </div>
       </div>

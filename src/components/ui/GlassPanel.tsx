@@ -26,10 +26,10 @@ export function GlassPanel({
   return (
     <motion.div
       className={`
-        bg-slate-900/${opacity}
+        bg-white/${opacity}
         ${blurClass}
-        border border-slate-700/50
-        shadow-2xl shadow-black/50
+        border border-slate-200/50
+        shadow-xl shadow-slate-200/50
         rounded-2xl
         ${className}
       `}
@@ -57,11 +57,11 @@ export function GlassCard({
   return (
     <motion.div
       className={`
-        bg-slate-800/60
+        bg-white/80
         backdrop-blur-lg
-        border border-slate-700/50
+        border border-slate-200/50
         rounded-xl
-        ${hover ? 'hover:bg-slate-700/60 hover:border-slate-600/50 cursor-pointer' : ''}
+        ${hover ? 'hover:bg-slate-50 hover:border-slate-300/50 cursor-pointer' : ''}
         transition-colors duration-200
         ${className}
       `}
@@ -90,7 +90,7 @@ export function GlassButton({
   disabled?: boolean;
 }) {
   const variantClasses = {
-    default: 'bg-slate-700/80 hover:bg-slate-600/80 text-white',
+    default: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
     primary: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white',
     success: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white',
     danger: 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white',
@@ -133,12 +133,12 @@ export function GlassInput({
     <input
       className={`
         w-full
-        bg-slate-800/60
+        bg-white
         backdrop-blur-lg
-        border border-slate-700/50
+        border border-slate-200
         rounded-xl
         px-4 py-2
-        text-white
+        text-slate-900
         placeholder-slate-400
         focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50
         transition-all duration-200
@@ -159,14 +159,14 @@ export function GlassBadge({
   className?: string;
 }) {
   const colorClasses = {
-    slate: 'bg-slate-700/60 text-slate-300',
-    pink: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-    green: 'bg-green-500/20 text-green-400 border-green-500/30',
-    blue: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    amber: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    red: 'bg-red-500/20 text-red-400 border-red-500/30',
-    purple: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+    slate: 'bg-slate-100 text-slate-600',
+    pink: 'bg-pink-100 text-pink-700 border-pink-200',
+    green: 'bg-green-100 text-green-700 border-green-200',
+    blue: 'bg-blue-100 text-blue-700 border-blue-200',
+    amber: 'bg-amber-100 text-amber-700 border-amber-200',
+    red: 'bg-red-100 text-red-700 border-red-200',
+    purple: 'bg-purple-100 text-purple-700 border-purple-200',
+    cyan: 'bg-cyan-100 text-cyan-700 border-cyan-200',
   };
 
   return (

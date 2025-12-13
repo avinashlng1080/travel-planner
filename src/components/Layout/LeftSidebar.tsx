@@ -28,7 +28,7 @@ function SidebarItem({ icon: Icon, label, active, badge, onClick }: SidebarItemP
       className={`
         w-full flex items-center gap-3 px-3 py-2 rounded-lg
         transition-colors duration-200
-        ${active ? 'bg-pink-500/20 text-pink-400' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'}
+        ${active ? 'bg-pink-500/20 text-pink-400' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}
       `}
       onClick={onClick}
     >
@@ -58,13 +58,13 @@ function DayPlanItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: D
       className={`
         w-full text-left px-3 py-2 rounded-lg
         transition-all duration-200
-        ${isSelected ? 'bg-pink-500 text-white' : 'hover:bg-slate-800/60'}
+        ${isSelected ? 'bg-pink-500 text-white' : 'hover:bg-slate-100'}
         ${isToday && !isSelected ? 'border border-pink-500/50' : ''}
       `}
       onClick={onClick}
     >
       <div className="flex items-center gap-2">
-        <span className={`text-xs font-medium ${isSelected ? 'text-pink-100' : 'text-slate-400'}`}>
+        <span className={`text-xs font-medium ${isSelected ? 'text-pink-100' : 'text-slate-600'}`}>
           {dayOfWeek}
         </span>
         {isToday && (
@@ -73,7 +73,7 @@ function DayPlanItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: D
           </GlassBadge>
         )}
       </div>
-      <div className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+      <div className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}>
         {title}
       </div>
     </button>
@@ -91,19 +91,19 @@ function CategoryFilter({ categories, onToggle }: CategoryFilterProps) {
       {categories.map((cat) => (
         <label
           key={cat.id}
-          className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-slate-800/60 cursor-pointer transition-colors"
+          className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
         >
           <input
             type="checkbox"
             checked={cat.visible}
             onChange={() => onToggle(cat.id)}
-            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-pink-500 focus:ring-pink-500/50"
+            className="w-4 h-4 rounded border-slate-200 bg-white text-pink-500 focus:ring-pink-500/50"
           />
           <span
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: cat.color }}
           />
-          <span className="text-sm text-slate-300">{cat.name}</span>
+          <span className="text-sm text-slate-600">{cat.name}</span>
         </label>
       ))}
     </div>
@@ -152,8 +152,8 @@ export function LeftSidebar({
     <aside
       className={`
         fixed top-14 left-0 bottom-0 z-40
-        bg-slate-900/90 backdrop-blur-xl
-        border-r border-slate-700/50
+        bg-white backdrop-blur-xl
+        border-r border-slate-200
         transition-all duration-300
         ${collapsed ? 'w-16' : 'w-72'}
         flex flex-col
@@ -161,7 +161,7 @@ export function LeftSidebar({
     >
       {/* Collapse Toggle */}
       <button
-        className="absolute -right-3 top-4 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white z-10"
+        className="absolute -right-3 top-4 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
         onClick={() => setCollapsed(!collapsed)}
       >
         {collapsed ? (
@@ -208,12 +208,12 @@ export function LeftSidebar({
             />
           </nav>
 
-          <div className="border-t border-slate-700/50" />
+          <div className="border-t border-slate-200" />
 
           {/* Daily Plans */}
           <div>
             <button
-              className="w-full flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+              className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2"
               onClick={() => toggleSection('days')}
             >
               Daily Plans
@@ -245,12 +245,12 @@ export function LeftSidebar({
             </AnimatePresence>
           </div>
 
-          <div className="border-t border-slate-700/50" />
+          <div className="border-t border-slate-200" />
 
           {/* Categories */}
           <div>
             <button
-              className="w-full flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+              className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2"
               onClick={() => toggleSection('categories')}
             >
               Categories
@@ -277,19 +277,19 @@ export function LeftSidebar({
       {collapsed && (
         <nav className="p-2 space-y-2">
           <button
-            className={`w-full p-2 rounded-lg ${activeSection === 'locations' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-400 hover:bg-slate-800/60'}`}
+            className={`w-full p-2 rounded-lg ${activeSection === 'locations' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-600 hover:bg-slate-100'}`}
             onClick={() => onSectionChange('locations')}
           >
             <MapPin className="w-5 h-5 mx-auto" />
           </button>
           <button
-            className={`w-full p-2 rounded-lg ${activeSection === 'itinerary' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-400 hover:bg-slate-800/60'}`}
+            className={`w-full p-2 rounded-lg ${activeSection === 'itinerary' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-600 hover:bg-slate-100'}`}
             onClick={() => onSectionChange('itinerary')}
           >
             <Calendar className="w-5 h-5 mx-auto" />
           </button>
           <button
-            className={`w-full p-2 rounded-lg ${activeSection === 'checklists' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-400 hover:bg-slate-800/60'}`}
+            className={`w-full p-2 rounded-lg ${activeSection === 'checklists' ? 'bg-pink-500/20 text-pink-400' : 'text-slate-600 hover:bg-slate-100'}`}
             onClick={() => onSectionChange('checklists')}
           >
             <CheckSquare className="w-5 h-5 mx-auto" />

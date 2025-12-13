@@ -5,13 +5,13 @@ export default function Header() {
   const { chatOpen, setChatOpen } = useTripStore();
 
   return (
-    <header className="bg-slate-900 border-b border-slate-700 px-4 md:px-6 py-4">
+    <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold font-['Outfit'] text-white">
+          <h1 className="text-xl md:text-2xl font-bold font-['Outfit'] text-slate-900">
             Malaysia Family Trip
           </h1>
-          <p className="text-xs md:text-sm text-slate-400 mt-1">
+          <p className="text-xs md:text-sm text-slate-600 mt-1">
             December 21, 2025 - January 6, 2026
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function Header() {
             onClick={() => setChatOpen(!chatOpen)}
             className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-colors ${
               chatOpen
-                ? 'bg-slate-700 text-white'
+                ? 'bg-white text-slate-900'
                 : 'bg-pink-500 hover:bg-pink-600 text-white'
             }`}
             aria-label={chatOpen ? 'Close chat' : 'Open chat'}

@@ -111,8 +111,9 @@ function App() {
       setAILoading(true);
 
       try {
-        // For now, use a simple response - will connect to Convex HTTP action later
-        const response = await fetch('/api/chat', {
+        // Call Convex HTTP action - convert .cloud URL to .site for HTTP endpoints
+        const convexUrl = import.meta.env.VITE_CONVEX_URL?.replace('.cloud', '.site') || '';
+        const response = await fetch(`${convexUrl}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -150,7 +151,7 @@ function App() {
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-900 text-white font-['DM_Sans']">
+    <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
       <FullScreenMap
         locations={LOCATIONS}

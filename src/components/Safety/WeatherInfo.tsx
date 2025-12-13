@@ -33,63 +33,63 @@ export default function WeatherInfo() {
         <p className="text-cyan-100">Expected weather for Dec 21, 2025 - Jan 6, 2026</p>
       </div>
 
-      <div className="bg-slate-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-bold text-white mb-4">Weather Overview</h2>
-        <p className="text-slate-300 mb-6">{WEATHER_INFO.summary}</p>
+      <div className="bg-white rounded-lg p-6 shadow-lg">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">Weather Overview</h2>
+        <p className="text-slate-600 mb-6">{WEATHER_INFO.summary}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-gradient-to-br from-orange-900/30 to-amber-900/30 border border-orange-700 rounded-lg p-5">
-            <h3 className="text-lg font-semibold text-white mb-3">Kuala Lumpur</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Kuala Lumpur</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Temperature:</span>
+                <span className="text-slate-600">Temperature:</span>
                 <span className="font-semibold text-orange-300">{WEATHER_INFO.klWeather.temperature}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Humidity:</span>
+                <span className="text-slate-600">Humidity:</span>
                 <span className="font-semibold text-cyan-300">{WEATHER_INFO.klWeather.humidity}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Rainfall:</span>
+                <span className="text-slate-600">Rainfall:</span>
                 <span className="font-semibold text-blue-300">{WEATHER_INFO.klWeather.rainfall}</span>
               </div>
             </div>
-            <p className="text-xs text-slate-300 mt-4 pt-4 border-t border-orange-700/50">
+            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-orange-700/50">
               {WEATHER_INFO.klWeather.recommendation}
             </p>
           </div>
 
           <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-700 rounded-lg p-5">
-            <h3 className="text-lg font-semibold text-white mb-3">Cameron Highlands</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Cameron Highlands</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Temperature:</span>
+                <span className="text-slate-600">Temperature:</span>
                 <span className="font-semibold text-green-300">{WEATHER_INFO.cameronWeather.temperature}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Humidity:</span>
+                <span className="text-slate-600">Humidity:</span>
                 <span className="font-semibold text-cyan-300">{WEATHER_INFO.cameronWeather.humidity}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Rainfall:</span>
+                <span className="text-slate-600">Rainfall:</span>
                 <span className="font-semibold text-blue-300">{WEATHER_INFO.cameronWeather.rainfall}</span>
               </div>
             </div>
-            <p className="text-xs text-slate-300 mt-4 pt-4 border-t border-green-700/50">
+            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-green-700/50">
               {WEATHER_INFO.cameronWeather.recommendation}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-bold text-white mb-4">Rain Probability by Time of Day</h2>
+      <div className="bg-white rounded-lg p-6 shadow-lg">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">Rain Probability by Time of Day</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {rainProbability.map((period, index) => (
-            <div key={index} className="bg-slate-750 border border-slate-700 rounded-lg p-4">
-              <h3 className="font-semibold text-white text-center mb-2">{period.time}</h3>
+            <div key={index} className="bg-white border border-slate-200 rounded-lg p-4">
+              <h3 className="font-semibold text-slate-900 text-center mb-2">{period.time}</h3>
               <p className="text-cyan-400 text-center font-medium mb-3">{period.probability}</p>
-              <p className="text-xs text-slate-400 text-center">{period.recommendation}</p>
+              <p className="text-xs text-slate-600 text-center">{period.recommendation}</p>
             </div>
           ))}
         </div>
@@ -100,27 +100,27 @@ export default function WeatherInfo() {
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-bold text-white mb-4">What to Pack</h2>
+      <div className="bg-white rounded-lg p-6 shadow-lg">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">What to Pack</h2>
         <div className="space-y-6">
           <div>
-            <h3 className="font-semibold text-white mb-3">Essential for Kuala Lumpur</h3>
+            <h3 className="font-semibold text-slate-900 mb-3">Essential for Kuala Lumpur</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {packingList.essential.map((item, index) => (
-                <div key={index} className="bg-slate-750 border border-slate-700 rounded-lg p-3 flex items-center gap-3">
+                <div key={index} className="bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-3">
                   <span className="text-green-400 flex-shrink-0">OK</span>
-                  <span className="text-sm text-slate-300">{item}</span>
+                  <span className="text-sm text-slate-600">{item}</span>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <h3 className="font-semibold text-white mb-3">Additional for Cameron Highlands (Dec 26-29)</h3>
+            <h3 className="font-semibold text-slate-900 mb-3">Additional for Cameron Highlands (Dec 26-29)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {packingList.cameron.map((item, index) => (
                 <div key={index} className="bg-green-900/20 border border-green-800 rounded-lg p-3 flex items-center gap-3">
                   <span className="text-green-400 flex-shrink-0">OK</span>
-                  <span className="text-sm text-slate-300">{item}</span>
+                  <span className="text-sm text-slate-600">{item}</span>
                 </div>
               ))}
             </div>

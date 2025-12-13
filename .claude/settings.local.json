@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
-      "Bash(npx playwright install chromium)"
+      "Bash(npx playwright install chromium)",
+      "mcp__convex__status",
+      "mcp__convex__tables",
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ]
   }
 }

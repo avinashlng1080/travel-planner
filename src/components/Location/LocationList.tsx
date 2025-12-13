@@ -26,14 +26,14 @@ export default function LocationList() {
   );
 
   return (
-    <div className="h-full bg-slate-900 overflow-y-auto">
-      <div className="p-4 sticky top-0 bg-slate-900 border-b border-slate-800 z-10">
-        <h2 className="text-xl font-bold text-white font-['Outfit']">
+    <div className="h-full bg-white overflow-y-auto">
+      <div className="p-4 sticky top-0 bg-white border-b border-slate-200 z-10">
+        <h2 className="text-xl font-bold text-slate-900 font-['Outfit']">
           Locations ({visibleLocations.length})
         </h2>
       </div>
 
-      <div className="divide-y divide-slate-800">
+      <div className="divide-y divide-slate-200">
         {sortedLocations.map((location) => {
           const isSelected = selectedLocation?.id === location.id;
           const color = CATEGORY_COLORS[location.category] || '#3B82F6';
@@ -42,8 +42,8 @@ export default function LocationList() {
             <button
               key={location.id}
               onClick={() => selectLocation(location)}
-              className={`w-full text-left p-4 hover:bg-slate-800 transition-colors ${
-                isSelected ? 'bg-slate-800 border-l-4' : ''
+              className={`w-full text-left p-4 hover:bg-slate-100 transition-colors ${
+                isSelected ? 'bg-slate-100 border-l-4' : ''
               }`}
               style={isSelected ? { borderLeftColor: color } : {}}
             >
@@ -53,9 +53,9 @@ export default function LocationList() {
                   style={{ backgroundColor: color }}
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white truncate">{location.name}</h3>
+                  <h3 className="font-semibold text-slate-900 truncate">{location.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-slate-400 capitalize">
+                    <span className="text-xs text-slate-600 capitalize">
                       {location.category.replace('-', ' ')}
                     </span>
                     <div className="flex items-center gap-1 text-xs text-amber-400">
@@ -69,7 +69,7 @@ export default function LocationList() {
                     <span>-</span>
                     <span>{location.drivingTime}</span>
                   </div>
-                  <p className="text-sm text-slate-400 mt-2 line-clamp-2">
+                  <p className="text-sm text-slate-600 mt-2 line-clamp-2">
                     {location.description}
                   </p>
                 </div>

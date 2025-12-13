@@ -1,5 +1,35 @@
+# Dependencies
 node_modules/
+
+# Environment files
 .env
 .env.local
+
+# Build outputs
 dist/
+.vite/
+
+# Convex generated files
+convex/_generated/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Duplicate/backup files (macOS creates these)
+* 2.*
+* 2
+*copy*

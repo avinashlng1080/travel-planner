@@ -4,12 +4,12 @@ export default function PlanFilter() {
   const { travelPlans, visiblePlans, togglePlan } = useTripStore();
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4 shadow-lg">
+    <div className="bg-white rounded-lg p-4 shadow-lg">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white font-['Outfit']">
+        <h3 className="text-lg font-semibold text-slate-900 font-['Outfit']">
           Travel Plans
         </h3>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-600 mt-1">
           Select which plans to display
         </p>
       </div>
@@ -22,7 +22,7 @@ export default function PlanFilter() {
               key={plan.id}
               onClick={() => togglePlan(plan.id)}
               className={`w-full p-4 rounded-lg transition-all duration-200 ${
-                isActive ? 'bg-slate-700 ring-2' : 'bg-slate-900 hover:bg-slate-800'
+                isActive ? 'bg-slate-100 ring-2' : 'bg-white hover:bg-slate-50'
               }`}
               style={isActive ? { boxShadow: `0 0 0 2px ${plan.color}` } : {}}
             >
@@ -35,13 +35,13 @@ export default function PlanFilter() {
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <h4 className={`font-semibold ${isActive ? 'text-white' : 'text-slate-400'}`}>
+                    <h4 className={`font-semibold ${isActive ? 'text-slate-900' : 'text-slate-600'}`}>
                       {plan.name}
                     </h4>
                     <span
                       className="px-2 py-0.5 text-xs font-medium rounded-full"
                       style={{
-                        backgroundColor: isActive ? `${plan.color}30` : '#1e293b',
+                        backgroundColor: isActive ? `${plan.color}30` : '#f1f5f9',
                         color: isActive ? plan.color : '#64748b',
                       }}
                     >
@@ -56,7 +56,7 @@ export default function PlanFilter() {
                 </div>
                 <div
                   className="w-12 h-6 rounded-full relative"
-                  style={{ backgroundColor: isActive ? plan.color : '#334155' }}
+                  style={{ backgroundColor: isActive ? plan.color : '#cbd5e1' }}
                 >
                   <div
                     className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200"
@@ -69,8 +69,8 @@ export default function PlanFilter() {
         })}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-slate-700">
-        <p className="text-xs text-slate-400">
+      <div className="mt-4 pt-4 border-t border-slate-200">
+        <p className="text-xs text-slate-600">
           Both plans can be active simultaneously.
         </p>
       </div>

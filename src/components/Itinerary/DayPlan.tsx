@@ -69,12 +69,12 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
       : 'text-slate-500';
 
   return (
-    <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+    <div className="bg-white rounded-xl p-6 border border-slate-200">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <Calendar className="w-5 h-5 text-pink-500" />
-            <h3 className="text-xl font-semibold text-white">
+            <h3 className="text-xl font-semibold text-slate-900">
               {dayPlan.dayOfWeek}, {new Date(dayPlan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </h3>
           </div>
@@ -85,7 +85,7 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
             </span>
           </div>
         </div>
-        <h4 className="text-lg text-slate-300">{dayPlan.title}</h4>
+        <h4 className="text-lg text-slate-600">{dayPlan.title}</h4>
       </div>
 
       {dayPlan.planB.length > 0 && (
@@ -95,7 +95,7 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'A'
                 ? 'bg-green-600 text-white shadow-lg shadow-green-900/50'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                : 'bg-white text-slate-600 hover:bg-slate-100'
             }`}
           >
             Plan A - Main
@@ -105,7 +105,7 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'B'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                : 'bg-white text-slate-600 hover:bg-slate-100'
             }`}
           >
             Plan B - Alternative
@@ -130,12 +130,12 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
       </DndContext>
 
       {dayPlan.notes.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-slate-800">
+        <div className="mt-6 pt-6 border-t border-slate-200">
           <div className="flex items-start gap-2 mb-3">
             <AlertCircle className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
             <h5 className="text-sm font-medium text-cyan-500">Important Notes</h5>
           </div>
-          <ul className="space-y-1.5 text-sm text-slate-400">
+          <ul className="space-y-1.5 text-sm text-slate-600">
             {dayPlan.notes.map((note, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-cyan-600 mt-1">-</span>
