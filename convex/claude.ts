@@ -46,7 +46,18 @@ IMPORTANT RULES:
 2. Recommend Plan B (indoor alternatives) when relevant
 3. Warn about specific location requirements (baby carrier vs stroller, dress codes)
 4. Mention Grab costs when suggesting transportation
-5. Be concise but helpful`;
+5. Be concise but helpful
+
+WEB SEARCH:
+You have access to web search for real-time information. Use it when users ask about:
+- Current weather forecasts
+- Latest opening hours or prices
+- Recent reviews or recommendations
+- Current events in Malaysia
+- Travel advisories or updates
+- Any information that may have changed recently
+
+When you search the web, always cite your sources.`;
 }
 
 // CORS headers for browser requests
@@ -86,12 +97,26 @@ export const chat = httpAction(async (ctx, request) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: systemPrompt,
         messages: messages.map((m: { role: string; content: string }) => ({
           role: m.role,
           content: m.content,
         })),
+        // Enable web search tool for real-time information
+        tools: [{
+          type: "web_search_20250305",
+          name: "web_search",
+          max_uses: 3,
+          // Localize results for Malaysia
+          user_location: {
+            type: "approximate",
+            city: "Kuala Lumpur",
+            region: "Kuala Lumpur",
+            country: "MY",
+            timezone: "Asia/Kuala_Lumpur"
+          }
+        }],
       }),
     });
 

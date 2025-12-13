@@ -8,7 +8,9 @@
       "mcp__convex__tables",
       "Bash(ls:*)",
       "Bash(cat:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(npx convex dev:*)"
     ]
   }
 }

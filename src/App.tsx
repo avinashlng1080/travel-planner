@@ -126,7 +126,10 @@ function App() {
 
         if (response.ok) {
           const data = await response.json();
-          const assistantMessage = data.content?.[0]?.text || 'Sorry, I couldn\'t process that request.';
+          // Extract text from response - may have multiple content blocks with web search
+          const textBlocks = data.content?.filter((block: any) => block.type === 'text') || [];
+          const assistantMessage = textBlocks.map((block: any) => block.text).join('\n\n')
+            || 'Sorry, I couldn\'t process that request.';
           addChatMessage('assistant', assistantMessage);
         } else {
           addChatMessage('assistant', 'Sorry, there was an error processing your request. Please try again.');
