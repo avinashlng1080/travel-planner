@@ -7,6 +7,23 @@ interface LoginFormProps {
   onSwitchToSignup: () => void;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('invalidsecret') || message.includes('invalid secret')) {
+      return 'Incorrect password. Please try again.';
+    }
+    if (message.includes('could not find') || message.includes('not found')) {
+      return 'No account found with this email. Please sign up first.';
+    }
+    if (message.includes('invalid email')) {
+      return 'Please enter a valid email address.';
+    }
+    return error.message;
+  }
+  return 'Failed to sign in. Please check your credentials.';
+}
+
 export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState('');
@@ -23,7 +40,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
       await signIn('password', { email, password, flow: 'signIn' });
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.');
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

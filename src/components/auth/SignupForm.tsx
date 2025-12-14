@@ -7,6 +7,23 @@ interface SignupFormProps {
   onSwitchToLogin: () => void;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('already exists') || message.includes('duplicate')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    if (message.includes('invalid email')) {
+      return 'Please enter a valid email address.';
+    }
+    if (message.includes('password') && message.includes('weak')) {
+      return 'Password is too weak. Please use a stronger password.';
+    }
+    return error.message;
+  }
+  return 'Failed to create account. Please try again.';
+}
+
 export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState('');
@@ -19,13 +36,19 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     e.preventDefault();
     setError(null);
 
+    // Client-side validation
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match.');
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError('Password must be at least 8 characters.');
       return;
     }
 
@@ -35,7 +58,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
       await signIn('password', { email, password, flow: 'signUp' });
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

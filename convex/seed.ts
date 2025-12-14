@@ -133,3 +133,24 @@ export const clearDatabase = mutation({
     return { message: "Database cleared" };
   },
 });
+
+// Clear auth data (for fixing corrupted accounts)
+export const clearAuthData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const accounts = await ctx.db.query("authAccounts").collect();
+    const sessions = await ctx.db.query("authSessions").collect();
+    const tokens = await ctx.db.query("authRefreshTokens").collect();
+
+    for (const token of tokens) await ctx.db.delete(token._id);
+    for (const session of sessions) await ctx.db.delete(session._id);
+    for (const account of accounts) await ctx.db.delete(account._id);
+    for (const user of users) await ctx.db.delete(user._id);
+
+    return {
+      message: "Auth data cleared",
+      deleted: { users: users.length, accounts: accounts.length, sessions: sessions.length, tokens: tokens.length }
+    };
+  },
+});
