@@ -61,3 +61,93 @@ export const update = mutation({
     await ctx.db.patch(id, cleanUpdates);
   },
 });
+
+// Move item between Plan A and Plan B
+export const moveItemBetweenPlans = mutation({
+  args: {
+    itemId: v.id("scheduleItems"),
+    targetPlanType: v.union(v.literal("A"), v.literal("B")),
+    targetIndex: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const { itemId, targetPlanType, targetIndex } = args;
+
+    // Get the item being moved
+    const item = await ctx.db.get(itemId);
+    if (!item) throw new Error("Item not found");
+
+    const sourcePlanType = item.planType;
+    const dayPlanId = item.dayPlanId;
+
+    // If moving within the same plan, just reorder
+    if (sourcePlanType === targetPlanType) {
+      const items = await ctx.db
+        .query("scheduleItems")
+        .withIndex("by_dayPlan_planType", (q) =>
+          q.eq("dayPlanId", dayPlanId).eq("planType", targetPlanType)
+        )
+        .collect();
+
+      const sorted = items.sort((a, b) => a.order - b.order);
+      const oldIndex = sorted.findIndex((i) => i._id === itemId);
+
+      if (oldIndex === targetIndex) return { success: true };
+
+      // Remove item and reinsert at new position
+      const reordered = [...sorted];
+      const [moved] = reordered.splice(oldIndex, 1);
+      reordered.splice(targetIndex, 0, moved);
+
+      // Update all orders
+      for (let i = 0; i < reordered.length; i++) {
+        if (reordered[i].order !== i) {
+          await ctx.db.patch(reordered[i]._id, { order: i });
+        }
+      }
+
+      return { success: true };
+    }
+
+    // Moving between different plans
+    // 1. Get source plan items and reorder (fill gap)
+    const sourceItems = await ctx.db
+      .query("scheduleItems")
+      .withIndex("by_dayPlan_planType", (q) =>
+        q.eq("dayPlanId", dayPlanId).eq("planType", sourcePlanType)
+      )
+      .collect();
+
+    const filteredSource = sourceItems
+      .filter((i) => i._id !== itemId)
+      .sort((a, b) => a.order - b.order);
+
+    for (let i = 0; i < filteredSource.length; i++) {
+      if (filteredSource[i].order !== i) {
+        await ctx.db.patch(filteredSource[i]._id, { order: i });
+      }
+    }
+
+    // 2. Get target plan items and make room at targetIndex
+    const targetItems = await ctx.db
+      .query("scheduleItems")
+      .withIndex("by_dayPlan_planType", (q) =>
+        q.eq("dayPlanId", dayPlanId).eq("planType", targetPlanType)
+      )
+      .collect();
+
+    const sortedTarget = targetItems.sort((a, b) => a.order - b.order);
+
+    // Shift items at and after targetIndex
+    for (let i = sortedTarget.length - 1; i >= targetIndex; i--) {
+      await ctx.db.patch(sortedTarget[i]._id, { order: i + 1 });
+    }
+
+    // 3. Update the moved item with new planType and order
+    await ctx.db.patch(itemId, {
+      planType: targetPlanType,
+      order: targetIndex,
+    });
+
+    return { success: true };
+  },
+});

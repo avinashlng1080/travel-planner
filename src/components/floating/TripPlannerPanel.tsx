@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap } from 'lucide-react';
+import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
+import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -9,7 +10,7 @@ import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
 
-type TabId = 'itinerary' | 'suggestions' | 'alerts';
+type TabId = 'itinerary' | 'builder' | 'suggestions' | 'alerts';
 
 interface Tab {
   id: TabId;
@@ -19,6 +20,7 @@ interface Tab {
 
 const TABS: Tab[] = [
   { id: 'itinerary', label: 'Itinerary', icon: MapPin },
+  { id: 'builder', label: 'Plan Builder', icon: Columns },
   { id: 'suggestions', label: 'Tips', icon: Lightbulb },
   { id: 'alerts', label: 'Safety', icon: AlertTriangle },
 ];
@@ -266,6 +268,27 @@ export function TripPlannerPanel() {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <MapPin className="w-10 h-10 text-slate-300 mb-3" />
                   <p className="text-sm text-slate-600">No day selected</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Plan Builder Tab */}
+          {activeTab === 'builder' && (
+            <div className="p-4 h-full">
+              {selectedDayPlan ? (
+                <div className="h-full">
+                  <div className="mb-3 text-center">
+                    <p className="text-xs text-slate-500">
+                      Drag activities between Plan A and Plan B to create your custom itinerary
+                    </p>
+                  </div>
+                  <PlanBuilder dayPlan={selectedDayPlan} />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Columns className="w-10 h-10 text-slate-300 mb-3" />
+                  <p className="text-sm text-slate-600">Select a day to build your plan</p>
                 </div>
               )}
             </div>
