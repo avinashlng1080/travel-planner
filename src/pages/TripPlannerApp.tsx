@@ -1,11 +1,11 @@
 import { useMemo, useCallback } from 'react';
 import { useUIStore } from '../stores/uiStore';
 import { LOCATIONS, DAILY_PLANS, HOME_BASE } from '../data/tripData';
-import { FloatingHeader } from '../components/layout/FloatingHeader';
-import { NavigationDock } from '../components/layout/NavigationDock';
-import { RightDetailPanel } from '../components/layout/RightDetailPanel';
-import { AIChatWidget } from '../components/layout/AIChatWidget';
-import { FullScreenMap } from '../components/map/FullScreenMap';
+import { FloatingHeader } from '../components/Layout/FloatingHeader';
+import { NavigationDock } from '../components/Layout/NavigationDock';
+import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
+import { AIChatWidget } from '../components/Layout/AIChatWidget';
+import { FullScreenMap } from '../components/Map/FullScreenMap';
 import {
   TripPlannerPanel,
   ChecklistFloatingPanel,

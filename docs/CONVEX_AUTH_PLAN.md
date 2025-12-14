@@ -1,148 +1,113 @@
-# Convex Auth Implementation Plan
+# Convex Auth Implementation
 
 ## Overview
-Implement email/password sign-up and sign-in functionality using the existing Convex Auth backend. The UI will be a modal triggered from the FloatingHeader user button.
+Email/password authentication using Convex Auth with a Facebook-style onboarding flow. Unauthenticated users see a landing page with embedded login/signup forms. Authenticated users are taken directly to the trip planner app.
 
-## Current State
+## Architecture
 
-### What's Already Set Up
-- `@convex-dev/auth` package installed
+```
+App.tsx (Auth Router)
+├── isLoading → <LoadingScreen />
+├── !isAuthenticated → <LandingPage />
+└── isAuthenticated → <TripPlannerApp />
+```
+
+## Current Implementation
+
+### Backend (Convex)
 - `convex/auth.ts` - Password provider configured with `signIn`/`signOut` mutations
-- `convex/auth.config.ts` - Basic auth config
+- `convex/auth.config.ts` - Auth configuration
 - `convex/schema.ts` - Auth tables included via `...authTables`
-- `src/main.tsx` - ConvexAuthProvider wrapping app
-- Data model: Tables have `userId` fields ready for user association
 
-### What's Missing
-1. No Login/Signup UI components
-2. Auth state not used to control app access
-3. No logout functionality in UI
-
----
-
-## Implementation Steps
-
-### 1. Create Auth UI Components
-
-**Files to create:**
-- `src/components/auth/AuthModal.tsx` - Modal container with backdrop
-- `src/components/auth/LoginForm.tsx` - Email/password login form
-- `src/components/auth/SignupForm.tsx` - Registration form
-
-**Design approach:**
-- Use existing `GlassPanel`, `GlassButton`, `GlassInput` components
-- Match glassmorphic style: `bg-white/90 backdrop-blur-xl border-slate-200/50`
-- Pink-to-purple gradient for primary actions
-- Framer Motion animations for enter/exit
-
-### 2. Add Auth State to UI Store
-
-**File to modify:** `src/stores/uiStore.ts`
-
-Add:
-```typescript
-authModalOpen: boolean
-authMode: 'login' | 'signup'
-setAuthModalOpen: (open: boolean) => void
-setAuthMode: (mode: 'login' | 'signup') => void
-```
-
-### 3. Update FloatingHeader
-
-**File to modify:** `src/components/Layout/FloatingHeader.tsx`
-
-- Import `useConvexAuth` to check auth state
-- Show user email or "Sign In" based on auth status
-- Click handler opens auth modal (unauthenticated) or shows dropdown (authenticated)
-- Add sign-out option for authenticated users
-
-### 4. Integrate Modal into App
-
-**File to modify:** `src/App.tsx`
-
-- Import and render `AuthModal` component
-- Modal renders based on `authModalOpen` state from uiStore
-
-### 5. Wire Up Convex Auth Actions
-
-**In LoginForm.tsx and SignupForm.tsx:**
-```typescript
-import { useAuthActions } from "@convex-dev/auth/react";
-
-const { signIn } = useAuthActions();
-
-// For login:
-await signIn("password", { email, password, flow: "signIn" });
-
-// For signup:
-await signIn("password", { email, password, flow: "signUp" });
-```
-
----
-
-## File Structure
+### Frontend Structure
 
 ```
-src/components/auth/
-├── AuthModal.tsx      # Modal wrapper with backdrop, tabs for login/signup
-├── LoginForm.tsx      # Email + password form, submit calls signIn
-└── SignupForm.tsx     # Email + password + confirm, submit calls signUp
+src/
+├── App.tsx                           # Auth router (checks isAuthenticated)
+├── pages/
+│   ├── LandingPage.tsx              # Hero + embedded auth forms
+│   └── TripPlannerApp.tsx           # Main app (authenticated users)
+├── components/
+│   ├── auth/
+│   │   ├── LoginForm.tsx            # Email/password login
+│   │   └── SignupForm.tsx           # Registration with confirm password
+│   ├── ui/
+│   │   └── LoadingScreen.tsx        # Auth loading state
+│   └── layout/
+│       └── FloatingHeader.tsx       # User menu with sign-out
 ```
 
-## Component Details
+## Auth Flow
 
-### AuthModal.tsx
-- Fixed overlay with backdrop blur
-- Centered GlassPanel container
+### Sign Up
+1. User visits app → sees `<LandingPage />`
+2. Fills out signup form (email, password, confirm)
+3. `signIn("password", { email, password, flow: "signUp" })` called
+4. On success, `isAuthenticated` becomes true
+5. App renders `<TripPlannerApp />`
+
+### Sign In
+1. User visits app → sees `<LandingPage />`
+2. Switches to login tab, enters credentials
+3. `signIn("password", { email, password, flow: "signIn" })` called
+4. On success, app renders `<TripPlannerApp />`
+
+### Sign Out
+1. User clicks avatar in header → dropdown menu
+2. Clicks "Sign out"
+3. `signOut()` called
+4. `isAuthenticated` becomes false
+5. App renders `<LandingPage />`
+
+## Key Components
+
+### LandingPage.tsx
+- Split layout: 60% hero content, 40% auth form
 - Tab switcher between Login/Signup
-- Close button (X)
-- AnimatePresence for smooth transitions
+- Reuses existing `LoginForm` and `SignupForm` components
+- Feature highlights and trust indicators
+- Responsive design (stacks on mobile)
 
-### LoginForm.tsx
-- Email input (GlassInput)
-- Password input (GlassInput, type="password")
-- Submit button (GlassButton variant="primary")
-- Error message display
-- Loading state during auth
+### TripPlannerApp.tsx
+- Full trip planner UI (map, panels, chat)
+- Only rendered for authenticated users
+- Extracted from original App.tsx
 
-### SignupForm.tsx
-- Email input
-- Password input
-- Confirm password input
-- Submit button
-- Validation (passwords match, email format)
-- Error message display
+### LoadingScreen.tsx
+- Shown while auth state is being determined
+- Animated logo and spinner
+- Prevents flash of wrong content
 
-### FloatingHeader Changes
-- Check `isAuthenticated` from `useConvexAuth()`
-- If authenticated: show user indicator + sign-out dropdown
-- If not: show "Sign In" button that opens modal
+### FloatingHeader.tsx
+- User avatar with dropdown menu
+- Sign-out functionality
+- No sign-in button (users are always authenticated when viewing)
 
----
+## Hooks Used
 
-## Critical Files to Modify
+```typescript
+// Check auth state
+import { useConvexAuth } from 'convex/react';
+const { isAuthenticated, isLoading } = useConvexAuth();
 
-1. `src/stores/uiStore.ts` - Add auth modal state
-2. `src/components/Layout/FloatingHeader.tsx` - Add auth trigger
-3. `src/App.tsx` - Render AuthModal
+// Auth actions
+import { useAuthActions } from '@convex-dev/auth/react';
+const { signIn, signOut } = useAuthActions();
 
----
+// Sign in/up
+await signIn("password", { email, password, flow: "signIn" });
+await signIn("password", { email, password, flow: "signUp" });
+
+// Sign out
+await signOut();
+```
 
 ## Testing Checklist
 
-- [ ] Sign up with new email/password
-- [ ] Sign in with existing credentials
-- [ ] Sign out clears session
-- [ ] Error handling for invalid credentials
-- [ ] Modal closes on successful auth
-- [ ] Header updates to show authenticated state
-
----
-
-## Notes
-
-### Password Provider Flow
-Convex Auth Password provider supports:
-- `signIn("password", { email, password, flow: "signIn" })` - Login
-- `signIn("password", { email, password, flow: "signUp" })` - Register
-- `signOut()` - Logout
+- [x] Unauthenticated user sees landing page
+- [x] Sign up creates account and shows app
+- [x] Sign in authenticates and shows app
+- [x] Authenticated user goes directly to app on refresh
+- [x] Sign out returns user to landing page
+- [x] Loading screen shows during auth check
+- [x] Mobile responsive layout works

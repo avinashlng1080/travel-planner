@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Calendar, Settings, User, ChevronDown, LogOut } from 'lucide-react';
-import { useConvexAuth } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { GlassBadge } from '../ui/GlassPanel';
-import { useUIStore } from '../../stores/uiStore';
 
 interface FloatingHeaderProps {
   currentDay: number;
@@ -11,7 +9,6 @@ interface FloatingHeaderProps {
   activePlan: 'A' | 'B';
   onPlanChange: (plan: 'A' | 'B') => void;
   tripName?: string;
-  dateRange?: string;
 }
 
 export function FloatingHeader({
@@ -22,9 +19,7 @@ export function FloatingHeader({
   tripName = 'Malaysia Dec 21 - Jan 6',
 }: FloatingHeaderProps) {
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;
-  const { isAuthenticated, isLoading } = useConvexAuth();
   const { signOut } = useAuthActions();
-  const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -38,15 +33,6 @@ export function FloatingHeader({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleUserClick = () => {
-    if (isAuthenticated) {
-      setShowUserMenu(!showUserMenu);
-    } else {
-      setAuthMode('login');
-      setAuthModalOpen(true);
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -121,26 +107,17 @@ export function FloatingHeader({
 
           <div className="relative" ref={menuRef}>
             <button
-              onClick={handleUserClick}
-              disabled={isLoading}
+              onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-              ) : isAuthenticated ? (
-                <>
-                  <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <User className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <ChevronDown className="w-4 h-4 hidden sm:block" />
-                </>
-              ) : (
-                <span className="text-sm font-medium">Sign In</span>
-              )}
+              <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-white" />
+              </div>
+              <ChevronDown className="w-4 h-4 hidden sm:block" />
             </button>
 
             {/* User Dropdown Menu */}
-            {showUserMenu && isAuthenticated && (
+            {showUserMenu && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-xl shadow-xl overflow-hidden">
                 <div className="p-3 border-b border-slate-100">
                   <p className="text-xs text-slate-500">Signed in</p>
