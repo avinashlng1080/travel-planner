@@ -1,5 +1,9 @@
-import { MapPin, Calendar, Settings, User, ChevronDown } from 'lucide-react';
-import { GlassButton, GlassBadge } from '../ui/GlassPanel';
+import { useState, useRef, useEffect } from 'react';
+import { MapPin, Calendar, Settings, User, ChevronDown, LogOut } from 'lucide-react';
+import { useConvexAuth } from 'convex/react';
+import { useAuthActions } from '@convex-dev/auth/react';
+import { GlassBadge } from '../ui/GlassPanel';
+import { useUIStore } from '../../stores/uiStore';
 
 interface FloatingHeaderProps {
   currentDay: number;
@@ -16,9 +20,38 @@ export function FloatingHeader({
   activePlan,
   onPlanChange,
   tripName = 'Malaysia Dec 21 - Jan 6',
-  dateRange,
 }: FloatingHeaderProps) {
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
+  const { setAuthModalOpen, setAuthMode } = useUIStore();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleUserClick = () => {
+    if (isAuthenticated) {
+      setShowUserMenu(!showUserMenu);
+    } else {
+      setAuthMode('login');
+      setAuthModalOpen(true);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setShowUserMenu(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
@@ -85,10 +118,43 @@ export function FloatingHeader({
           <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors">
             <Settings className="w-5 h-5" />
           </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors">
-            <User className="w-5 h-5" />
-            <ChevronDown className="w-4 h-4 hidden sm:block" />
-          </button>
+
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={handleUserClick}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+              ) : isAuthenticated ? (
+                <>
+                  <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <User className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <ChevronDown className="w-4 h-4 hidden sm:block" />
+                </>
+              ) : (
+                <span className="text-sm font-medium">Sign In</span>
+              )}
+            </button>
+
+            {/* User Dropdown Menu */}
+            {showUserMenu && isAuthenticated && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-xl shadow-xl overflow-hidden">
+                <div className="p-3 border-b border-slate-100">
+                  <p className="text-xs text-slate-500">Signed in</p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

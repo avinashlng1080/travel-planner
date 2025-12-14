@@ -168,6 +168,9 @@ function App() {
         onSendMessage={handleSendMessage}
         onClearHistory={clearChatMessages}
       />
+
+      {/* Auth Modal */}
+      <AuthModal />
     </div>
   );
 }
