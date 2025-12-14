@@ -9,6 +9,7 @@ import {
   Briefcase,
   Package,
 } from 'lucide-react';
+import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface ChecklistItem {
   id: string;
@@ -80,6 +81,7 @@ const DEFAULT_CHECKLISTS: ChecklistCategory[] = [
 export function ChecklistFloatingPanel() {
   const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
   const panel = panels.checklist;
+  const { width, height, isMobile } = useResponsivePanel(400, 500);
 
   // Manage checklist state internally
   const [checklists, setChecklists] = useState<ChecklistCategory[]>(DEFAULT_CHECKLISTS);
@@ -127,7 +129,7 @@ export function ChecklistFloatingPanel() {
       isOpen={panel.isOpen}
       isMinimized={panel.isMinimized}
       position={panel.position}
-      size={{ width: 400, height: 500 }}
+      size={{ width, height }}
       zIndex={panel.zIndex}
       onClose={() => closePanel('checklist')}
       onMinimize={() => toggleMinimize('checklist')}

@@ -35,7 +35,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         className={`
           max-w-[80%] rounded-2xl px-4 py-3
           ${isUser
-            ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
+            ? 'bg-gradient-to-r from-sunset-500 to-ocean-600 text-white'
             : 'bg-slate-100 text-slate-900'
           }
         `}
@@ -55,7 +55,7 @@ function TypingIndicator() {
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="w-2 h-2 bg-cyan-400 rounded-full"
+          className="w-2 h-2 bg-ocean-400 rounded-full"
           animate={{ y: [0, -6, 0] }}
           transition={{
             duration: 0.6,
@@ -99,13 +99,15 @@ export function AIChatWidget({
 
   // Calculate dimensions
   const PADDING = 16;
-  const NAV_DOCK_WIDTH = 56;
+  const isMobile = windowSize.width < 768;
+  const NAV_DOCK_WIDTH = isMobile ? 0 : 56;
   const HEADER_HEIGHT = 56;
+  const MOBILE_NAV_HEIGHT = isMobile ? 64 : 0; // Height of mobile nav bar
 
-  const normalSize = { width: 384, height: 500 };
+  const normalSize = { width: isMobile ? windowSize.width - 32 : 384, height: 500 };
   const maximizedSize = {
     width: windowSize.width - NAV_DOCK_WIDTH - (PADDING * 2),
-    height: windowSize.height - HEADER_HEIGHT - (PADDING * 2),
+    height: windowSize.height - HEADER_HEIGHT - MOBILE_NAV_HEIGHT - (PADDING * 2),
   };
 
   const currentWidth = isMaximized ? maximizedSize.width : normalSize.width;
@@ -135,10 +137,13 @@ export function AIChatWidget({
   if (!isOpen) {
     return (
       <motion.button
-        className="fixed bottom-4 right-4 z-50 w-14 h-14 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30"
+        className={`fixed right-4 z-50 w-14 h-14 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center shadow-lg shadow-glow-sunset ${
+          isMobile ? 'bottom-20' : 'bottom-4'
+        }`}
         onClick={() => setIsOpen(true)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
+        aria-label="Open AI Travel Assistant"
       >
         <MessageSquare className="w-6 h-6 text-white" />
       </motion.button>
@@ -155,17 +160,17 @@ export function AIChatWidget({
         width: currentWidth,
         height: currentHeight,
         right: isMaximized ? PADDING : 16,
-        bottom: isMaximized ? PADDING : 16,
+        bottom: isMaximized ? PADDING + MOBILE_NAV_HEIGHT : (isMobile ? 80 : 16),
       }}
       transition={{ duration: 0.2 }}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-b border-slate-200 cursor-pointer select-none"
+        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200 cursor-pointer select-none"
         onDoubleClick={toggleMaximize}
       >
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center shadow-glow-sunset">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -179,7 +184,7 @@ export function AIChatWidget({
           {dynamicPinsCount > 0 && (
             <button
               onClick={onClearDynamicPins}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-xs text-sunset-600 hover:text-sunset-800 hover:bg-sunset-50 rounded-lg transition-colors"
               title="Clear AI-suggested pins"
             >
               <MapPin className="w-3 h-3" />
@@ -237,8 +242,8 @@ export function AIChatWidget({
           >
             {messages.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
-                  <MessageSquare className="w-8 h-8 text-pink-400" />
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-sunset-500/20 to-ocean-600/20 rounded-full flex items-center justify-center">
+                  <MessageSquare className="w-8 h-8 text-sunset-500" />
                 </div>
                 <h4 className="text-slate-900 font-medium mb-2">How can I help?</h4>
                 <p className="text-sm text-slate-600 mb-4">
@@ -273,7 +278,7 @@ export function AIChatWidget({
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about your trip..."
                 rows={1}
-                className="flex-1 bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none max-h-24"
+                className="flex-1 bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 resize-none max-h-24"
                 style={{ minHeight: '44px' }}
               />
               <GlassButton

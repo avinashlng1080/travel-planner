@@ -36,7 +36,7 @@ export function PlanBuilder({ dayPlan }: PlanBuilderProps) {
       activationConstraint: { distance: 8 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 8 },
+      activationConstraint: { delay: 150, tolerance: 12 },
     })
   );
 

@@ -5,6 +5,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
 import { LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
+import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface Suggestion {
   id: string;
@@ -19,6 +20,7 @@ export function SuggestionsPanel() {
   const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } =
     useFloatingPanelStore();
   const { selectedDayId, selectedLocation } = useUIStore();
+  const { width, height, isMobile } = useResponsivePanel(380, 450);
 
   const panelState = panels.suggestions;
 
@@ -224,7 +226,7 @@ export function SuggestionsPanel() {
       case 'nearby':
         return 'from-green-500 to-emerald-500';
       case 'tip':
-        return 'from-purple-500 to-pink-500';
+        return 'from-sunset-500 to-ocean-600';
       default:
         return 'from-slate-500 to-slate-600';
     }
@@ -238,7 +240,7 @@ export function SuggestionsPanel() {
       isOpen={panelState.isOpen}
       isMinimized={panelState.isMinimized}
       position={panelState.position}
-      size={{ width: 380, height: 450 }}
+      size={{ width, height }}
       zIndex={panelState.zIndex}
       onClose={() => closePanel('suggestions')}
       onMinimize={() => toggleMinimize('suggestions')}
@@ -281,10 +283,10 @@ export function SuggestionsPanel() {
                           // Handle action - could trigger location selection
                           console.log('Action clicked:', suggestion.action);
                         }}
-                        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-ocean-600 hover:text-ocean-700 transition-colors"
                       >
                         {suggestion.action.label}
-                        <span className="text-[10px]">→</span>
+                        <span className="text-xs md:text-[10px]">→</span>
                       </button>
                     )}
                   </div>
@@ -292,7 +294,7 @@ export function SuggestionsPanel() {
 
                 {/* Type Badge */}
                 <div className="absolute top-2 right-2">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wider bg-slate-100 text-slate-600">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider bg-slate-100 text-slate-600">
                     {suggestion.type}
                   </span>
                 </div>

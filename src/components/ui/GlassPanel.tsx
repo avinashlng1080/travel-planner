@@ -91,15 +91,15 @@ export function GlassButton({
 }) {
   const variantClasses = {
     default: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
-    primary: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white',
-    success: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white',
+    primary: 'bg-gradient-to-r from-sunset-500 to-ocean-600 hover:from-sunset-600 hover:to-ocean-700 text-white shadow-glow-sunset',
+    success: 'bg-gradient-to-r from-ocean-500 to-ocean-600 hover:from-ocean-600 hover:to-ocean-700 text-white',
     danger: 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white',
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: 'px-3 py-1.5 text-sm min-h-[44px]',
+    md: 'px-4 py-2 text-sm min-h-[44px]',
+    lg: 'px-6 py-3 text-base min-h-[44px]',
   };
 
   return (
@@ -137,10 +137,10 @@ export function GlassInput({
         backdrop-blur-lg
         border border-slate-200
         rounded-xl
-        px-4 py-2
+        px-4 py-3
         text-slate-900
         placeholder-slate-400
-        focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50
+        focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50
         transition-all duration-200
         ${className}
       `}
@@ -155,7 +155,7 @@ export function GlassBadge({
   className = '',
 }: {
   children: ReactNode;
-  color?: 'slate' | 'pink' | 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'cyan';
+  color?: 'slate' | 'pink' | 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'cyan' | 'sunset' | 'ocean';
   className?: string;
 }) {
   const colorClasses = {
@@ -167,6 +167,8 @@ export function GlassBadge({
     red: 'bg-red-100 text-red-700 border-red-200',
     purple: 'bg-purple-100 text-purple-700 border-purple-200',
     cyan: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+    sunset: 'bg-sunset-100 text-sunset-700 border-sunset-200',
+    ocean: 'bg-ocean-100 text-ocean-700 border-ocean-200',
   };
 
   return (

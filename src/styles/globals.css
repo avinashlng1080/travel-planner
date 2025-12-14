@@ -89,10 +89,10 @@
 
   @keyframes marker-pulse {
     0%, 100% {
-      box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+      box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.4);
     }
     50% {
-      box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
+      box-shadow: 0 0 0 10px rgba(251, 146, 60, 0);
     }
   }
 
@@ -110,7 +110,7 @@
 
   /* Gradient text */
   .gradient-text {
-    @apply bg-gradient-to-r from-pink-600 to-cyan-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-sunset-500 to-ocean-600 bg-clip-text text-transparent;
   }
 
   /* Card hover effect */
@@ -172,7 +172,12 @@
 
   /* Focus ring */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-white;
+    @apply focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 focus:ring-offset-white;
+  }
+
+  /* Safe area insets for mobile devices */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 
@@ -203,13 +208,13 @@
 
 /* Nap time block styling */
 .nap-time-block {
-  @apply bg-purple-100 border-l-4 border-purple-500 opacity-90;
+  @apply bg-ocean-100 border-l-4 border-ocean-500 opacity-90;
   background-image: repeating-linear-gradient(
     45deg,
     transparent,
     transparent 10px,
-    rgba(139, 92, 246, 0.1) 10px,
-    rgba(139, 92, 246, 0.1) 20px
+    rgba(59, 130, 246, 0.1) 10px,
+    rgba(59, 130, 246, 0.1) 20px
   );
 }
 
@@ -261,4 +266,23 @@
   @apply absolute top-full left-1/2 transform -translate-x-1/2;
   border: 6px solid transparent;
   border-top-color: #ffffff;
+}
+
+/* Mobile map controls */
+@media (max-width: 767px) {
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 20px !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    max-width: calc(100vw - 48px) !important;
+  }
+
+  .leaflet-popup-content {
+    font-size: 14px !important;
+    margin: 12px !important;
+  }
 }

@@ -47,7 +47,7 @@ export function DraggableItem({ item, location, planType }: DraggableItemProps) 
         className={`
           absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center
           cursor-grab active:cursor-grabbing
-          opacity-0 group-hover:opacity-100
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
           transition-opacity duration-200
           ${isDragging ? 'opacity-100' : ''}
         `}

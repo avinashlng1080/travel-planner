@@ -8,8 +8,8 @@ interface PanelState {
   zIndex: number;
 }
 
-// Simplified panel structure: tripPlanner combines days/itinerary/suggestions/alerts
-export type PanelId = 'tripPlanner' | 'checklist' | 'filters';
+// All available floating panels
+export type PanelId = 'tripPlanner' | 'days' | 'checklist' | 'filters' | 'suggestions' | 'alerts';
 
 interface FloatingPanelState {
   panels: Record<PanelId, PanelState>;
@@ -23,29 +23,65 @@ interface FloatingPanelState {
   bringToFront: (id: PanelId) => void;
 }
 
+// Helper function to get viewport-aware default position
+const getDefaultPosition = (preferredX: number, preferredY: number): { x: number; y: number } => {
+  if (typeof window === 'undefined') {
+    return { x: preferredX, y: preferredY };
+  }
+
+  const isMobile = window.innerWidth < 768;
+
+  if (isMobile) {
+    // On mobile, center panels with 16px margin
+    return { x: 16, y: preferredY };
+  }
+
+  // On desktop, ensure x position doesn't exceed viewport
+  const safeX = Math.min(preferredX, window.innerWidth - 400); // 400 = approx panel width
+  return { x: safeX, y: preferredY };
+};
+
 // Default panel configurations
 const DEFAULT_PANELS: Record<PanelId, PanelState> = {
   tripPlanner: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 70, y: 70 },
+    position: getDefaultPosition(70, 70),
     zIndex: 1,
+  },
+  days: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(70, 70),
+    zIndex: 2,
   },
   checklist: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 500, y: 100 },
-    zIndex: 2,
+    position: getDefaultPosition(500, 100),
+    zIndex: 3,
   },
   filters: {
     isOpen: false,
     isMinimized: false,
-    position: { x: 70, y: 400 },
-    zIndex: 3,
+    position: getDefaultPosition(70, 400),
+    zIndex: 4,
+  },
+  suggestions: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(400, 70),
+    zIndex: 5,
+  },
+  alerts: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(400, 200),
+    zIndex: 6,
   },
 };
 
-const INITIAL_Z_INDEX = 4;
+const INITIAL_Z_INDEX = 7;
 
 export const useFloatingPanelStore = create<FloatingPanelState>()(
   persist(

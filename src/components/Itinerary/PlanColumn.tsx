@@ -65,7 +65,7 @@ export function PlanColumn({ planType, items, locations, isOver }: PlanColumnPro
         className={`
           flex-1 p-2 rounded-b-xl border-2 border-t-0
           ${showDropIndicator ? 'border-dashed' : 'border-slate-200'}
-          overflow-y-auto min-h-[200px]
+          overflow-y-auto min-h-[300px] md:min-h-[200px]
         `}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>

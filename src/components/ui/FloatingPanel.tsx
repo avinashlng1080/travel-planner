@@ -50,14 +50,16 @@ export function FloatingPanel({
   // Calculate dimensions based on state
   const HEADER_HEIGHT = 56;
   const MAXIMIZED_PADDING = 20;
-  const NAV_DOCK_WIDTH = 56;
+  const isMobile = windowSize.width < 768;
+  const NAV_DOCK_WIDTH = isMobile ? 0 : 56;
 
   // Maximized dimensions (accounting for nav dock and some padding)
+  // On mobile: full-screen with no margins
   const maximizedDimensions = {
-    x: NAV_DOCK_WIDTH + MAXIMIZED_PADDING,
-    y: HEADER_HEIGHT + MAXIMIZED_PADDING,
-    width: windowSize.width - NAV_DOCK_WIDTH - (MAXIMIZED_PADDING * 2),
-    height: windowSize.height - HEADER_HEIGHT - (MAXIMIZED_PADDING * 2),
+    x: isMobile ? 0 : NAV_DOCK_WIDTH + MAXIMIZED_PADDING,
+    y: isMobile ? 0 : HEADER_HEIGHT + MAXIMIZED_PADDING,
+    width: isMobile ? windowSize.width : windowSize.width - NAV_DOCK_WIDTH - (MAXIMIZED_PADDING * 2),
+    height: isMobile ? windowSize.height : windowSize.height - HEADER_HEIGHT - (MAXIMIZED_PADDING * 2),
   };
 
   // Current dimensions based on state
@@ -119,12 +121,12 @@ export function FloatingPanel({
           <div className="bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
             {/* Draggable Header - triggers drag on parent */}
             <div
-              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}
+              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}
               onPointerDown={(e) => !isMaximized && dragControls.start(e)}
               onDoubleClick={toggleMaximize}
             >
               <div className="flex items-center gap-3 pointer-events-none">
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg shadow-pink-500/30">
+                <div className="w-8 h-8 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-lg flex items-center justify-center shadow-lg shadow-sunset-500/30">
                   <Icon className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -144,12 +146,12 @@ export function FloatingPanel({
                     if (isMaximized) setIsMaximized(false);
                     onMinimize();
                   }}
-                  className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2.5 md:p-1.5 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   title="Minimize"
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-5 h-5 md:w-4 md:h-4" />
                 </motion.button>
 
                 {/* Maximize/Restore button */}
@@ -158,15 +160,15 @@ export function FloatingPanel({
                     e.stopPropagation();
                     toggleMaximize();
                   }}
-                  className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2.5 md:p-1.5 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   title={isMaximized ? 'Restore' : 'Maximize'}
                 >
                   {isMaximized ? (
-                    <Minimize2 className="w-4 h-4" />
+                    <Minimize2 className="w-5 h-5 md:w-4 md:h-4" />
                   ) : (
-                    <Square className="w-4 h-4" />
+                    <Square className="w-5 h-5 md:w-4 md:h-4" />
                   )}
                 </motion.button>
 
@@ -176,12 +178,12 @@ export function FloatingPanel({
                     e.stopPropagation();
                     onClose();
                   }}
-                  className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2.5 md:p-1.5 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   title="Close"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5 md:w-4 md:h-4" />
                 </motion.button>
               </div>
             </div>

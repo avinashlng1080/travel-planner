@@ -45,7 +45,7 @@ export function FloatingHeader({
         {/* Left: Logo and Trip Name */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-lg flex items-center justify-center shadow-glow-sunset">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-slate-900 hidden sm:block">TripPlanner</span>
@@ -62,7 +62,7 @@ export function FloatingHeader({
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-slate-600" />
             {isOnTrip ? (
-              <GlassBadge color="pink">
+              <GlassBadge color="sunset">
                 Day {currentDay} of {totalDays}
               </GlassBadge>
             ) : currentDay <= 0 ? (
@@ -77,9 +77,9 @@ export function FloatingHeader({
           {/* Plan A/B Toggle */}
           <div className="flex items-center gap-1 bg-white/60 rounded-lg p-1">
             <button
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
                 activePlan === 'A'
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+                  ? 'bg-ocean-600 text-white shadow-lg shadow-ocean-600/30'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => onPlanChange('A')}
@@ -87,9 +87,9 @@ export function FloatingHeader({
               Plan A
             </button>
             <button
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
                 activePlan === 'B'
-                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-sunset-500 text-white shadow-lg shadow-sunset-500/30'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => onPlanChange('B')}
@@ -101,16 +101,16 @@ export function FloatingHeader({
 
         {/* Right: User and Settings */}
         <div className="flex items-center gap-2">
-          <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors">
+          <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]">
             <Settings className="w-5 h-5" />
           </button>
 
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
             >
-              <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-white" />
               </div>
               <ChevronDown className="w-4 h-4 hidden sm:block" />

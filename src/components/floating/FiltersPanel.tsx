@@ -2,6 +2,7 @@ import { Filter } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface Category {
   id: string;
@@ -24,6 +25,7 @@ const categories: Category[] = [
 export function FiltersPanel() {
   const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
   const { visibleCategories, toggleCategory, setAllCategories } = useUIStore();
+  const { width, height, isMobile } = useResponsivePanel(300, 400);
 
   const panelState = panels.filters;
 
@@ -43,7 +45,7 @@ export function FiltersPanel() {
       isOpen={panelState.isOpen}
       isMinimized={panelState.isMinimized}
       position={panelState.position}
-      size={{ width: 300, height: 400 }}
+      size={{ width, height }}
       zIndex={panelState.zIndex}
       onClose={() => closePanel('filters')}
       onMinimize={() => toggleMinimize('filters')}
@@ -55,7 +57,7 @@ export function FiltersPanel() {
         <div className="flex items-center gap-2 mb-4">
           <button
             onClick={handleShowAll}
-            className="flex-1 px-3 py-2 text-xs font-medium bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            className="flex-1 px-3 py-2 text-xs font-medium bg-gradient-to-r from-sunset-500 to-ocean-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
           >
             Show All
           </button>
@@ -75,13 +77,13 @@ export function FiltersPanel() {
             return (
               <label
                 key={cat.id}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors min-h-[44px]"
               >
                 <input
                   type="checkbox"
                   checked={isVisible}
                   onChange={() => toggleCategory(cat.id)}
-                  className="w-4 h-4 rounded border-slate-300 bg-white text-pink-500 focus:ring-pink-500/50 focus:ring-2 cursor-pointer transition-all"
+                  className="w-5 h-5 rounded border-slate-300 bg-white text-sunset-500 focus:ring-sunset-500/50 focus:ring-2 cursor-pointer transition-all"
                 />
                 <span
                   className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"

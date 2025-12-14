@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
 import type { DynamicPin } from '../../stores/uiStore';
+import { RoutingLayer } from './RoutingLayer';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default icon issue
@@ -13,27 +14,54 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+// Tropical Sunset palette for map markers - softer colors for eye comfort
 const CATEGORY_COLORS: Record<string, string> = {
-  'home-base': '#EC4899',
-  'toddler-friendly': '#F472B6',
-  attraction: '#10B981',
-  shopping: '#8B5CF6',
-  restaurant: '#F59E0B',
-  nature: '#22C55E',
-  temple: '#EF4444',
-  playground: '#06B6D4',
-  medical: '#DC2626',
-  avoid: '#64748b',
-  'ai-suggested': '#A855F7',
+  'home-base': '#F97316',       // Sunset coral - warm home (kept)
+  'toddler-friendly': '#F9A8D4', // Softer pink - gentle, friendly
+  attraction: '#14B8A6',         // Softer teal - adventure
+  shopping: '#FBBF24',           // Warmer gold - luxury
+  restaurant: '#FB923C',         // Softer orange - warmth
+  nature: '#34D399',             // Softer emerald - natural
+  temple: '#F87171',             // Softer red - sacred, traditional
+  playground: '#38BDF8',         // Softer sky - playful
+  medical: '#EF4444',            // Slightly softer red - universal
+  avoid: '#94A3B8',              // Lighter slate - muted
+  'ai-suggested': '#F97316',     // Sunset coral for AI (kept)
 };
+
+// Plan indicator type
+type PlanIndicator = 'A' | 'B' | 'both' | null;
 
 // Unique silhouette marker SVGs for each category
 // Each marker has a distinctive shape that's recognizable at a glance
-function createCategoryMarkerSVG(category: string, size: number, isSelected: boolean): string {
-  const scale = size / 40; // Base size is 40
+function createCategoryMarkerSVG(category: string, size: number, isSelected: boolean, planIndicator: PlanIndicator = null): string {
   const shadow = isSelected ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));' : 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));';
   const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
   const color = CATEGORY_COLORS[category] || '#64748b';
+
+  // Plan ring colors
+  const planAColor = '#10B981'; // Green
+  const planBColor = '#3B82F6'; // Blue
+  const ringStrokeWidth = 3;
+  const ringRadius = 22; // Outer ring radius (size is 40, so center is at 20)
+
+  // Create plan indicator ring
+  let planRing = '';
+  if (planIndicator === 'A') {
+    // Green ring for Plan A
+    planRing = `<circle cx="20" cy="22" r="${ringRadius}" fill="none" stroke="${planAColor}" stroke-width="${ringStrokeWidth}"/>`;
+  } else if (planIndicator === 'B') {
+    // Blue ring for Plan B
+    planRing = `<circle cx="20" cy="22" r="${ringRadius}" fill="none" stroke="${planBColor}" stroke-width="${ringStrokeWidth}"/>`;
+  } else if (planIndicator === 'both') {
+    // Split ring - half green, half blue
+    planRing = `
+      <path d="M20 ${22 - ringRadius} A${ringRadius} ${ringRadius} 0 0 1 20 ${22 + ringRadius}"
+            fill="none" stroke="${planAColor}" stroke-width="${ringStrokeWidth}"/>
+      <path d="M20 ${22 + ringRadius} A${ringRadius} ${ringRadius} 0 0 1 20 ${22 - ringRadius}"
+            fill="none" stroke="${planBColor}" stroke-width="${ringStrokeWidth}"/>
+    `;
+  }
 
   const markers: Record<string, string> = {
     // House silhouette for home base
@@ -160,8 +188,7 @@ function createCustomIcon(category: string, isSelected: boolean = false) {
 // Special icon for AI-suggested dynamic pins with sparkle badge
 function createDynamicPinIcon(isSelected: boolean = false) {
   const size = isSelected ? 48 : 40;
-  const color = CATEGORY_COLORS['ai-suggested'];
-  const shadow = isSelected ? 'filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.6));' : 'filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.4));';
+  const shadow = isSelected ? 'filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.6));' : 'filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.4));';
   const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
 
   return L.divIcon({
@@ -170,8 +197,8 @@ function createDynamicPinIcon(isSelected: boolean = false) {
         <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}">
           <defs>
             <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#A855F7"/>
-              <stop offset="100%" style="stop-color:#EC4899"/>
+              <stop offset="0%" style="stop-color:#F97316"/>
+              <stop offset="100%" style="stop-color:#14B8A6"/>
             </linearGradient>
           </defs>
           <path d="M20 2 C10 2 4 10 4 18 C4 30 20 42 20 42 C20 42 36 30 36 18 C36 10 30 2 20 2Z"
@@ -225,6 +252,40 @@ function MapController({ selectedLocation }: MapControllerProps) {
   return null;
 }
 
+interface MapBoundsControllerProps {
+  planRoute: Array<{ lat: number; lng: number }>;
+  selectedLocation: Location | null;
+}
+
+function MapBoundsController({ planRoute, selectedLocation }: MapBoundsControllerProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Don't auto-fit if a location is selected (MapController handles that)
+    if (selectedLocation || planRoute.length === 0) {
+      return;
+    }
+
+    // For a single point, use flyTo with default zoom instead of fitBounds
+    if (planRoute.length === 1) {
+      map.flyTo([planRoute[0].lat, planRoute[0].lng], 13, {
+        duration: 1,
+      });
+      return;
+    }
+
+    // For multiple points, fit bounds with padding
+    const bounds = L.latLngBounds(planRoute.map(p => [p.lat, p.lng]));
+    map.fitBounds(bounds, {
+      padding: [50, 50],
+      duration: 1,
+      maxZoom: 14,
+    });
+  }, [planRoute, selectedLocation, map]);
+
+  return null;
+}
+
 interface FullScreenMapProps {
   locations: Location[];
   selectedLocation: Location | null;
@@ -246,12 +307,18 @@ export function FullScreenMap({
   onLocationSelect,
   onDynamicPinSelect,
 }: FullScreenMapProps) {
+  const [mapLayer, setMapLayer] = useState<'street' | 'satellite'>('street');
+
   const filteredLocations = locations.filter((loc) =>
     visibleCategories.includes(loc.category)
   );
 
-  const routeColor = activePlan === 'A' ? '#10B981' : '#3B82F6';
+  const routeColor = activePlan === 'A' ? '#10B981' : '#3B82F6'; // Plan A: solid green, Plan B: blue
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
+
+  const toggleLayer = () => {
+    setMapLayer(prev => prev === 'street' ? 'satellite' : 'street');
+  };
 
   return (
     <div className="fixed inset-0 z-0">
@@ -286,31 +353,94 @@ export function FullScreenMap({
           .leaflet-control-zoom a:hover {
             background: rgba(241, 245, 249, 0.95) !important;
           }
+          .layer-toggle-button {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+          }
+          .layer-toggle-button:hover {
+            background: rgba(241, 245, 249, 0.95);
+            transform: scale(1.05);
+          }
         `}
       </style>
+
+      {/* Layer Toggle Control */}
+      <div className="absolute top-4 right-4 z-[1000]">
+        <button
+          onClick={toggleLayer}
+          className="layer-toggle-button p-3 shadow-lg"
+          title={mapLayer === 'street' ? 'Switch to Satellite' : 'Switch to Street'}
+        >
+          {mapLayer === 'street' ? (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-700"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+          ) : (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-700"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          )}
+        </button>
+      </div>
+
       <MapContainer
         center={[3.1089, 101.7279]}
-        zoom={12}
+        zoom={13}
         className="w-full h-full"
         zoomControl={true}
       >
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        />
-
-        <MapController selectedLocation={selectedLocation} />
-
-        {/* Route Polyline */}
-        {planRoute.length > 1 && (
-          <Polyline
-            positions={planRoute.map((p) => [p.lat, p.lng])}
-            color={routeColor}
-            weight={4}
-            opacity={0.8}
-            dashArray={routeDashArray}
+        {mapLayer === 'street' ? (
+          <TileLayer
+            key="street"
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          />
+        ) : (
+          <TileLayer
+            key="satellite"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution='&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community'
           />
         )}
+
+        <MapController selectedLocation={selectedLocation} />
+        <MapBoundsController planRoute={planRoute} selectedLocation={selectedLocation} />
+
+        {/* Real Road Routing Layer */}
+        <RoutingLayer
+          waypoints={planRoute}
+          color={routeColor}
+          dashArray={routeDashArray}
+          weight={4}
+          opacity={0.8}
+          enabled={planRoute.length > 1}
+        />
 
         {/* Location Markers */}
         {filteredLocations.map((location) => {

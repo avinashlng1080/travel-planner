@@ -4,6 +4,7 @@ import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
 import { useUIStore } from '../../stores/uiStore';
 import { DAILY_PLANS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
+import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface DayItemProps {
   date: string;
@@ -20,17 +21,17 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
       className={`
         w-full text-left px-4 py-3 rounded-lg
         transition-all duration-200
-        ${isSelected ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg' : 'hover:bg-slate-100'}
-        ${isToday && !isSelected ? 'border-2 border-pink-500/50 bg-pink-50/50' : ''}
+        ${isSelected ? 'bg-gradient-to-r from-sunset-500 to-ocean-600 text-white shadow-lg' : 'hover:bg-slate-100'}
+        ${isToday && !isSelected ? 'border-2 border-sunset-500/50 bg-sunset-50/50' : ''}
       `}
       onClick={onClick}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className={`text-xs font-semibold ${isSelected ? 'text-pink-100' : 'text-slate-600'}`}>
+        <span className={`text-xs font-semibold ${isSelected ? 'text-sunset-100' : 'text-slate-600'}`}>
           {dayOfWeek}
         </span>
         {isToday && (
-          <GlassBadge color="pink" className="text-[10px] px-2 py-0.5">
+          <GlassBadge color="sunset" className="text-[10px] px-2 py-0.5">
             TODAY
           </GlassBadge>
         )}
@@ -52,6 +53,7 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
 export function DaysPanel() {
   const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
   const { selectedDayId, selectDay } = useUIStore();
+  const { width, height, isMobile } = useResponsivePanel(320, 450);
 
   const panelState = panels.days;
 
@@ -85,7 +87,7 @@ export function DaysPanel() {
       isOpen={panelState.isOpen}
       isMinimized={panelState.isMinimized}
       position={panelState.position}
-      size={{ width: 320, height: 450 }}
+      size={{ width, height }}
       zIndex={panelState.zIndex}
       onClose={() => closePanel('days')}
       onMinimize={() => toggleMinimize('days')}

@@ -9,6 +9,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
+import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 type TabId = 'itinerary' | 'builder' | 'suggestions' | 'alerts';
 
@@ -39,6 +40,7 @@ export function TripPlannerPanel() {
     useFloatingPanelStore();
   const { selectedDayId, selectDay, selectLocation } = useUIStore();
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
+  const { width, height, isMobile } = useResponsivePanel(420, 580);
 
   const panelState = panels.tripPlanner;
 
@@ -170,7 +172,7 @@ export function TripPlannerPanel() {
       case 'weather': return 'from-yellow-500 to-orange-500';
       case 'time': return 'from-blue-500 to-cyan-500';
       case 'nearby': return 'from-green-500 to-emerald-500';
-      case 'tip': return 'from-purple-500 to-pink-500';
+      case 'tip': return 'from-sunset-500 to-ocean-600';
       default: return 'from-slate-500 to-slate-600';
     }
   };
@@ -183,7 +185,7 @@ export function TripPlannerPanel() {
       isOpen={panelState.isOpen}
       isMinimized={panelState.isMinimized}
       position={panelState.position}
-      size={{ width: 420, height: 580 }}
+      size={{ width, height }}
       zIndex={panelState.zIndex}
       onClose={() => closePanel('tripPlanner')}
       onMinimize={() => toggleMinimize('tripPlanner')}
@@ -207,7 +209,7 @@ export function TripPlannerPanel() {
                 {selectedDayPlan?.dayOfWeek}
               </span>
               {isToday && (
-                <GlassBadge color="pink" className="text-[9px] px-1.5 py-0">
+                <GlassBadge color="sunset" className="text-xs px-1.5 py-0">
                   TODAY
                 </GlassBadge>
               )}
@@ -215,7 +217,7 @@ export function TripPlannerPanel() {
             <h3 className="text-sm font-semibold text-slate-900 truncate">
               {selectedDayPlan?.title || 'Select a day'}
             </h3>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-xs md:text-[10px] text-slate-500">
               {selectedDayPlan
                 ? new Date(selectedDayPlan.date).toLocaleDateString('en-US', {
                     month: 'short',
@@ -246,7 +248,7 @@ export function TripPlannerPanel() {
                 text-xs font-medium transition-all duration-200
                 ${
                   activeTab === tab.id
-                    ? 'text-pink-600 border-b-2 border-pink-500 bg-pink-50/50'
+                    ? 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50/50'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }
               `}
@@ -313,7 +315,7 @@ export function TripPlannerPanel() {
                     <h4 className="text-xs font-semibold text-slate-900 mb-0.5">
                       {suggestion.title}
                     </h4>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                    <p className="text-sm md:text-xs text-slate-600 leading-relaxed">
                       {suggestion.description}
                     </p>
                   </div>
