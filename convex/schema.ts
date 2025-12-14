@@ -132,4 +132,169 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_sessionId", ["sessionId"]),
+
+  // User Profiles
+  userProfiles: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    email: v.string(),
+    avatarUrl: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_email", ["email"]),
+
+  // Trips - User-owned trips
+  trips: defineTable({
+    ownerId: v.id("users"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    startDate: v.string(),
+    endDate: v.string(),
+    coverImageUrl: v.optional(v.string()),
+    homeBase: v.optional(
+      v.object({
+        name: v.string(),
+        lat: v.number(),
+        lng: v.number(),
+      })
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_owner", ["ownerId"]),
+
+  // Trip Members - Trip membership and permissions
+  tripMembers: defineTable({
+    tripId: v.id("trips"),
+    userId: v.id("users"),
+    role: v.union(
+      v.literal("owner"),
+      v.literal("editor"),
+      v.literal("commenter"),
+      v.literal("viewer")
+    ),
+    invitedBy: v.id("users"),
+    invitedAt: v.number(),
+    acceptedAt: v.optional(v.number()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined")
+    ),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_user", ["userId"])
+    .index("by_trip_and_user", ["tripId", "userId"]),
+
+  // Trip Invite Links - Shareable invite links
+  tripInviteLinks: defineTable({
+    tripId: v.id("trips"),
+    token: v.string(),
+    role: v.union(
+      v.literal("editor"),
+      v.literal("commenter"),
+      v.literal("viewer")
+    ),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+    maxUses: v.optional(v.number()),
+    useCount: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_trip", ["tripId"]),
+
+  // Trip Plans - Dynamic plans per trip (replaces fixed A/B)
+  tripPlans: defineTable({
+    tripId: v.id("trips"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.string(),
+    icon: v.optional(v.string()),
+    createdBy: v.id("users"),
+    order: v.number(),
+    isDefault: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_trip_and_order", ["tripId", "order"]),
+
+  // Trip Locations - Trip-specific locations
+  tripLocations: defineTable({
+    tripId: v.id("trips"),
+    locationId: v.optional(v.id("locations")),
+    customName: v.optional(v.string()),
+    customLat: v.optional(v.number()),
+    customLng: v.optional(v.number()),
+    customCategory: v.optional(v.string()),
+    customDescription: v.optional(v.string()),
+    addedBy: v.id("users"),
+    addedAt: v.number(),
+    notes: v.optional(v.string()),
+  }).index("by_trip", ["tripId"]),
+
+  // Trip Schedule Items - Schedule items for trip plans
+  tripScheduleItems: defineTable({
+    tripId: v.id("trips"),
+    planId: v.id("tripPlans"),
+    dayDate: v.string(),
+    locationId: v.optional(v.id("tripLocations")),
+    title: v.string(),
+    startTime: v.string(),
+    endTime: v.string(),
+    notes: v.optional(v.string()),
+    isFlexible: v.boolean(),
+    createdBy: v.id("users"),
+    updatedBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    order: v.number(),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_plan", ["planId"])
+    .index("by_trip_and_date", ["tripId", "dayDate"])
+    .index("by_plan_and_date", ["planId", "dayDate"]),
+
+  // Trip Comments - Comments on trips/plans/activities
+  tripComments: defineTable({
+    tripId: v.id("trips"),
+    planId: v.optional(v.id("tripPlans")),
+    scheduleItemId: v.optional(v.id("tripScheduleItems")),
+    dayDate: v.optional(v.string()),
+    userId: v.id("users"),
+    content: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    isResolved: v.boolean(),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_plan", ["planId"])
+    .index("by_schedule_item", ["scheduleItemId"])
+    .index("by_user", ["userId"]),
+
+  // Trip Activity - Activity log for collaboration
+  tripActivity: defineTable({
+    tripId: v.id("trips"),
+    userId: v.id("users"),
+    action: v.union(
+      v.literal("created_trip"),
+      v.literal("updated_trip"),
+      v.literal("invited_member"),
+      v.literal("joined_trip"),
+      v.literal("created_plan"),
+      v.literal("updated_plan"),
+      v.literal("added_activity"),
+      v.literal("updated_activity"),
+      v.literal("deleted_activity"),
+      v.literal("added_comment"),
+      v.literal("resolved_comment")
+    ),
+    targetId: v.optional(v.string()),
+    targetType: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+    createdAt: v.number(),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_trip_and_time", ["tripId", "createdAt"]),
 });

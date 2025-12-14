@@ -19,7 +19,7 @@ export function LoadingScreen() {
             repeat: Infinity,
             ease: 'easeInOut',
           }}
-          className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30"
+          className="w-16 h-16 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-2xl flex items-center justify-center shadow-lg shadow-sunset-500/30"
         >
           <MapPin className="w-8 h-8 text-white" />
         </motion.div>
@@ -38,7 +38,7 @@ export function LoadingScreen() {
             repeat: Infinity,
             ease: 'linear',
           }}
-          className="w-6 h-6 border-2 border-slate-200 border-t-pink-500 rounded-full"
+          className="w-6 h-6 border-2 border-slate-200 border-t-sunset-500 rounded-full"
         />
       </motion.div>
     </div>
