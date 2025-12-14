@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles } from 'lucide-react';
+import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin } from 'lucide-react';
 import { GlassButton, GlassInput } from '../ui/GlassPanel';
 
 interface ChatMessage {
@@ -13,8 +13,10 @@ interface ChatMessage {
 interface AIChatWidgetProps {
   messages: ChatMessage[];
   isLoading: boolean;
+  dynamicPinsCount?: number;
   onSendMessage: (message: string) => void;
   onClearHistory: () => void;
+  onClearDynamicPins?: () => void;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -69,8 +71,10 @@ function TypingIndicator() {
 export function AIChatWidget({
   messages,
   isLoading,
+  dynamicPinsCount = 0,
   onSendMessage,
   onClearHistory,
+  onClearDynamicPins,
 }: AIChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -172,6 +176,17 @@ export function AIChatWidget({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {dynamicPinsCount > 0 && (
+            <button
+              onClick={onClearDynamicPins}
+              className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors"
+              title="Clear AI-suggested pins"
+            >
+              <MapPin className="w-3 h-3" />
+              <span>{dynamicPinsCount}</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
           <button
             onClick={onClearHistory}
             className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"

@@ -21,11 +21,14 @@ function App() {
     visibleCategories,
     chatMessages,
     isAILoading,
+    dynamicPins,
     selectLocation,
     setActivePlan,
     addChatMessage,
     clearChatMessages,
     setAILoading,
+    addDynamicPins,
+    clearDynamicPins,
   } = useUIStore();
 
   // Calculate current day
@@ -109,6 +112,17 @@ function App() {
           const assistantMessage = textBlocks.map((block: any) => block.text).join('\n\n')
             || 'Sorry, I couldn\'t process that request.';
           addChatMessage('assistant', assistantMessage);
+
+          // Extract map pins from tool_use blocks
+          const toolUseBlocks = data.content?.filter((block: any) => block.type === 'tool_use') || [];
+          const mapPinTools = toolUseBlocks.filter((block: any) => block.name === 'suggest_map_pins');
+
+          if (mapPinTools.length > 0) {
+            const allPins = mapPinTools.flatMap((tool: any) => tool.input?.pins || []);
+            if (allPins.length > 0) {
+              addDynamicPins(allPins);
+            }
+          }
         } else {
           addChatMessage('assistant', 'Sorry, there was an error processing your request. Please try again.');
         }
@@ -118,7 +132,7 @@ function App() {
         setAILoading(false);
       }
     },
-    [chatMessages, addChatMessage, setAILoading]
+    [chatMessages, addChatMessage, setAILoading, addDynamicPins]
   );
 
   return (
@@ -130,7 +144,12 @@ function App() {
         visibleCategories={visibleCategories}
         activePlan={activePlan}
         planRoute={planRoute}
+        dynamicPins={dynamicPins}
         onLocationSelect={selectLocation}
+        onDynamicPinSelect={(pin) => {
+          // For now, just log - could open a detail panel for dynamic pins
+          console.log('Dynamic pin selected:', pin);
+        }}
       />
 
       {/* Floating Header */}
@@ -165,8 +184,10 @@ function App() {
       <AIChatWidget
         messages={chatMessages}
         isLoading={isAILoading}
+        dynamicPinsCount={dynamicPins.length}
         onSendMessage={handleSendMessage}
         onClearHistory={clearChatMessages}
+        onClearDynamicPins={clearDynamicPins}
       />
 
       {/* Auth Modal */}

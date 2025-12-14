@@ -2,6 +2,18 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Location } from '../data/tripData';
 
+// Dynamic pin created by AI chat
+export interface DynamicPin {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  category?: string;
+  description?: string;
+  reason?: string;
+  createdAt: Date;
+}
+
 interface UIState {
   // UI State
   selectedLocation: Location | null;
@@ -19,6 +31,7 @@ interface UIState {
   isAILoading: boolean;
   authModalOpen: boolean;
   authMode: 'login' | 'signup';
+  dynamicPins: DynamicPin[];
 
   // Actions
   selectLocation: (location: Location | null) => void;
@@ -33,6 +46,9 @@ interface UIState {
   setAILoading: (loading: boolean) => void;
   setAuthModalOpen: (open: boolean) => void;
   setAuthMode: (mode: 'login' | 'signup') => void;
+  addDynamicPins: (pins: Omit<DynamicPin, 'id' | 'createdAt'>[]) => void;
+  clearDynamicPins: () => void;
+  removeDynamicPin: (id: string) => void;
 }
 
 const ALL_CATEGORIES = [
@@ -62,6 +78,7 @@ export const useUIStore = create<UIState>()(
       isAILoading: false,
       authModalOpen: false,
       authMode: 'login',
+      dynamicPins: [],
 
       // Actions
       selectLocation: (location) => set({ selectedLocation: location }),
@@ -92,6 +109,22 @@ export const useUIStore = create<UIState>()(
       setAILoading: (loading) => set({ isAILoading: loading }),
       setAuthModalOpen: (open) => set({ authModalOpen: open }),
       setAuthMode: (mode) => set({ authMode: mode }),
+      addDynamicPins: (pins) =>
+        set((state) => ({
+          dynamicPins: [
+            ...state.dynamicPins,
+            ...pins.map((pin) => ({
+              ...pin,
+              id: `dynamic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              createdAt: new Date(),
+            })),
+          ],
+        })),
+      clearDynamicPins: () => set({ dynamicPins: [] }),
+      removeDynamicPin: (id) =>
+        set((state) => ({
+          dynamicPins: state.dynamicPins.filter((pin) => pin.id !== id),
+        })),
     }),
     {
       name: 'malaysia-trip-ui-storage',

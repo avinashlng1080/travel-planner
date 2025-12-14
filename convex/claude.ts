@@ -57,7 +57,23 @@ You have access to web search for real-time information. Use it when users ask a
 - Travel advisories or updates
 - Any information that may have changed recently
 
-When you search the web, always cite your sources.`;
+When you search the web, always cite your sources.
+
+ADDING MAP PINS:
+You can suggest locations to add to the map using the suggest_map_pins tool. Use this when:
+- The user asks about specific places to visit
+- You recommend restaurants, attractions, or activities
+- The user wants to discover new places near a location
+- You search for and find specific places with addresses
+
+When suggesting pins, provide:
+- name: The place name
+- lat/lng: Coordinates (search the web if unsure)
+- category: One of restaurant, attraction, shopping, nature, playground, temple, medical
+- description: Brief description
+- reason: Why you're suggesting it
+
+Always use suggest_map_pins when you have specific place recommendations with coordinates.`;
 }
 
 // CORS headers for browser requests
@@ -103,20 +119,67 @@ export const chat = httpAction(async (ctx, request) => {
           role: m.role,
           content: m.content,
         })),
-        // Enable web search tool for real-time information
-        tools: [{
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 3,
-          // Localize results for Malaysia
-          user_location: {
-            type: "approximate",
-            city: "Kuala Lumpur",
-            region: "Kuala Lumpur",
-            country: "MY",
-            timezone: "Asia/Kuala_Lumpur"
+        // Enable web search and map pin suggestion tools
+        tools: [
+          {
+            type: "web_search_20250305",
+            name: "web_search",
+            max_uses: 3,
+            // Localize results for Malaysia
+            user_location: {
+              type: "approximate",
+              city: "Kuala Lumpur",
+              region: "Kuala Lumpur",
+              country: "MY",
+              timezone: "Asia/Kuala_Lumpur"
+            }
+          },
+          {
+            name: "suggest_map_pins",
+            description: "Suggest locations to add as pins on the user's travel map. Use this whenever recommending specific places to visit.",
+            input_schema: {
+              type: "object",
+              properties: {
+                pins: {
+                  type: "array",
+                  description: "Array of location pins to add to the map",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the place"
+                      },
+                      lat: {
+                        type: "number",
+                        description: "Latitude coordinate"
+                      },
+                      lng: {
+                        type: "number",
+                        description: "Longitude coordinate"
+                      },
+                      category: {
+                        type: "string",
+                        enum: ["restaurant", "attraction", "shopping", "nature", "playground", "temple", "medical", "toddler-friendly"],
+                        description: "Category of the location"
+                      },
+                      description: {
+                        type: "string",
+                        description: "Brief description of the place"
+                      },
+                      reason: {
+                        type: "string",
+                        description: "Why you're recommending this place"
+                      }
+                    },
+                    required: ["name", "lat", "lng"]
+                  }
+                }
+              },
+              required: ["pins"]
+            }
           }
-        }],
+        ],
       }),
     });
 
