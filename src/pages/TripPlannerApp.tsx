@@ -3,6 +3,7 @@ import { useUIStore } from '../stores/uiStore';
 import { LOCATIONS, DAILY_PLANS, HOME_BASE } from '../data/tripData';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { NavigationDock } from '../components/Layout/NavigationDock';
+import { MobileNavBar } from '../components/layout/MobileNavBar';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
@@ -83,6 +84,21 @@ export function TripPlannerApp() {
     return routePoints;
   }, [selectedDayPlan, activePlan]);
 
+  // Extract location IDs for Plan A and Plan B for the selected day
+  const { planALocationIds, planBLocationIds } = useMemo(() => {
+    if (!selectedDayPlan) return { planALocationIds: [], planBLocationIds: [] };
+
+    const planAIds = selectedDayPlan.planA
+      .filter((item) => !item.isNapTime)
+      .map((item) => item.locationId);
+
+    const planBIds = selectedDayPlan.planB
+      .filter((item) => !item.isNapTime)
+      .map((item) => item.locationId);
+
+    return { planALocationIds: planAIds, planBLocationIds: planBIds };
+  }, [selectedDayPlan]);
+
 
   // Handle AI chat
   const handleSendMessage = useCallback(
@@ -144,10 +160,34 @@ export function TripPlannerApp() {
         activePlan={activePlan}
         planRoute={planRoute}
         dynamicPins={dynamicPins}
+        planALocationIds={planALocationIds}
+        planBLocationIds={planBLocationIds}
         onLocationSelect={selectLocation}
         onDynamicPinSelect={(pin) => {
-          // For now, just log - could open a detail panel for dynamic pins
-          console.log('Dynamic pin selected:', pin);
+          // Convert DynamicPin to Location-compatible object for detail panel
+          selectLocation({
+            id: pin.id,
+            name: pin.name,
+            lat: pin.lat,
+            lng: pin.lng,
+            category: (pin.category as any) || 'attraction',
+            description: pin.description || pin.reason || 'AI-suggested location',
+            city: 'Malaysia',
+            toddlerRating: 3,
+            isIndoor: false,
+            bestTimeToVisit: [],
+            estimatedDuration: 'Varies',
+            grabEstimate: 'Check Grab app',
+            distanceFromBase: 'Check map',
+            drivingTime: 'Check map',
+            warnings: [],
+            tips: pin.reason ? [`AI Suggestion: ${pin.reason}`] : [],
+            whatToBring: [],
+            whatNotToBring: [],
+            bookingRequired: false,
+            openingHours: 'Check locally',
+            planIds: [],
+          });
         }}
       />
 
@@ -188,6 +228,9 @@ export function TripPlannerApp() {
         onClearHistory={clearChatMessages}
         onClearDynamicPins={clearDynamicPins}
       />
+
+      {/* Mobile Navigation Bar */}
+      <MobileNavBar />
     </div>
   );
 }

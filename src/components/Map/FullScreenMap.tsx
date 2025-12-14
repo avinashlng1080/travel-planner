@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
 import type { DynamicPin } from '../../stores/uiStore';
@@ -20,11 +20,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   'toddler-friendly': '#F9A8D4', // Softer pink - gentle, friendly
   attraction: '#14B8A6',         // Softer teal - adventure
   shopping: '#FBBF24',           // Warmer gold - luxury
-  restaurant: '#FB923C',         // Softer orange - warmth
+  restaurant: '#F97316',         // Softer orange - warmth
   nature: '#34D399',             // Softer emerald - natural
-  temple: '#F87171',             // Softer red - sacred, traditional
+  temple: '#EF4444',             // Softer red - sacred, traditional
   playground: '#38BDF8',         // Softer sky - playful
-  medical: '#EF4444',            // Slightly softer red - universal
+  medical: '#EF4444',            // Softer red - universal
   avoid: '#94A3B8',              // Lighter slate - muted
   'ai-suggested': '#F97316',     // Sunset coral for AI (kept)
 };
@@ -41,7 +41,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
 
   // Plan ring colors
   const planAColor = '#10B981'; // Green
-  const planBColor = '#3B82F6'; // Blue
+  const planBColor = '#6366F1'; // Indigo
   const ringStrokeWidth = 3;
   const ringRadius = 22; // Outer ring radius (size is 40, so center is at 20)
 
@@ -67,6 +67,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     // House silhouette for home base
     'home-base': `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        ${planRing}
         <path d="M20 2 L38 18 L38 42 L2 42 L2 18 Z" fill="${color}" stroke="white" stroke-width="2"/>
         <rect x="15" y="26" width="10" height="16" fill="white" opacity="0.3"/>
         <polygon points="20,2 2,18 38,18" fill="${color}" stroke="white" stroke-width="2"/>
@@ -173,11 +174,11 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
   return markers[category] || markers['attraction'];
 }
 
-function createCustomIcon(category: string, isSelected: boolean = false) {
+function createCustomIcon(category: string, isSelected: boolean = false, planIndicator: PlanIndicator = null) {
   const size = isSelected ? 48 : 40;
 
   return L.divIcon({
-    html: createCategoryMarkerSVG(category, size, isSelected),
+    html: createCategoryMarkerSVG(category, size, isSelected, planIndicator),
     className: 'custom-marker',
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
@@ -293,6 +294,8 @@ interface FullScreenMapProps {
   activePlan: 'A' | 'B';
   planRoute: Array<{ lat: number; lng: number }>;
   dynamicPins?: DynamicPin[];
+  planALocationIds?: string[];  // IDs of locations in current day's Plan A
+  planBLocationIds?: string[];  // IDs of locations in current day's Plan B
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
 }
@@ -304,21 +307,17 @@ export function FullScreenMap({
   activePlan,
   planRoute,
   dynamicPins = [],
+  planALocationIds = [],
+  planBLocationIds = [],
   onLocationSelect,
   onDynamicPinSelect,
 }: FullScreenMapProps) {
-  const [mapLayer, setMapLayer] = useState<'street' | 'satellite'>('street');
-
   const filteredLocations = locations.filter((loc) =>
     visibleCategories.includes(loc.category)
   );
 
-  const routeColor = activePlan === 'A' ? '#10B981' : '#3B82F6'; // Plan A: solid green, Plan B: blue
+  const routeColor = activePlan === 'A' ? '#10B981' : '#6366F1'; // Plan A: solid green, Plan B: indigo
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
-
-  const toggleLayer = () => {
-    setMapLayer(prev => prev === 'street' ? 'satellite' : 'street');
-  };
 
   return (
     <div className="fixed inset-0 z-0">
@@ -353,61 +352,42 @@ export function FullScreenMap({
           .leaflet-control-zoom a:hover {
             background: rgba(241, 245, 249, 0.95) !important;
           }
-          .layer-toggle-button {
-            background: rgba(255, 255, 255, 0.95);
+          .leaflet-control-layers {
+            background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(203, 213, 225, 0.8);
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            border: 1px solid rgba(203, 213, 225, 0.8) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
           }
-          .layer-toggle-button:hover {
-            background: rgba(241, 245, 249, 0.95);
-            transform: scale(1.05);
+          .leaflet-control-layers-toggle {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23475569" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>') !important;
+            background-size: 20px 20px !important;
+            background-position: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
+          }
+          .leaflet-control-layers-expanded {
+            padding: 12px !important;
+          }
+          .leaflet-control-layers-base label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 6px 8px !important;
+            margin: 2px 0 !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            transition: background 0.2s !important;
+          }
+          .leaflet-control-layers-base label:hover {
+            background: rgba(241, 245, 249, 0.8) !important;
+          }
+          .leaflet-control-layers-selector {
+            margin-right: 4px !important;
           }
         `}
       </style>
-
-      {/* Layer Toggle Control */}
-      <div className="absolute top-4 right-4 z-[1000]">
-        <button
-          onClick={toggleLayer}
-          className="layer-toggle-button p-3 shadow-lg"
-          title={mapLayer === 'street' ? 'Switch to Satellite' : 'Switch to Street'}
-        >
-          {mapLayer === 'street' ? (
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-slate-700"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="6" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
-          ) : (
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-slate-700"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          )}
-        </button>
-      </div>
 
       <MapContainer
         center={[3.1089, 101.7279]}
@@ -415,19 +395,26 @@ export function FullScreenMap({
         className="w-full h-full"
         zoomControl={true}
       >
-        {mapLayer === 'street' ? (
-          <TileLayer
-            key="street"
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          />
-        ) : (
-          <TileLayer
-            key="satellite"
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution='&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community'
-          />
-        )}
+        <LayersControl position="topright">
+          <LayersControl.BaseLayer checked name="Street Map">
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Satellite">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Dark Mode">
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
 
         <MapController selectedLocation={selectedLocation} />
         <MapBoundsController planRoute={planRoute} selectedLocation={selectedLocation} />
@@ -445,12 +432,24 @@ export function FullScreenMap({
         {/* Location Markers */}
         {filteredLocations.map((location) => {
           const isSelected = selectedLocation?.id === location.id;
+          const inPlanA = planALocationIds.includes(location.id);
+          const inPlanB = planBLocationIds.includes(location.id);
+
+          // Determine plan indicator
+          let planIndicator: PlanIndicator = null;
+          if (inPlanA && inPlanB) {
+            planIndicator = 'both';
+          } else if (inPlanA) {
+            planIndicator = 'A';
+          } else if (inPlanB) {
+            planIndicator = 'B';
+          }
 
           return (
             <Marker
               key={location.id}
               position={[location.lat, location.lng]}
-              icon={createCustomIcon(location.category, isSelected)}
+              icon={createCustomIcon(location.category, isSelected, planIndicator)}
               eventHandlers={{
                 click: () => onLocationSelect(location),
               }}
