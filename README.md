@@ -39,8 +39,10 @@ npm install
 # Copy environment file
 cp .env.example .env
 
-# Add your Anthropic API key to .env
-# VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
+# Add your API keys to .env
+# - OpenRouteService API key (get free key at https://openrouteservice.org/)
+#   VITE_ORS_API_KEY=your-api-key-here
+# - Optional: PostHog for analytics
 
 # Start development server
 npm run dev
@@ -102,6 +104,7 @@ This app is pre-configured for a family trip:
 - **Frontend:** React 18, TypeScript, Vite
 - **Styling:** Tailwind CSS, Framer Motion
 - **Maps:** React-Leaflet + OpenStreetMap
+- **Routing:** OpenRouteService API (real road routes)
 - **Drag & Drop:** @dnd-kit
 - **State:** Zustand
 - **AI:** Anthropic Claude API

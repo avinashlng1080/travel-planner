@@ -102,6 +102,7 @@ npx playwright test  # Run E2E tests
 Create `.env`:
 ```
 VITE_CONVEX_URL=https://your-project.convex.cloud
+VITE_ORS_API_KEY=your-openrouteservice-api-key  # For real road routing (2,000 req/day free)
 VITE_POSTHOG_KEY=phc_...  # Optional
 ```
 
@@ -110,6 +111,11 @@ Set in Convex dashboard:
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
+**OpenRouteService Setup:**
+- Sign up at https://openrouteservice.org/ for a free API key
+- Free tier: 2,000 requests/day (sufficient for travel planning)
+- If not set, map routing falls back to straight lines between locations
+
 ## Architecture
 
 ### Tech Stack
@@ -117,6 +123,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 - **Convex** — Real-time database, HTTP actions, auth
 - **Tailwind CSS + Framer Motion** — Styling and animations
 - **React-Leaflet** — Interactive maps (CARTO light tiles)
+- **OpenRouteService** — Real road routing (replaces straight lines)
 - **Zustand** — UI-only state management
 - **@dnd-kit** — Drag-and-drop itinerary reordering
 
@@ -127,8 +134,11 @@ src/
 │   ├── ui/              # GlassPanel, FloatingPanel, LoadingScreen
 │   ├── layout/          # FloatingHeader, NavigationDock, AIChatWidget
 │   ├── floating/        # TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel
-│   ├── map/             # FullScreenMap with unique silhouette markers
+│   ├── map/             # FullScreenMap, RoutingLayer with OpenRouteService
 │   └── auth/            # AuthModal, LoginForm, SignupForm
+├── hooks/
+│   ├── useRouting.ts    # OpenRouteService API integration
+│   └── useAIChat.ts     # Claude chat integration
 ├── stores/
 │   ├── uiStore.ts       # UI state, chat messages, dynamic pins
 │   └── floatingPanelStore.ts  # Panel positions, z-index management
