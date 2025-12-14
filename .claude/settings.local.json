@@ -14,7 +14,11 @@
       "Bash(npm run build:*)",
       "Bash(find:*)",
       "WebFetch(domain:docs.convex.dev)",
-      "WebFetch(domain:labs.convex.dev)"
+      "WebFetch(domain:labs.convex.dev)",
+      "mcp__convex__run",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "WebSearch"
     ]
   }
 }
