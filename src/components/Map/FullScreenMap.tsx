@@ -24,54 +24,132 @@ const CATEGORY_COLORS: Record<string, string> = {
   playground: '#06B6D4',
   medical: '#DC2626',
   avoid: '#64748b',
-  'ai-suggested': '#A855F7', // Purple for AI suggestions
+  'ai-suggested': '#A855F7',
 };
 
-// SVG icons for each category (simplified paths)
-const CATEGORY_ICONS: Record<string, string> = {
-  'home-base': `<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/>`, // Home
-  'toddler-friendly': `<path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm2 11h-4v-1h4v1zm0-2h-4V9.5h4V11z" fill="white"/>`, // Baby/Lightbulb
-  attraction: `<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="white"/>`, // Landmark pin
-  shopping: `<path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" fill="white"/>`, // Shopping bag
-  restaurant: `<path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" fill="white"/>`, // Fork & knife
-  nature: `<path d="M17 8V2h-2v1h-1.5C13.22 3 13 3.22 13 3.5V6l-3.72 1.86C9.11 7.95 9 8.11 9 8.28v1.22L6 11v3l3-1.5v1.72c0 .17.11.33.28.42l3 1.5c.14.07.3.08.44.02l.28-.14V19c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-3l-1.72-.86c-.17-.08-.28-.25-.28-.42V13l3 1.5v-3l-3-1.5V8.28c0-.17.11-.33.28-.42L17 6V4l-1 .5V4c.55 0 1-.45 1-1s-.45-1-1-1h-1v6h2z" fill="white"/>`, // Tree
-  temple: `<path d="M6 20h12v2H6v-2zm6-18L2 8v2h2v8H2v2h20v-2h-2v-8h2V8L12 2zm6 10h-3v4h-2v-4h-2v4H9v-4H6v6h12v-6z" fill="white"/>`, // Temple/building
-  playground: `<path d="M17.5 12c.88 0 1.73.09 2.5.26V3H4v9.26c.77-.17 1.62-.26 2.5-.26.86 0 1.68.09 2.5.25V6h6v6.25c.82-.16 1.64-.25 2.5-.25zm-9 1c-2.78 0-4.5 1.84-4.5 4V22h9v-5c0-2.16-1.72-4-4.5-4zm8.5 0c-1.93 0-3.5 1.57-3.5 3.5v5.5h7v-5.5c0-1.93-1.57-3.5-3.5-3.5z" fill="white"/>`, // Play
-  medical: `<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="white"/>`, // Medical cross
-  avoid: `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z" fill="white"/>`, // No symbol
-};
+// Unique silhouette marker SVGs for each category
+// Each marker has a distinctive shape that's recognizable at a glance
+function createCategoryMarkerSVG(category: string, size: number, isSelected: boolean): string {
+  const scale = size / 40; // Base size is 40
+  const shadow = isSelected ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));' : 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));';
+  const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
+  const color = CATEGORY_COLORS[category] || '#64748b';
+
+  const markers: Record<string, string> = {
+    // House silhouette for home base
+    'home-base': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M20 2 L38 18 L38 42 L2 42 L2 18 Z" fill="${color}" stroke="white" stroke-width="2"/>
+        <rect x="15" y="26" width="10" height="16" fill="white" opacity="0.3"/>
+        <polygon points="20,2 2,18 38,18" fill="${color}" stroke="white" stroke-width="2"/>
+        <rect x="24" y="20" width="6" height="6" fill="white" opacity="0.4"/>
+      </svg>
+    `,
+
+    // Heart with baby for toddler-friendly
+    'toddler-friendly': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M20 38 C20 38 4 26 4 14 C4 8 9 4 15 4 C18 4 20 6 20 6 C20 6 22 4 25 4 C31 4 36 8 36 14 C36 26 20 38 20 38Z" fill="${color}" stroke="white" stroke-width="2"/>
+        <circle cx="20" cy="18" r="6" fill="white" opacity="0.4"/>
+        <circle cx="20" cy="16" r="3" fill="white" opacity="0.6"/>
+      </svg>
+    `,
+
+    // Camera/landmark for attractions
+    'attraction': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M6 12 L14 12 L17 8 L23 8 L26 12 L34 12 L34 36 L6 36 Z" fill="${color}" stroke="white" stroke-width="2"/>
+        <circle cx="20" cy="24" r="8" fill="white" opacity="0.3" stroke="white" stroke-width="1"/>
+        <circle cx="20" cy="24" r="5" fill="white" opacity="0.5"/>
+        <rect x="28" y="14" width="4" height="3" rx="1" fill="white" opacity="0.4"/>
+      </svg>
+    `,
+
+    // Shopping bag silhouette
+    'shopping': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M8 14 L32 14 L34 42 L6 42 Z" fill="${color}" stroke="white" stroke-width="2"/>
+        <path d="M14 14 L14 10 C14 6 16 4 20 4 C24 4 26 6 26 10 L26 14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="20" cy="28" rx="6" ry="8" fill="white" opacity="0.2"/>
+      </svg>
+    `,
+
+    // Plate with utensils for restaurants
+    'restaurant': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <ellipse cx="20" cy="24" rx="16" ry="16" fill="${color}" stroke="white" stroke-width="2"/>
+        <ellipse cx="20" cy="24" rx="10" ry="10" fill="white" opacity="0.2"/>
+        <rect x="8" y="4" width="2" height="16" rx="1" fill="white" opacity="0.8"/>
+        <rect x="12" y="4" width="2" height="16" rx="1" fill="white" opacity="0.8"/>
+        <path d="M28 4 L28 12 C28 15 30 16 30 16 L30 20" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M32 4 L32 10 L28 10" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+    `,
+
+    // Tree silhouette for nature/parks
+    'nature': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M20 2 L32 18 L26 18 L34 30 L6 30 L14 18 L8 18 Z" fill="${color}" stroke="white" stroke-width="2"/>
+        <rect x="17" y="30" width="6" height="12" fill="#8B4513" stroke="white" stroke-width="1"/>
+        <circle cx="14" cy="14" r="3" fill="white" opacity="0.3"/>
+        <circle cx="26" cy="20" r="2" fill="white" opacity="0.3"/>
+      </svg>
+    `,
+
+    // Pagoda/temple silhouette
+    'temple': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M20 2 L28 10 L12 10 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <path d="M8 10 L32 10 L30 18 L10 18 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <path d="M6 18 L34 18 L31 28 L9 28 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <path d="M4 28 L36 28 L34 42 L6 42 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <rect x="17" y="32" width="6" height="10" fill="white" opacity="0.4"/>
+        <circle cx="20" cy="6" r="2" fill="#FFD700"/>
+      </svg>
+    `,
+
+    // Swing/playground silhouette
+    'playground': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <path d="M4 42 L12 4 L28 4 L36 42" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
+        <rect x="10" y="4" width="20" height="4" rx="2" fill="${color}" stroke="white" stroke-width="1"/>
+        <line x1="16" y1="8" x2="16" y2="28" stroke="${color}" stroke-width="3"/>
+        <line x1="24" y1="8" x2="24" y2="28" stroke="${color}" stroke-width="3"/>
+        <rect x="12" y="26" width="8" height="4" rx="2" fill="${color}" stroke="white" stroke-width="1"/>
+        <rect x="20" y="26" width="8" height="4" rx="2" fill="${color}" stroke="white" stroke-width="1"/>
+        <circle cx="16" cy="22" r="4" fill="white" opacity="0.5"/>
+        <circle cx="24" cy="22" r="4" fill="white" opacity="0.5"/>
+        <path d="M2 42 L38 42" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    `,
+
+    // Cross/hospital for medical
+    'medical': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <rect x="4" y="4" width="32" height="38" rx="4" fill="${color}" stroke="white" stroke-width="2"/>
+        <rect x="16" y="10" width="8" height="26" rx="1" fill="white"/>
+        <rect x="10" y="18" width="20" height="8" rx="1" fill="white"/>
+      </svg>
+    `,
+
+    // Warning/avoid symbol
+    'avoid': `
+      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
+        <circle cx="20" cy="22" r="18" fill="${color}" stroke="white" stroke-width="2"/>
+        <line x1="8" y1="34" x2="32" y2="10" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="20" cy="22" r="10" fill="none" stroke="white" stroke-width="2" opacity="0.5"/>
+      </svg>
+    `,
+  };
+
+  return markers[category] || markers['attraction'];
+}
 
 function createCustomIcon(category: string, isSelected: boolean = false) {
-  const size = isSelected ? 44 : 36;
-  const iconSize = isSelected ? 20 : 16;
-  const color = CATEGORY_COLORS[category] || '#64748b';
-  const iconPath = CATEGORY_ICONS[category] || CATEGORY_ICONS['attraction'];
+  const size = isSelected ? 48 : 40;
 
   return L.divIcon({
-    html: `
-      <div style="
-        width: ${size}px;
-        height: ${size}px;
-        background-color: ${color};
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        border: 2px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        ${isSelected ? 'animation: pulse 1s ease-in-out infinite;' : ''}
-      ">
-        <svg
-          width="${iconSize}"
-          height="${iconSize}"
-          viewBox="0 0 24 24"
-          style="transform: rotate(45deg);"
-        >
-          ${iconPath}
-        </svg>
-      </div>
-    `,
+    html: createCategoryMarkerSVG(category, size, isSelected),
     className: 'custom-marker',
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
@@ -81,40 +159,31 @@ function createCustomIcon(category: string, isSelected: boolean = false) {
 
 // Special icon for AI-suggested dynamic pins with sparkle badge
 function createDynamicPinIcon(isSelected: boolean = false) {
-  const size = isSelected ? 44 : 36;
+  const size = isSelected ? 48 : 40;
   const color = CATEGORY_COLORS['ai-suggested'];
+  const shadow = isSelected ? 'filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.6));' : 'filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.4));';
+  const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
 
   return L.divIcon({
     html: `
-      <div style="position: relative;">
-        <div style="
-          width: ${size}px;
-          height: ${size}px;
-          background: linear-gradient(135deg, ${color}, #EC4899);
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          border: 2px solid white;
-          box-shadow: 0 2px 12px rgba(168, 85, 247, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          ${isSelected ? 'animation: pulse 1s ease-in-out infinite;' : ''}
-        ">
-          <svg
-            width="${size * 0.45}"
-            height="${size * 0.45}"
-            viewBox="0 0 24 24"
-            style="transform: rotate(45deg);"
-            fill="white"
-          >
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-        </div>
+      <div style="position: relative; ${pulse}">
+        <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}">
+          <defs>
+            <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#A855F7"/>
+              <stop offset="100%" style="stop-color:#EC4899"/>
+            </linearGradient>
+          </defs>
+          <path d="M20 2 C10 2 4 10 4 18 C4 30 20 42 20 42 C20 42 36 30 36 18 C36 10 30 2 20 2Z"
+                fill="url(#aiGradient)" stroke="white" stroke-width="2"/>
+          <circle cx="20" cy="18" r="6" fill="white" opacity="0.4"/>
+          <circle cx="20" cy="18" r="3" fill="white" opacity="0.7"/>
+        </svg>
         <!-- Sparkle badge -->
         <div style="
           position: absolute;
-          top: -4px;
-          right: -4px;
+          top: -2px;
+          right: -2px;
           width: 18px;
           height: 18px;
           background: linear-gradient(135deg, #FBBF24, #F59E0B);
