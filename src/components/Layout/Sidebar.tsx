@@ -54,7 +54,7 @@ export default function Sidebar() {
                   onClick={() => selectDay(day.id === selectedDay ? null : day.id)}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                     selectedDay === day.id
-                      ? 'bg-pink-500 text-white'
+                      ? 'bg-gradient-to-r from-sunset-500 to-ocean-600 text-white'
                       : 'bg-white hover:bg-slate-100 text-slate-600'
                   }`}
                 >

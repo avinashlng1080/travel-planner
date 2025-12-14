@@ -17,11 +17,11 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
     <div className="relative">
       <button
         className={`
-          w-10 h-10 rounded-lg flex items-center justify-center
+          w-11 h-11 rounded-lg flex items-center justify-center
           transition-all duration-200
           ${
             isActive
-              ? 'bg-pink-100 text-pink-600 shadow-sm'
+              ? 'bg-sunset-100 text-sunset-600 shadow-sm'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }
         `}
@@ -61,7 +61,7 @@ export function NavigationDock() {
 
   return (
     <aside
-      className="fixed left-0 z-40 w-14 bg-white/80 backdrop-blur-xl border-r border-slate-200/50"
+      className="hidden md:fixed md:flex md:flex-col left-0 z-40 w-14 bg-white/80 backdrop-blur-xl border-r border-slate-200/50"
       style={{ top: '56px', bottom: 0 }}
     >
       <nav className="flex flex-col items-center gap-2 p-2">

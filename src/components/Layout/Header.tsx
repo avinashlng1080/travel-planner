@@ -22,7 +22,7 @@ export default function Header() {
             className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-colors ${
               chatOpen
                 ? 'bg-white text-slate-900'
-                : 'bg-pink-500 hover:bg-pink-600 text-white'
+                : 'bg-gradient-to-r from-sunset-500 to-ocean-600 hover:from-sunset-600 hover:to-ocean-700 text-white'
             }`}
             aria-label={chatOpen ? 'Close chat' : 'Open chat'}
           >

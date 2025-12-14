@@ -2,10 +2,10 @@ import { useTripStore } from '../../stores/tripStore';
 import { X, MapPin, Clock, DollarSign, AlertCircle, Info, ExternalLink } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'home-base': 'bg-pink-500',
-  'toddler-friendly': 'bg-pink-400',
+  'home-base': 'bg-sunset-500',
+  'toddler-friendly': 'bg-sunset-400',
   'attraction': 'bg-green-500',
-  'shopping': 'bg-purple-500',
+  'shopping': 'bg-ocean-500',
   'restaurant': 'bg-amber-500',
   'nature': 'bg-green-400',
   'temple': 'bg-red-500',

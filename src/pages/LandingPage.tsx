@@ -9,13 +9,13 @@ export function LandingPage() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-pink-50/30 font-['DM_Sans']">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sunset-50/30 font-['DM_Sans']">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-xl flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-semibold text-slate-900">TripPlanner</span>
@@ -37,7 +37,7 @@ export function LandingPage() {
             >
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 Plan Your Perfect{' '}
-                <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-sunset-500 to-ocean-600 bg-clip-text text-transparent">
                   Family Trip
                 </span>
               </h1>
@@ -97,7 +97,7 @@ export function LandingPage() {
                 <div className="flex mb-6 bg-slate-100 rounded-lg p-1">
                   <button
                     onClick={() => setAuthMode('signup')}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all ${
+                    className={`flex-1 py-3 text-sm font-medium rounded-md transition-all ${
                       authMode === 'signup'
                         ? 'bg-white text-slate-900 shadow-sm'
                         : 'text-slate-600 hover:text-slate-900'
@@ -107,7 +107,7 @@ export function LandingPage() {
                   </button>
                   <button
                     onClick={() => setAuthMode('login')}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all ${
+                    className={`flex-1 py-3 text-sm font-medium rounded-md transition-all ${
                       authMode === 'login'
                         ? 'bg-white text-slate-900 shadow-sm'
                         : 'text-slate-600 hover:text-slate-900'
@@ -191,7 +191,7 @@ function FeatureItem({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-pink-500/10 to-purple-500/10 rounded-lg flex items-center justify-center text-pink-600">
+      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-sunset-500/10 to-ocean-600/10 rounded-lg flex items-center justify-center text-sunset-600">
         {icon}
       </div>
       <div>
@@ -216,7 +216,7 @@ function FeatureCard({
       whileHover={{ y: -4 }}
       className="bg-slate-50 rounded-2xl p-6 border border-slate-100"
     >
-      <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white mb-4">
+      <div className="w-12 h-12 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-xl flex items-center justify-center text-white mb-4">
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">{title}</h3>

@@ -73,7 +73,7 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-pink-500" />
+            <Calendar className="w-5 h-5 text-sunset-500" />
             <h3 className="text-xl font-semibold text-slate-900">
               {dayPlan.dayOfWeek}, {new Date(dayPlan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </h3>

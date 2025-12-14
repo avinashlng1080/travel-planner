@@ -34,7 +34,7 @@ export function RightDetailPanel({ location, onClose, onAddToPlan }: RightDetail
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-14 right-0 bottom-0 z-40 w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col"
+        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl p-4 border-b border-slate-200/50 z-10">
@@ -59,9 +59,10 @@ export function RightDetailPanel({ location, onClose, onAddToPlan }: RightDetail
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 rounded-lg transition-colors"
+              className="p-2 md:p-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 rounded-lg transition-colors"
+              aria-label="Close details"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6 md:w-5 md:h-5" />
             </button>
           </div>
         </div>

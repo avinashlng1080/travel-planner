@@ -38,8 +38,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
           isUser
-            ? 'bg-pink-500 text-white'
-            : 'bg-gradient-to-br from-cyan-500 to-purple-500 text-white'
+            ? 'bg-sunset-500 text-white'
+            : 'bg-gradient-to-br from-cyan-500 to-ocean-500 text-white'
         }`}
       >
         {isUser ? 'U' : 'AI'}
@@ -48,7 +48,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className={`flex-1 max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           className={`rounded-lg px-4 py-3 ${
-            isUser ? 'bg-pink-500 text-white ml-auto' : 'bg-slate-100 text-slate-900'
+            isUser ? 'bg-sunset-500 text-white ml-auto' : 'bg-slate-100 text-slate-900'
           }`}
         >
           <div className="text-sm leading-relaxed">{renderContent(message.content)}</div>

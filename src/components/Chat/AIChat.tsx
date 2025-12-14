@@ -41,7 +41,7 @@ export function AIChat() {
       style={{ height: isExpanded ? '500px' : '60px', maxHeight: '80vh' }}
     >
       <div
-        className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-t-lg cursor-pointer"
+        className="flex items-center justify-between p-4 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-t-lg cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ export function AIChat() {
 
                 {loading && (
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-sm">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-ocean-500 flex items-center justify-center text-sm">
                       AI
                     </div>
                     <div className="bg-slate-100 rounded-lg px-4 py-3">
@@ -134,14 +134,14 @@ export function AIChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your Malaysia trip..."
-                className="flex-1 bg-white text-slate-900 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-500 placeholder-slate-500 min-h-[44px] max-h-32"
+                className="flex-1 bg-white text-slate-900 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sunset-500 placeholder-slate-500 min-h-[44px] max-h-32"
                 rows={1}
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:from-slate-600 disabled:to-slate-600 text-white rounded-lg px-4 py-3 font-medium transition-all disabled:cursor-not-allowed flex items-center justify-center min-w-[44px]"
+                className="bg-gradient-to-r from-sunset-500 to-ocean-600 hover:from-sunset-600 hover:to-ocean-600 disabled:from-slate-600 disabled:to-slate-600 text-white rounded-lg px-4 py-3 font-medium transition-all disabled:cursor-not-allowed flex items-center justify-center min-w-[44px]"
               >
                 <Send className="w-5 h-5" />
               </button>

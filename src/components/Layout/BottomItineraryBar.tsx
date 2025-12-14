@@ -35,10 +35,10 @@ function ScheduleStop({
 }) {
   if (item.isNapTime) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 border border-purple-500/30 rounded-lg">
-        <Moon className="w-4 h-4 text-purple-400" />
-        <span className="text-sm text-purple-300">{item.startTime}</span>
-        <span className="text-sm text-purple-200">Nap Time</span>
+      <div className="flex items-center gap-2 px-3 py-2 bg-ocean-500/20 border border-ocean-500/30 rounded-lg">
+        <Moon className="w-4 h-4 text-ocean-400" />
+        <span className="text-sm text-ocean-300">{item.startTime}</span>
+        <span className="text-sm text-ocean-200">Nap Time</span>
       </div>
     );
   }
@@ -48,14 +48,14 @@ function ScheduleStop({
       onClick={onClick}
       className={`
         flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200
-        ${isActive ? 'bg-pink-500/20 border border-pink-500/30' : 'bg-white hover:bg-slate-100'}
+        ${isActive ? 'bg-sunset-500/20 border border-sunset-500/30' : 'bg-white hover:bg-slate-100'}
       `}
     >
       <div className="flex items-center gap-1 text-slate-600">
         <Clock className="w-3 h-3" />
         <span className="text-xs">{item.startTime}</span>
       </div>
-      <MapPin className="w-4 h-4 text-pink-400" />
+      <MapPin className="w-4 h-4 text-sunset-400" />
       <span className="text-sm text-slate-900 font-medium truncate max-w-[150px]">
         {item.locationName}
       </span>
@@ -128,7 +128,7 @@ export function BottomItineraryBar({
   return (
     <motion.div
       className={`
-        fixed bottom-0 left-72 right-0 z-30
+        fixed bottom-0 left-0 md:left-14 lg:left-72 right-0 z-30
         bg-white backdrop-blur-xl
         border-t border-slate-200
         rounded-t-2xl
@@ -139,7 +139,8 @@ export function BottomItineraryBar({
       {/* Expand Toggle */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
+        className="absolute -top-4 left-1/2 -translate-x-1/2 w-11 h-11 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
+        aria-label={expanded ? 'Collapse itinerary' : 'Expand itinerary'}
       >
         <ChevronUp
           className={`w-5 h-5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
