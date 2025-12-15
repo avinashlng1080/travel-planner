@@ -1,18 +1,19 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Get the current user's profile
 export const getMyProfile = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return null;
     }
 
     const profile = await ctx.db
       .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject as any))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
 
     return profile;
@@ -57,13 +58,13 @@ export const createProfile = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("User not authenticated");
     }
 
-    const userId = identity.subject as any;
-    const email = identity.email || "";
+    const identity = await ctx.auth.getUserIdentity();
+    const email = identity?.email || "";
 
     // Check if profile already exists
     const existingProfile = await ctx.db
@@ -94,12 +95,10 @@ export const updateProfile = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("User not authenticated");
     }
-
-    const userId = identity.subject as any;
 
     const profile = await ctx.db
       .query("userProfiles")
@@ -128,13 +127,13 @@ export const updateProfile = mutation({
 export const ensureProfile = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("User not authenticated");
     }
 
-    const userId = identity.subject as any;
-    const email = identity.email || "";
+    const identity = await ctx.auth.getUserIdentity();
+    const email = identity?.email || "";
 
     // Check if profile already exists
     const existingProfile = await ctx.db

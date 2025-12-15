@@ -1,5 +1,6 @@
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Helper function to check trip access
@@ -84,13 +85,13 @@ export const getActivityFeed = query({
     cursor: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
     const limit = args.limit || 50;
@@ -160,13 +161,13 @@ export const getRecentActivity = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
     const limit = args.limit || 20;
@@ -221,13 +222,13 @@ export const getActivityCount = query({
     tripId: v.id("trips"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Count activities for this trip
     const activities = await ctx.db
@@ -263,13 +264,13 @@ export const getActivitiesByAction = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
     const limit = args.limit || 50;
@@ -370,8 +371,8 @@ export const clearOldActivity = mutation({
     olderThanDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -379,7 +380,7 @@ export const clearOldActivity = mutation({
     const membership = await checkTripAccess(
       ctx,
       args.tripId,
-      identity.subject
+      userId
     );
 
     if (membership.role !== "owner") {

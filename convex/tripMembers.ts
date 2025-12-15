@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Get all members of a trip
@@ -7,8 +8,8 @@ import { v } from "convex/values";
 export const getMembers = query({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -16,7 +17,7 @@ export const getMembers = query({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -80,8 +81,8 @@ export const inviteMember = mutation({
     role: v.union(v.literal("editor"), v.literal("commenter"), v.literal("viewer")),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
       throw new Error("Not authenticated");
     }
 
@@ -89,7 +90,7 @@ export const inviteMember = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", currentUserId)
       )
       .first();
 
@@ -103,17 +104,16 @@ export const inviteMember = mutation({
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
 
-    let userId: any;
-    let isPending = true;
+    let targetUserId: any;
 
     if (targetProfile) {
-      userId = targetProfile.userId;
+      targetUserId = targetProfile.userId;
 
       // Check if user is already a member
       const existingMember = await ctx.db
         .query("tripMembers")
         .withIndex("by_trip_and_user", (q) =>
-          q.eq("tripId", args.tripId).eq("userId", userId)
+          q.eq("tripId", args.tripId).eq("userId", targetUserId)
         )
         .first();
 
@@ -122,24 +122,24 @@ export const inviteMember = mutation({
       }
     } else {
       // Create a placeholder userId for the email (they'll see invite when they sign up)
-      userId = `pending:${args.email}` as any;
+      targetUserId = `pending:${args.email}` as any;
     }
 
     const now = Date.now();
     // Create tripMember with status "pending"
     await ctx.db.insert("tripMembers", {
       tripId: args.tripId,
-      userId: userId,
+      userId: targetUserId,
       role: args.role,
       status: "pending",
-      invitedBy: identity.subject as any,
+      invitedBy: currentUserId,
       invitedAt: now,
     });
 
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: args.tripId,
-      userId: identity.subject as any,
+      userId: currentUserId,
       action: "invited_member",
       metadata: {
         email: args.email,
@@ -166,8 +166,8 @@ export const createInviteLink = mutation({
     maxUses: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -175,7 +175,7 @@ export const createInviteLink = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -200,7 +200,7 @@ export const createInviteLink = mutation({
       tripId: args.tripId,
       token,
       role: args.role,
-      createdBy: identity.subject as any,
+      createdBy: userId,
       createdAt: now,
       expiresAt,
       maxUses: args.maxUses,
@@ -217,8 +217,8 @@ export const createInviteLink = mutation({
 export const joinViaLink = mutation({
   args: { token: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -246,7 +246,7 @@ export const joinViaLink = mutation({
     const existingMember = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", inviteLink.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", inviteLink.tripId).eq("userId", userId)
       )
       .first();
 
@@ -258,7 +258,7 @@ export const joinViaLink = mutation({
     // Create tripMember with status "accepted"
     await ctx.db.insert("tripMembers", {
       tripId: inviteLink.tripId,
-      userId: identity.subject as any,
+      userId: userId,
       role: inviteLink.role,
       status: "accepted",
       invitedBy: inviteLink.createdBy,
@@ -274,7 +274,7 @@ export const joinViaLink = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: inviteLink.tripId,
-      userId: identity.subject as any,
+      userId: userId,
       action: "joined_trip",
       metadata: {
         method: "invite_link",
@@ -292,8 +292,8 @@ export const joinViaLink = mutation({
 export const acceptInvite = mutation({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -301,7 +301,7 @@ export const acceptInvite = mutation({
     const memberEntry = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -323,7 +323,7 @@ export const acceptInvite = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: args.tripId,
-      userId: identity.subject as any,
+      userId: userId,
       action: "joined_trip",
       metadata: {
         method: "email_invite",
@@ -341,8 +341,8 @@ export const acceptInvite = mutation({
 export const declineInvite = mutation({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -350,7 +350,7 @@ export const declineInvite = mutation({
     const memberEntry = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -386,8 +386,8 @@ export const updateMemberRole = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -395,7 +395,7 @@ export const updateMemberRole = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -438,8 +438,8 @@ export const removeMember = mutation({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -464,12 +464,12 @@ export const removeMember = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
     const isOwner = userMembership?.role === "owner";
-    const isRemovingSelf = args.userId === (identity.subject as string);
+    const isRemovingSelf = args.userId === userId;
 
     if (!isOwner && !isRemovingSelf) {
       throw new Error("You don't have permission to remove this member");
@@ -488,8 +488,8 @@ export const removeMember = mutation({
 export const leaveTrip = mutation({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -497,7 +497,7 @@ export const leaveTrip = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .first();
 
@@ -523,15 +523,15 @@ export const leaveTrip = mutation({
 export const getPendingInvites = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
     // Get all pending memberships for this user
     const pendingMemberships = await ctx.db
       .query("tripMembers")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject as any))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("status"), "pending"))
       .collect();
 
@@ -581,8 +581,8 @@ export const getPendingInvites = query({
 export const revokeInviteLink = mutation({
   args: { linkId: v.id("tripInviteLinks") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -596,7 +596,7 @@ export const revokeInviteLink = mutation({
     const userMembership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", inviteLink.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", inviteLink.tripId).eq("userId", userId)
       )
       .first();
 

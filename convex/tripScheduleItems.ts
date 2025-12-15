@@ -1,27 +1,6 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { ConvexError } from "convex/values";
-
-/**
- * Helper function to get the user's database ID from their auth identity
- */
-async function getUserId(ctx: any) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new ConvexError("Not authenticated");
-  }
-
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_subject", (q: any) => q.eq("subject", identity.subject))
-    .unique();
-
-  if (!user) {
-    throw new ConvexError("User not found");
-  }
-
-  return user._id;
-}
+import { v, ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Helper function to check trip access and permissions
@@ -94,7 +73,8 @@ export const getScheduleItems = query({
     dayDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -183,7 +163,8 @@ export const getScheduleItemsByDate = query({
     dayDate: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Check user has access to trip
     await checkTripAccess(ctx, args.tripId, userId);
@@ -288,7 +269,8 @@ export const createScheduleItem = mutation({
     isFlexible: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -375,7 +357,8 @@ export const updateScheduleItem = mutation({
     isFlexible: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);
@@ -444,7 +427,8 @@ export const deleteScheduleItem = mutation({
     itemId: v.id("tripScheduleItems"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);
@@ -502,7 +486,8 @@ export const reorderScheduleItems = mutation({
     itemIds: v.array(v.id("tripScheduleItems")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -571,7 +556,8 @@ export const moveItemBetweenPlans = mutation({
     targetDayDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);

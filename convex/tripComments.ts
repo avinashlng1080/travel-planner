@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Helper function to check trip access
@@ -46,13 +47,13 @@ export const getCommentsByTrip = query({
     includeResolved: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Get comments for this trip
     let commentsQuery = ctx.db
@@ -102,8 +103,8 @@ export const getCommentsByPlan = query({
     includeResolved: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -114,7 +115,7 @@ export const getCommentsByPlan = query({
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, plan.tripId, identity.subject);
+    await checkTripAccess(ctx, plan.tripId, userId);
 
     // Get comments for this plan
     const comments = await ctx.db
@@ -164,8 +165,8 @@ export const getCommentsByScheduleItem = query({
     scheduleItemId: v.id("tripScheduleItems"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -176,7 +177,7 @@ export const getCommentsByScheduleItem = query({
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, scheduleItem.tripId, identity.subject);
+    await checkTripAccess(ctx, scheduleItem.tripId, userId);
 
     // Get all comments for this schedule item (including resolved)
     const comments = await ctx.db
@@ -224,13 +225,13 @@ export const getCommentCounts = query({
     dayDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
     // Check user has access to this trip
-    await checkTripAccess(ctx, args.tripId, identity.subject);
+    await checkTripAccess(ctx, args.tripId, userId);
 
     // Get all unresolved comments for this trip
     const comments = await ctx.db
@@ -275,8 +276,8 @@ export const addComment = mutation({
     dayDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -284,7 +285,7 @@ export const addComment = mutation({
     const membership = await checkTripAccess(
       ctx,
       args.tripId,
-      identity.subject
+      userId
     );
 
     if (!hasCommenterRole(membership.role)) {
@@ -299,7 +300,7 @@ export const addComment = mutation({
       planId: args.planId,
       scheduleItemId: args.scheduleItemId,
       dayDate: args.dayDate,
-      userId: identity.subject as any,
+      userId: userId,
       content: args.content,
       createdAt: Date.now(),
       isResolved: false,
@@ -308,7 +309,7 @@ export const addComment = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: args.tripId,
-      userId: identity.subject as any,
+      userId: userId,
       action: "added_comment",
       targetId: commentId,
       targetType: "comment",
@@ -337,8 +338,8 @@ export const updateComment = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -349,7 +350,7 @@ export const updateComment = mutation({
     }
 
     // Check user is the comment author
-    if (comment.userId !== identity.subject) {
+    if (comment.userId !== userId) {
       throw new Error("You can only edit your own comments");
     }
 
@@ -373,8 +374,8 @@ export const deleteComment = mutation({
     commentId: v.id("tripComments"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -388,11 +389,11 @@ export const deleteComment = mutation({
     const membership = await checkTripAccess(
       ctx,
       comment.tripId,
-      identity.subject
+      userId
     );
 
     // Check user is comment author OR trip owner
-    const isAuthor = comment.userId === identity.subject;
+    const isAuthor = comment.userId === userId;
     const isOwner = membership.role === "owner";
 
     if (!isAuthor && !isOwner) {
@@ -419,8 +420,8 @@ export const resolveComment = mutation({
     commentId: v.id("tripComments"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -434,7 +435,7 @@ export const resolveComment = mutation({
     const membership = await checkTripAccess(
       ctx,
       comment.tripId,
-      identity.subject
+      userId
     );
 
     if (!hasEditorRole(membership.role)) {
@@ -450,7 +451,7 @@ export const resolveComment = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: comment.tripId,
-      userId: identity.subject as any,
+      userId: userId,
       action: "resolved_comment",
       targetId: args.commentId,
       targetType: "comment",
@@ -471,8 +472,8 @@ export const unresolveComment = mutation({
     commentId: v.id("tripComments"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
 
@@ -486,7 +487,7 @@ export const unresolveComment = mutation({
     const membership = await checkTripAccess(
       ctx,
       comment.tripId,
-      identity.subject
+      userId
     );
 
     if (!hasEditorRole(membership.role)) {

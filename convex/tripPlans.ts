@@ -1,26 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-
-/**
- * Helper function to get the user's database ID from their auth identity
- */
-async function getUserId(ctx: any) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new Error("Not authenticated");
-  }
-
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_subject", (q: any) => q.eq("subject", identity.subject))
-    .unique();
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return user._id;
-}
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Helper function to check trip access and permissions
@@ -92,7 +72,8 @@ async function logActivity(
 export const getPlans = query({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     // Check user has access to trip
     await checkTripAccess(ctx, args.tripId, userId);
@@ -135,7 +116,8 @@ export const getPlans = query({
 export const getPlan = query({
   args: { planId: v.id("tripPlans") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const plan = await ctx.db.get(args.planId);
     if (!plan) {
@@ -181,7 +163,8 @@ export const createPlan = mutation({
     icon: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(
@@ -244,7 +227,8 @@ export const updatePlan = mutation({
     icon: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const plan = await ctx.db.get(args.planId);
     if (!plan) {
@@ -294,7 +278,8 @@ export const updatePlan = mutation({
 export const deletePlan = mutation({
   args: { planId: v.id("tripPlans") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const plan = await ctx.db.get(args.planId);
     if (!plan) {
@@ -362,7 +347,8 @@ export const reorderPlans = mutation({
     planIds: v.array(v.id("tripPlans")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(
@@ -407,7 +393,8 @@ export const reorderPlans = mutation({
 export const setDefaultPlan = mutation({
   args: { planId: v.id("tripPlans") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const plan = await ctx.db.get(args.planId);
     if (!plan) {

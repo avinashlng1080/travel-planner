@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Get all trips for the current user (owned + shared)
@@ -9,15 +10,15 @@ import { v, ConvexError } from "convex/values";
 export const getMyTrips = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
     // Get all trip memberships for this user
     const memberships = await ctx.db
       .query("tripMembers")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject as any))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("status"), "accepted"))
       .collect();
 
@@ -49,8 +50,8 @@ export const getMyTrips = query({
 export const getTrip = query({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
@@ -63,7 +64,7 @@ export const getTrip = query({
     const membership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .filter((q) => q.eq(q.field("status"), "accepted"))
       .first();
@@ -111,8 +112,8 @@ export const createTrip = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
@@ -126,7 +127,7 @@ export const createTrip = mutation({
       endDate: args.endDate,
       coverImageUrl: args.coverImageUrl,
       homeBase: args.homeBase,
-      ownerId: identity.subject as any,
+      ownerId: userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -134,10 +135,10 @@ export const createTrip = mutation({
     // Create trip member entry for owner
     await ctx.db.insert("tripMembers", {
       tripId,
-      userId: identity.subject as any,
+      userId,
       role: "owner",
       status: "accepted",
-      invitedBy: identity.subject as any,
+      invitedBy: userId,
       invitedAt: now,
       acceptedAt: now,
     });
@@ -149,7 +150,7 @@ export const createTrip = mutation({
       color: "#10B981",
       isDefault: true,
       order: 0,
-      createdBy: identity.subject as any,
+      createdBy: userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -161,7 +162,7 @@ export const createTrip = mutation({
       color: "#3B82F6",
       isDefault: true,
       order: 1,
-      createdBy: identity.subject as any,
+      createdBy: userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -169,7 +170,7 @@ export const createTrip = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId,
-      userId: identity.subject as any,
+      userId,
       action: "created_trip",
       metadata: {
         tripName: args.name,
@@ -203,8 +204,8 @@ export const updateTrip = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
@@ -214,7 +215,7 @@ export const updateTrip = mutation({
     }
 
     // Check if user is owner
-    if (trip.ownerId !== identity.subject) {
+    if (trip.ownerId !== userId) {
       throw new ConvexError("Only the owner can update trip details");
     }
 
@@ -236,7 +237,7 @@ export const updateTrip = mutation({
     // Log activity
     await ctx.db.insert("tripActivity", {
       tripId: args.tripId,
-      userId: identity.subject as any,
+      userId,
       action: "updated_trip",
       metadata: {
         updatedFields: Object.keys(updates).filter(k => k !== "updatedAt"),
@@ -255,8 +256,8 @@ export const updateTrip = mutation({
 export const deleteTrip = mutation({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
@@ -266,7 +267,7 @@ export const deleteTrip = mutation({
     }
 
     // Check if user is owner
-    if (trip.ownerId !== identity.subject) {
+    if (trip.ownerId !== userId) {
       throw new ConvexError("Only the owner can delete this trip");
     }
 
@@ -348,8 +349,8 @@ export const deleteTrip = mutation({
 export const getTripWithDetails = query({
   args: { tripId: v.id("trips") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new ConvexError("Not authenticated");
     }
 
@@ -362,7 +363,7 @@ export const getTripWithDetails = query({
     const membership = await ctx.db
       .query("tripMembers")
       .withIndex("by_trip_and_user", (q) =>
-        q.eq("tripId", args.tripId).eq("userId", identity.subject as any)
+        q.eq("tripId", args.tripId).eq("userId", userId)
       )
       .filter((q) => q.eq(q.field("status"), "accepted"))
       .first();
