@@ -22,6 +22,7 @@ export function TripPlannerApp() {
     chatMessages,
     isAILoading,
     dynamicPins,
+    newlyAddedPins,
     selectLocation,
     setActivePlan,
     addChatMessage,
@@ -29,6 +30,7 @@ export function TripPlannerApp() {
     setAILoading,
     addDynamicPins,
     clearDynamicPins,
+    clearNewlyAddedPins,
   } = useUIStore();
 
   // Calculate current day
@@ -160,6 +162,7 @@ export function TripPlannerApp() {
         activePlan={activePlan}
         planRoute={planRoute}
         dynamicPins={dynamicPins}
+        newlyAddedPins={newlyAddedPins}
         planALocationIds={planALocationIds}
         planBLocationIds={planBLocationIds}
         onLocationSelect={selectLocation}
@@ -189,6 +192,7 @@ export function TripPlannerApp() {
             planIds: [],
           });
         }}
+        onNewPinsFocused={clearNewlyAddedPins}
       />
 
       {/* Floating Header */}
@@ -211,10 +215,14 @@ export function TripPlannerApp() {
       {selectedLocation && (
         <RightDetailPanel
           location={selectedLocation}
+          days={DAILY_PLANS}
+          selectedDayId={selectedDayPlan?.id || null}
           onClose={() => selectLocation(null)}
-          onAddToPlan={(plan) => {
-            console.log(`Add ${selectedLocation.name} to Plan ${plan}`);
-            // TODO: Implement add to plan
+          onAddToPlan={(plan, details) => {
+            console.log(`Add ${selectedLocation.name} to Plan ${plan}`, details);
+            // TODO: Persist to database/state
+            // For now, just log and close the sidebar
+            selectLocation(null);
           }}
         />
       )}

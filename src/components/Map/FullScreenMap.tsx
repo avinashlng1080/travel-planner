@@ -287,6 +287,49 @@ function MapBoundsController({ planRoute, selectedLocation }: MapBoundsControlle
   return null;
 }
 
+// Controller for auto-focusing on newly added AI-suggested pins
+interface DynamicPinBoundsControllerProps {
+  newlyAddedPins: DynamicPin[] | null;
+  onFirstPinSelect: (pin: DynamicPin) => void;
+  onPinsFocused: () => void;
+}
+
+function DynamicPinBoundsController({
+  newlyAddedPins,
+  onFirstPinSelect,
+  onPinsFocused
+}: DynamicPinBoundsControllerProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!newlyAddedPins || newlyAddedPins.length === 0) return;
+
+    // For a single pin, fly to it at zoom 14
+    if (newlyAddedPins.length === 1) {
+      map.flyTo([newlyAddedPins[0].lat, newlyAddedPins[0].lng], 14, {
+        duration: 1,
+      });
+    } else {
+      // For multiple pins, fit bounds to show all
+      const bounds = L.latLngBounds(newlyAddedPins.map(p => [p.lat, p.lng]));
+      map.fitBounds(bounds, {
+        padding: [80, 80],
+        maxZoom: 14,
+      });
+    }
+
+    // Select first pin after animation completes
+    const timer = setTimeout(() => {
+      onFirstPinSelect(newlyAddedPins[0]);
+      onPinsFocused();
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [newlyAddedPins, map, onFirstPinSelect, onPinsFocused]);
+
+  return null;
+}
+
 interface FullScreenMapProps {
   locations: Location[];
   selectedLocation: Location | null;
@@ -294,10 +337,12 @@ interface FullScreenMapProps {
   activePlan: 'A' | 'B';
   planRoute: Array<{ lat: number; lng: number }>;
   dynamicPins?: DynamicPin[];
+  newlyAddedPins?: DynamicPin[] | null; // Pins just added by AI, triggers auto-focus
   planALocationIds?: string[];  // IDs of locations in current day's Plan A
   planBLocationIds?: string[];  // IDs of locations in current day's Plan B
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
+  onNewPinsFocused?: () => void; // Called after map focuses on new pins
 }
 
 export function FullScreenMap({
@@ -307,10 +352,12 @@ export function FullScreenMap({
   activePlan,
   planRoute,
   dynamicPins = [],
+  newlyAddedPins = null,
   planALocationIds = [],
   planBLocationIds = [],
   onLocationSelect,
   onDynamicPinSelect,
+  onNewPinsFocused,
 }: FullScreenMapProps) {
   const filteredLocations = locations.filter((loc) =>
     visibleCategories.includes(loc.category)
@@ -418,6 +465,13 @@ export function FullScreenMap({
 
         <MapController selectedLocation={selectedLocation} />
         <MapBoundsController planRoute={planRoute} selectedLocation={selectedLocation} />
+        {newlyAddedPins && newlyAddedPins.length > 0 && onDynamicPinSelect && onNewPinsFocused && (
+          <DynamicPinBoundsController
+            newlyAddedPins={newlyAddedPins}
+            onFirstPinSelect={onDynamicPinSelect}
+            onPinsFocused={onNewPinsFocused}
+          />
+        )}
 
         {/* Real Road Routing Layer */}
         <RoutingLayer

@@ -1,16 +1,31 @@
-import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
-import type { Location } from '../../data/tripData';
+import { AddToPlanModal } from '../ui/AddToPlanModal';
+import type { Location, DayPlan } from '../../data/tripData';
 
 interface RightDetailPanelProps {
   location: Location | null;
+  days: DayPlan[];
+  selectedDayId: string | null;
   onClose: () => void;
-  onAddToPlan: (planType: 'A' | 'B') => void;
+  onAddToPlan: (planType: 'A' | 'B', details: {
+    dayId: string;
+    startTime: string;
+    endTime: string;
+    notes?: string;
+  }) => void;
 }
 
-export function RightDetailPanel({ location, onClose, onAddToPlan }: RightDetailPanelProps) {
+export function RightDetailPanel({ location, days, selectedDayId, onClose, onAddToPlan }: RightDetailPanelProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPlanType, setSelectedPlanType] = useState<'A' | 'B'>('A');
+
   if (!location) return null;
+
+  // Check if this is an AI-suggested dynamic pin
+  const isAISuggested = location.id.startsWith('dynamic-');
 
   const categoryColors: Record<string, string> = {
     'home-base': 'pink',
@@ -40,7 +55,13 @@ export function RightDetailPanel({ location, onClose, onAddToPlan }: RightDetail
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl p-4 border-b border-slate-200/50 z-10">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {isAISuggested && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border border-amber-200">
+                    <Sparkles className="w-3 h-3" />
+                    AI Suggested
+                  </span>
+                )}
                 <GlassBadge color={categoryColor as any}>
                   {location.category.replace('-', ' ')}
                 </GlassBadge>
@@ -217,14 +238,41 @@ export function RightDetailPanel({ location, onClose, onAddToPlan }: RightDetail
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl p-4 border-t border-slate-200/50 space-y-2">
-          <GlassButton className="w-full" variant="success" onClick={() => onAddToPlan('A')}>
+          <GlassButton
+            className="w-full"
+            variant="success"
+            onClick={() => {
+              setSelectedPlanType('A');
+              setModalOpen(true);
+            }}
+          >
             Add to Plan A
           </GlassButton>
-          <GlassButton className="w-full" onClick={() => onAddToPlan('B')}>
+          <GlassButton
+            className="w-full"
+            onClick={() => {
+              setSelectedPlanType('B');
+              setModalOpen(true);
+            }}
+          >
             Add to Plan B
           </GlassButton>
         </div>
       </motion.aside>
+
+      {/* Add to Plan Modal */}
+      <AddToPlanModal
+        isOpen={modalOpen}
+        locationName={location.name}
+        planType={selectedPlanType}
+        days={days}
+        currentDayId={selectedDayId}
+        onClose={() => setModalOpen(false)}
+        onAdd={(details) => {
+          onAddToPlan(selectedPlanType, details);
+          setModalOpen(false);
+        }}
+      />
     </AnimatePresence>
   );
 }

@@ -33,6 +33,7 @@ interface UIState {
   authModalOpen: boolean;
   authMode: 'login' | 'signup';
   dynamicPins: DynamicPin[];
+  newlyAddedPins: DynamicPin[] | null; // Pins just added, triggers map focus
 
   // Actions
   selectLocation: (location: Location | null) => void;
@@ -50,6 +51,7 @@ interface UIState {
   addDynamicPins: (pins: Omit<DynamicPin, 'id' | 'createdAt'>[]) => void;
   clearDynamicPins: () => void;
   removeDynamicPin: (id: string) => void;
+  clearNewlyAddedPins: () => void;
 }
 
 const ALL_CATEGORIES = [
@@ -80,6 +82,7 @@ export const useUIStore = create<UIState>()(
       authModalOpen: false,
       authMode: 'login',
       dynamicPins: [],
+      newlyAddedPins: null,
 
       // Actions
       selectLocation: (location) => {
@@ -126,21 +129,23 @@ export const useUIStore = create<UIState>()(
       setAuthModalOpen: (open) => set({ authModalOpen: open }),
       setAuthMode: (mode) => set({ authMode: mode }),
       addDynamicPins: (pins) =>
-        set((state) => ({
-          dynamicPins: [
-            ...state.dynamicPins,
-            ...pins.map((pin) => ({
-              ...pin,
-              id: `dynamic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              createdAt: new Date(),
-            })),
-          ],
-        })),
-      clearDynamicPins: () => set({ dynamicPins: [] }),
+        set((state) => {
+          const newPins = pins.map((pin) => ({
+            ...pin,
+            id: `dynamic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: new Date(),
+          }));
+          return {
+            dynamicPins: [...state.dynamicPins, ...newPins],
+            newlyAddedPins: newPins, // Track newly added pins for map focus
+          };
+        }),
+      clearDynamicPins: () => set({ dynamicPins: [], newlyAddedPins: null }),
       removeDynamicPin: (id) =>
         set((state) => ({
           dynamicPins: state.dynamicPins.filter((pin) => pin.id !== id),
         })),
+      clearNewlyAddedPins: () => set({ newlyAddedPins: null }),
     }),
     {
       name: 'malaysia-trip-ui-storage',
