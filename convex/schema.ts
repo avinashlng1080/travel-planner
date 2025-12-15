@@ -161,6 +161,9 @@ export default defineSchema({
     ),
     createdAt: v.number(),
     updatedAt: v.number(),
+    destination: v.optional(v.string()),    // "Tokyo, Japan"
+    travelerInfo: v.optional(v.string()),   // "2 adults, 1 toddler (2yo)"
+    interests: v.optional(v.string()),      // "nature, food, culture"
   }).index("by_owner", ["ownerId"]),
 
   // Trip Members - Trip membership and permissions
@@ -232,6 +235,11 @@ export default defineSchema({
     addedBy: v.id("users"),
     addedAt: v.number(),
     notes: v.optional(v.string()),
+    aiSuggested: v.optional(v.boolean()),
+    aiReason: v.optional(v.string()),
+    toddlerRating: v.optional(v.number()),
+    estimatedDuration: v.optional(v.string()),
+    tips: v.optional(v.array(v.string())),
   }).index("by_trip", ["tripId"]),
 
   // Trip Schedule Items - Schedule items for trip plans
@@ -250,6 +258,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     order: v.number(),
+    aiGenerated: v.optional(v.boolean()),
   })
     .index("by_trip", ["tripId"])
     .index("by_plan", ["planId"])

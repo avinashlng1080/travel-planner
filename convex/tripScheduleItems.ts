@@ -641,3 +641,227 @@ export const moveItemBetweenPlans = mutation({
     return { success: true };
   },
 });
+
+/**
+ * Create multiple schedule items from AI-generated itinerary
+ * Used when Claude generates a full day's schedule
+ * Checks editor/owner permission
+ * Logs activity: "ai_generated_itinerary"
+ */
+export const createAIItinerary = mutation({
+  args: {
+    tripId: v.id("trips"),
+    planId: v.id("tripPlans"),
+    days: v.array(
+      v.object({
+        date: v.string(),
+        title: v.optional(v.string()),
+        activities: v.array(
+          v.object({
+            locationName: v.string(),
+            startTime: v.string(),
+            endTime: v.string(),
+            notes: v.optional(v.string()),
+            isFlexible: v.optional(v.boolean()),
+          })
+        ),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
+
+    // 1. Get auth user - already done above
+
+    // 2. Verify plan belongs to trip
+    const plan = await ctx.db.get(args.planId);
+    if (!plan) {
+      throw new ConvexError("Plan not found");
+    }
+    if (plan.tripId !== args.tripId) {
+      throw new ConvexError("Plan does not belong to this trip");
+    }
+
+    // 3. Check user is editor/owner
+    const { canEdit } = await checkTripAccess(
+      ctx,
+      args.tripId,
+      userId,
+      "editor"
+    );
+
+    if (!canEdit) {
+      throw new ConvexError("Access denied: Editor or owner role required");
+    }
+
+    // 4. Get all trip locations for fuzzy matching
+    const tripLocations = await ctx.db
+      .query("tripLocations")
+      .withIndex("by_trip", (q) => q.eq("tripId", args.tripId))
+      .collect();
+
+    // Helper function for fuzzy location matching
+    const findMatchingLocation = (name: string) => {
+      const nameLower = name.toLowerCase().trim();
+
+      // Try exact match first
+      let match = tripLocations.find(
+        (loc) => loc.customName?.toLowerCase().trim() === nameLower
+      );
+
+      // Try partial match
+      if (!match) {
+        match = tripLocations.find(
+          (loc) =>
+            loc.customName?.toLowerCase().includes(nameLower) ||
+            nameLower.includes(loc.customName?.toLowerCase() || "")
+        );
+      }
+
+      return match?._id;
+    };
+
+    const createdItemIds: any[] = [];
+    let totalItemsCreated = 0;
+
+    // 4. For each day
+    for (const day of args.days) {
+      // Get existing items for this plan/date to determine starting order
+      const existingItems = await ctx.db
+        .query("tripScheduleItems")
+        .withIndex("by_plan_and_date", (q) =>
+          q.eq("planId", args.planId).eq("dayDate", day.date)
+        )
+        .collect();
+
+      let order =
+        existingItems.length > 0
+          ? Math.max(...existingItems.map((item) => item.order)) + 1
+          : 0;
+
+      // For each activity
+      for (const activity of day.activities) {
+        // Try to find matching tripLocation by name
+        const locationId = findMatchingLocation(activity.locationName);
+
+        // Create schedule item with aiGenerated: true (stored in notes)
+        const itemId = await ctx.db.insert("tripScheduleItems", {
+          tripId: args.tripId,
+          planId: args.planId,
+          dayDate: day.date,
+          locationId: locationId, // undefined if no match found
+          title: activity.locationName,
+          startTime: activity.startTime,
+          endTime: activity.endTime,
+          notes: activity.notes
+            ? `[AI Generated] ${activity.notes}`
+            : "[AI Generated]",
+          isFlexible: activity.isFlexible ?? true,
+          createdBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          order: order,
+        });
+
+        createdItemIds.push(itemId);
+        totalItemsCreated++;
+        order++;
+      }
+    }
+
+    // 5. Log activity with metadata about what was created
+    await logActivity(ctx, args.tripId, userId, "ai_generated_itinerary" as any, {
+      planId: args.planId,
+      daysCount: args.days.length,
+      totalActivities: totalItemsCreated,
+      createdItemIds,
+      days: args.days.map((d) => ({
+        date: d.date,
+        activityCount: d.activities.length,
+      })),
+    });
+
+    // 6. Return array of created item IDs for undo functionality
+    return createdItemIds;
+  },
+});
+
+/**
+ * Delete multiple schedule items
+ * Used for undo functionality after AI itinerary generation
+ * Checks editor/owner permission for each item
+ */
+export const deleteMultipleScheduleItems = mutation({
+  args: {
+    itemIds: v.array(v.id("tripScheduleItems")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
+
+    // Verify all items exist and user has permission
+    const items = await Promise.all(
+      args.itemIds.map(async (itemId) => {
+        const item = await ctx.db.get(itemId);
+        if (!item) {
+          throw new ConvexError(`Schedule item ${itemId} not found`);
+        }
+
+        // Check user is owner or editor for this trip
+        const { canEdit } = await checkTripAccess(
+          ctx,
+          item.tripId,
+          userId,
+          "editor"
+        );
+
+        if (!canEdit) {
+          throw new ConvexError(
+            "Access denied: Editor or owner role required"
+          );
+        }
+
+        return item;
+      })
+    );
+
+    // Delete all comments for these schedule items
+    for (const item of items) {
+      const comments = await ctx.db
+        .query("tripComments")
+        .withIndex("by_schedule_item", (q) =>
+          q.eq("scheduleItemId", item._id)
+        )
+        .collect();
+
+      for (const comment of comments) {
+        await ctx.db.delete(comment._id);
+      }
+    }
+
+    // Delete all items
+    for (const itemId of args.itemIds) {
+      await ctx.db.delete(itemId);
+    }
+
+    // Log activity if we deleted any items
+    if (items.length > 0) {
+      const firstItem = items[0];
+      await logActivity(
+        ctx,
+        firstItem.tripId,
+        userId,
+        "deleted_activity" as any,
+        {
+          deletedCount: items.length,
+          itemIds: args.itemIds,
+          isUndoOperation: true,
+        }
+      );
+    }
+
+    return { success: true, deletedCount: items.length };
+  },
+});
+

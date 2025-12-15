@@ -110,6 +110,9 @@ export const createTrip = mutation({
       lng: v.number(),
       city: v.string(),
     })),
+    destination: v.optional(v.string()),
+    travelerInfo: v.optional(v.string()),
+    interests: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -127,6 +130,9 @@ export const createTrip = mutation({
       endDate: args.endDate,
       coverImageUrl: args.coverImageUrl,
       homeBase: args.homeBase,
+      destination: args.destination,
+      travelerInfo: args.travelerInfo,
+      interests: args.interests,
       ownerId: userId,
       createdAt: now,
       updatedAt: now,

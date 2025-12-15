@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin } from 'lucide-react';
-import { GlassButton, GlassInput } from '../ui/GlassPanel';
+import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin, Loader2 } from 'lucide-react';
+import { GlassButton } from '../ui/GlassPanel';
+import { useAITripPlanner } from '../../hooks/useAITripPlanner';
+import { UndoToast, useToasts } from '../ui/UndoToast';
+import { Id } from '../../../convex/_generated/dataModel';
 
 interface ChatMessage {
   id: string;
@@ -11,20 +14,47 @@ interface ChatMessage {
 }
 
 interface AIChatWidgetProps {
-  messages: ChatMessage[];
-  isLoading: boolean;
+  // Legacy props for Malaysia trip mode
+  messages?: ChatMessage[];
+  isLoading?: boolean;
   dynamicPinsCount?: number;
-  onSendMessage: (message: string) => void;
-  onClearHistory: () => void;
+  onSendMessage?: (message: string) => void;
+  onClearHistory?: () => void;
   onClearDynamicPins?: () => void;
+  // New props for user-created trips
+  tripId?: Id<"trips">;
 }
 
-const SUGGESTED_QUESTIONS = [
+// Default questions for legacy Malaysia trip
+const LEGACY_SUGGESTED_QUESTIONS = [
   "What should I bring to Batu Caves?",
   "Best time to visit KLCC Park with a toddler?",
   "Indoor activities for rainy days?",
   "Where can I find good nursing rooms?",
 ];
+
+// Dynamic questions for user-created trips
+function getDynamicSuggestedQuestions(destination?: string, travelerInfo?: string): string[] {
+  const questions: string[] = [];
+
+  if (destination) {
+    questions.push(`What are the must-see attractions in ${destination}?`);
+    questions.push(`Find me the best restaurants in ${destination}`);
+  } else {
+    questions.push("What are some must-see attractions?");
+    questions.push("Find me the best restaurants");
+  }
+
+  if (travelerInfo?.toLowerCase().includes('toddler') || travelerInfo?.toLowerCase().includes('kid') || travelerInfo?.toLowerCase().includes('child')) {
+    questions.push("What are kid-friendly activities?");
+    questions.push("Where can I find playgrounds nearby?");
+  } else {
+    questions.push("Create a full day itinerary");
+    questions.push("What local experiences should I try?");
+  }
+
+  return questions.slice(0, 4);
+}
 
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
@@ -69,13 +99,17 @@ function TypingIndicator() {
 }
 
 export function AIChatWidget({
-  messages,
-  isLoading,
+  // Legacy props
+  messages: legacyMessages,
+  isLoading: legacyIsLoading,
   dynamicPinsCount = 0,
-  onSendMessage,
-  onClearHistory,
+  onSendMessage: legacyOnSendMessage,
+  onClearHistory: legacyOnClearHistory,
   onClearDynamicPins,
+  // Trip mode props
+  tripId,
 }: AIChatWidgetProps) {
+  // UI state
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -83,6 +117,34 @@ export function AIChatWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  // Trip-specific state (when tripId is provided)
+  const [tripMessages, setTripMessages] = useState<ChatMessage[]>([]);
+  const [tripIsLoading, setTripIsLoading] = useState(false);
+
+  // AI Trip Planner hook (only active when tripId provided)
+  const {
+    isProcessingTools,
+    processToolCalls,
+    getTripContext,
+    getTripLocations,
+    lastToolResults,
+    clearResults,
+    tripData,
+  } = useAITripPlanner(tripId);
+
+  // Toast management
+  const { toasts, addToast, dismissToast } = useToasts();
+
+  // Determine which mode we're in
+  const isTripMode = !!tripId;
+  const messages = isTripMode ? tripMessages : (legacyMessages || []);
+  const isLoading = isTripMode ? (tripIsLoading || isProcessingTools) : (legacyIsLoading || false);
+
+  // Get suggested questions based on mode
+  const suggestedQuestions = isTripMode
+    ? getDynamicSuggestedQuestions(tripData?.trip?.destination, tripData?.trip?.travelerInfo)
+    : LEGACY_SUGGESTED_QUESTIONS;
 
   // Update window size on resize
   useEffect(() => {
@@ -96,6 +158,21 @@ export function AIChatWidget({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // Show toasts when tool results come in
+  useEffect(() => {
+    if (lastToolResults.length > 0) {
+      lastToolResults.forEach((result) => {
+        addToast({
+          message: result.message,
+          type: result.success ? 'success' : 'error',
+          undoAction: result.undoAction,
+          duration: 5000,
+        });
+      });
+      clearResults();
+    }
+  }, [lastToolResults, addToast, clearResults]);
 
   // Calculate dimensions
   const PADDING = 16;
@@ -119,10 +196,102 @@ export function AIChatWidget({
     if (isMinimized) setIsMinimized(false);
   };
 
+  // Trip mode: send message and process response with tools
+  const sendTripMessage = useCallback(async (message: string) => {
+    const userMsg: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+    };
+    setTripMessages(prev => [...prev, userMsg]);
+    setTripIsLoading(true);
+
+    try {
+      // Get trip context for Claude
+      const tripContext = getTripContext();
+      const tripLocations = getTripLocations();
+
+      // Call Convex HTTP action
+      const convexUrl = import.meta.env.VITE_CONVEX_URL?.replace('.cloud', '.site') || '';
+      const response = await fetch(`${convexUrl}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            ...tripMessages.map((m) => ({ role: m.role, content: m.content })),
+            { role: 'user', content: message },
+          ],
+          tripId: tripId?.toString(),
+          tripContext,
+          tripLocations,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Extract text from response
+        const textBlocks = data.content?.filter((block: any) => block.type === 'text') || [];
+        const assistantMessage = textBlocks.map((block: any) => block.text).join('\n\n')
+          || 'Sorry, I couldn\'t process that request.';
+
+        const assistantMsg: ChatMessage = {
+          id: Math.random().toString(36).substr(2, 9),
+          role: 'assistant',
+          content: assistantMessage,
+          timestamp: new Date(),
+        };
+        setTripMessages(prev => [...prev, assistantMsg]);
+
+        // Process tool calls (add locations, create itinerary)
+        if (data.content && Array.isArray(data.content)) {
+          await processToolCalls(data.content);
+        }
+      } else {
+        const errorMsg: ChatMessage = {
+          id: Math.random().toString(36).substr(2, 9),
+          role: 'assistant',
+          content: 'Sorry, there was an error processing your request. Please try again.',
+          timestamp: new Date(),
+        };
+        setTripMessages(prev => [...prev, errorMsg]);
+      }
+    } catch (error) {
+      const errorMsg: ChatMessage = {
+        id: Math.random().toString(36).substr(2, 9),
+        role: 'assistant',
+        content: 'Sorry, I\'m having trouble connecting. Please check your internet connection.',
+        timestamp: new Date(),
+      };
+      setTripMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setTripIsLoading(false);
+    }
+  }, [tripMessages, tripId, getTripContext, getTripLocations, processToolCalls]);
+
+  // Unified send message handler
+  const handleSendMessage = useCallback((message: string) => {
+    if (isTripMode) {
+      sendTripMessage(message);
+    } else if (legacyOnSendMessage) {
+      legacyOnSendMessage(message);
+    }
+  }, [isTripMode, sendTripMessage, legacyOnSendMessage]);
+
+  // Unified clear history handler
+  const handleClearHistory = useCallback(() => {
+    if (isTripMode) {
+      setTripMessages([]);
+    } else if (legacyOnClearHistory) {
+      legacyOnClearHistory();
+    }
+  }, [isTripMode, legacyOnClearHistory]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isLoading) {
-      onSendMessage(input.trim());
+      handleSendMessage(input.trim());
       setInput('');
     }
   };
@@ -193,7 +362,7 @@ export function AIChatWidget({
             </button>
           )}
           <button
-            onClick={onClearHistory}
+            onClick={handleClearHistory}
             className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Clear history"
           >
@@ -245,16 +414,23 @@ export function AIChatWidget({
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-sunset-500/20 to-ocean-600/20 rounded-full flex items-center justify-center">
                   <MessageSquare className="w-8 h-8 text-sunset-500" />
                 </div>
-                <h4 className="text-slate-900 font-medium mb-2">How can I help?</h4>
+                <h4 className="text-slate-900 font-medium mb-2">
+                  {isTripMode ? `Let's plan your trip!` : 'How can I help?'}
+                </h4>
                 <p className="text-sm text-slate-600 mb-4">
-                  Ask me anything about your Malaysia trip!
+                  {isTripMode
+                    ? tripData?.trip?.destination
+                      ? `I'll help you discover amazing places in ${tripData.trip.destination}. Ask me anything!`
+                      : 'Tell me about your trip and I\'ll suggest places to visit!'
+                    : 'Ask me anything about your Malaysia trip!'
+                  }
                 </p>
                 <div className="space-y-2">
-                  {SUGGESTED_QUESTIONS.map((question, i) => (
+                  {suggestedQuestions.map((question, i) => (
                     <button
                       key={i}
                       className="w-full text-left px-3 py-2 text-sm text-slate-600 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-                      onClick={() => onSendMessage(question)}
+                      onClick={() => handleSendMessage(question)}
                     >
                       {question}
                     </button>
@@ -296,6 +472,9 @@ export function AIChatWidget({
           </form>
         </>
       )}
+
+      {/* Undo Toast for AI actions */}
+      <UndoToast toasts={toasts} onDismiss={dismissToast} />
     </motion.div>
   );
 }

@@ -14,6 +14,8 @@ export interface CreateTripModalProps {
 interface FormData {
   tripName: string;
   description: string;
+  destination: string;
+  travelerInfo: string;
   startDate: string;
   endDate: string;
   homeBaseName: string;
@@ -33,6 +35,8 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
   const [formData, setFormData] = useState<FormData>({
     tripName: '',
     description: '',
+    destination: '',
+    travelerInfo: '',
     startDate: getTomorrowDate(),
     endDate: getNextWeekDate(),
     homeBaseName: '',
@@ -80,6 +84,8 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
         setFormData({
           tripName: '',
           description: '',
+          destination: '',
+          travelerInfo: '',
           startDate: getTomorrowDate(),
           endDate: getNextWeekDate(),
           homeBaseName: '',
@@ -157,6 +163,8 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
       const tripId = await createTrip({
         name: formData.tripName,
         description: formData.description || undefined,
+        destination: formData.destination || undefined,
+        travelerInfo: formData.travelerInfo || undefined,
         startDate: formData.startDate,
         endDate: formData.endDate,
         homeBase,
@@ -268,6 +276,42 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
                   )}
                 </div>
 
+                {/* Destination */}
+                <div>
+                  <label htmlFor="destination" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Destination
+                  </label>
+                  <GlassInput
+                    id="destination"
+                    type="text"
+                    placeholder="Tokyo, Japan"
+                    value={formData.destination}
+                    onChange={(e) => handleChange('destination', e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    AI will use this to suggest places to visit
+                  </p>
+                </div>
+
+                {/* Who's Traveling */}
+                <div>
+                  <label htmlFor="travelerInfo" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Who's Traveling?
+                  </label>
+                  <GlassInput
+                    id="travelerInfo"
+                    type="text"
+                    placeholder="2 adults, 1 toddler (2yo)"
+                    value={formData.travelerInfo}
+                    onChange={(e) => handleChange('travelerInfo', e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    AI will tailor suggestions for your group
+                  </p>
+                </div>
+
                 {/* Description */}
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -275,7 +319,7 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
                   </label>
                   <textarea
                     id="description"
-                    rows={3}
+                    rows={2}
                     placeholder="A magical trip with the little ones..."
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}

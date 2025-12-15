@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../components/ui/GlassPanel';
+import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
@@ -386,6 +387,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           </div>
         )}
       </main>
+
+      {/* AI Chat Widget */}
+      <AIChatWidget tripId={tripId} />
     </div>
   );
 }
