@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { Route, ToggleLeft, ArrowLeftRight } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES } from '@/stores/onboardingStore';
+import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
+import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -9,7 +9,10 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  * Advances automatically when user toggles the plan.
  */
 export function PlanToggleStep() {
-  const { hasToggledPlan } = useOnboardingStore();
+  const { hasToggledPlan, advanceToNextStep } = useOnboardingStore();
+
+  // Get current step number for display
+  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'plans') + 1;
 
   return (
     <>
@@ -21,9 +24,17 @@ export function PlanToggleStep() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="fixed top-24 left-1/2 -translate-x-1/2 z-60 w-[90%] max-w-md"
+        className="fixed top-24 left-1/2 -translate-x-1/2 z-60 w-[90%] max-w-md pointer-events-auto"
       >
         <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/50 p-4">
+          {/* Step indicator */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-ocean-400 to-emerald-500 text-white text-sm font-bold">
+              {stepNumber}
+            </span>
+            <span className="text-xs text-slate-400 font-medium">Step {stepNumber} of 5</span>
+          </div>
+
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ocean-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
               <Route className="w-5 h-5 text-white" />
@@ -61,9 +72,18 @@ export function PlanToggleStep() {
           >
             <ToggleLeft className="w-4 h-4 text-sunset-500" />
             <span className="text-sunset-600 text-sm font-medium">
-              {hasToggledPlan ? 'Perfect! Now you know!' : 'Toggle between plans to continue'}
+              {hasToggledPlan ? 'Perfect! Now you know!' : 'Click Plan A or Plan B above'}
             </span>
           </motion.div>
+
+          {/* Continue button - fallback */}
+          <button
+            onClick={advanceToNextStep}
+            className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors min-h-[44px] font-medium text-sm"
+          >
+            <span>Continue to next step</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </motion.div>
 

@@ -36,7 +36,7 @@ export function JourneyCompleteStep() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-60 flex items-center justify-center bg-gradient-to-b from-slate-900/90 via-slate-800/90 to-ocean-900/90 backdrop-blur-sm"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-gradient-to-b from-slate-900/90 via-slate-800/90 to-ocean-900/90 backdrop-blur-sm pointer-events-auto"
     >
       {/* Confetti particles */}
       <AnimatePresence>

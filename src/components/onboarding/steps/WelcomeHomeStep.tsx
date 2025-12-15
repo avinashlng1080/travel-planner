@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES } from '@/stores/onboardingStore';
+import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -11,6 +11,9 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  */
 export function WelcomeHomeStep() {
   const { advanceToNextStep, skipOnboarding } = useOnboardingStore();
+
+  // Get current step number for display
+  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'welcome') + 1;
   const [claudeMessage, setClaudeMessage] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
@@ -43,19 +46,28 @@ export function WelcomeHomeStep() {
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="fixed inset-x-4 bottom-24 md:inset-x-auto md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[480px] z-60"
+        className="fixed inset-x-4 bottom-24 md:inset-x-auto md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[480px] z-60 pointer-events-auto"
       >
         <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden">
           {/* Header with home icon */}
-          <div className="bg-gradient-to-r from-sunset-500 to-ocean-500 p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <Home className="w-5 h-5 text-white" />
+          <div className="bg-gradient-to-r from-sunset-500 to-ocean-500 p-4">
+            {/* Step indicator */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/20 text-white text-sm font-bold">
+                {stepNumber}
+              </span>
+              <span className="text-xs text-white/70 font-medium">Step {stepNumber} of 5</span>
             </div>
-            <div>
-              <h3 className="font-display font-bold text-white text-lg">
-                Your Home Base
-              </h3>
-              <p className="text-white/80 text-sm">M Vertica Residence, Cheras</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Home className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-white text-lg">
+                  Your Home Base
+                </h3>
+                <p className="text-white/80 text-sm">M Vertica Residence, Cheras</p>
+              </div>
             </div>
           </div>
 

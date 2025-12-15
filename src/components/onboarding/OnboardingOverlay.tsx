@@ -52,10 +52,8 @@ export function OnboardingOverlay() {
       aria-modal="true"
       aria-label="Welcome tour"
     >
-      {/* Step content */}
-      <div className="pointer-events-auto">
-        {renderStep()}
-      </div>
+      {/* Step content - each step manages its own pointer events */}
+      {renderStep()}
 
       {/* Passport card - always visible during onboarding */}
       {currentStep !== 'complete' && (
