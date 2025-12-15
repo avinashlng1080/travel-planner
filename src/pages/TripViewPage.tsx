@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../components/ui/GlassPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
+import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
@@ -27,8 +29,22 @@ interface TripViewPageProps {
 export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<Id<'tripPlans'> | null>(null);
 
+  // Onboarding state
+  const { status: onboardingStatus, startOnboarding } = useOnboardingStore();
+
   // Fetch trip details with members and plans
   const tripData = useQuery(api.trips.getTripWithDetails, { tripId });
+
+  // Trigger onboarding when trip data loads for the first time
+  useEffect(() => {
+    if (tripData && onboardingStatus === 'pending') {
+      // Small delay to let the UI settle before starting the animation
+      const timer = setTimeout(() => {
+        startOnboarding();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [tripData, onboardingStatus, startOnboarding]);
 
   // TODO: Fetch schedule items for selected plan
   // Note: The tripScheduleItems and tripPlans modules need to be added to Convex's API exports
@@ -390,6 +406,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* AI Chat Widget */}
       <AIChatWidget tripId={tripId} />
+
+      {/* Onboarding Overlay - renders when onboarding is active */}
+      <OnboardingOverlay />
     </div>
   );
 }

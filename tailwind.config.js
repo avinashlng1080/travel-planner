@@ -75,6 +75,10 @@ export default {
         'glow-ocean': '0 0 20px rgba(13, 148, 136, 0.3)',
         'glow-sand': '0 0 20px rgba(251, 191, 36, 0.3)',
       },
+      zIndex: {
+        '60': '60',
+        '70': '70',
+      },
     },
   },
   plugins: [],

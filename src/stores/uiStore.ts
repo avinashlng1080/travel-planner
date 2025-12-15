@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Location } from '../data/tripData';
+import { useOnboardingStore } from './onboardingStore';
 
 // Dynamic pin created by AI chat
 export interface DynamicPin {
@@ -81,9 +82,19 @@ export const useUIStore = create<UIState>()(
       dynamicPins: [],
 
       // Actions
-      selectLocation: (location) => set({ selectedLocation: location }),
+      selectLocation: (location) => {
+        set({ selectedLocation: location });
+        // Notify onboarding when a marker is selected
+        if (location) {
+          useOnboardingStore.getState().markInteraction('marker');
+        }
+      },
       selectDay: (dayId) => set({ selectedDayId: dayId }),
-      setActivePlan: (plan) => set({ activePlan: plan }),
+      setActivePlan: (plan) => {
+        set({ activePlan: plan });
+        // Notify onboarding when plan is toggled
+        useOnboardingStore.getState().markInteraction('plan');
+      },
       setActiveSection: (section) => set({ activeSection: section }),
       toggleCategory: (category) =>
         set((state) => ({
@@ -93,7 +104,7 @@ export const useUIStore = create<UIState>()(
         })),
       setAllCategories: (categories) => set({ visibleCategories: categories }),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
-      addChatMessage: (role, content) =>
+      addChatMessage: (role, content) => {
         set((state) => ({
           chatMessages: [
             ...state.chatMessages,
@@ -104,7 +115,12 @@ export const useUIStore = create<UIState>()(
               timestamp: new Date(),
             },
           ],
-        })),
+        }));
+        // Notify onboarding when user sends a message
+        if (role === 'user') {
+          useOnboardingStore.getState().markInteraction('chat');
+        }
+      },
       clearChatMessages: () => set({ chatMessages: [] }),
       setAILoading: (loading) => set({ isAILoading: loading }),
       setAuthModalOpen: (open) => set({ authModalOpen: open }),
