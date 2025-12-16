@@ -43,7 +43,7 @@ interface TripViewPageProps {
 }
 
 export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [selectedPlanId, setSelectedPlanId] = useState<Id<'tripPlans'> | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(null);
@@ -51,6 +51,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importInitialText, setImportInitialText] = useState('');
+  const [hasOpenedPanel, setHasOpenedPanel] = useState(false);
 
   // Onboarding state
   const { status: onboardingStatus, startOnboarding } = useOnboardingStore();
@@ -94,6 +95,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       return () => clearTimeout(timer);
     }
   }, [tripData, onboardingStatus, startOnboarding]);
+
+  // Auto-open TripPlannerPanel when trip loads (PostHog-style UX)
+  useEffect(() => {
+    if (tripData && !hasOpenedPanel) {
+      const timer = setTimeout(() => {
+        openPanel('tripPlanner');
+        setHasOpenedPanel(true);
+      }, 800); // Open after onboarding animation
+      return () => clearTimeout(timer);
+    }
+  }, [tripData, hasOpenedPanel, openPanel]);
 
   // Auto-select first plan when data loads
   if (tripData?.plans && tripData.plans.length > 0 && !selectedPlanId) {
