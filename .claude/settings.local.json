@@ -20,7 +20,8 @@
       "Bash(git commit:*)",
       "WebSearch",
       "mcp__convex__runOneoffQuery",
-      "mcp__convex__data"
+      "mcp__convex__data",
+      "Bash(git checkout:*)"
     ]
   }
 }
