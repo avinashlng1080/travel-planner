@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin, Loader2 } from 'lucide-react';
-import { GlassButton } from '../ui/GlassPanel';
+import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin } from 'lucide-react';
+// GlassButton not currently used - can be re-imported if needed
 import { useAITripPlanner } from '../../hooks/useAITripPlanner';
 import { UndoToast, useToasts } from '../ui/UndoToast';
+import { usePasteDetection } from '../../hooks/usePasteDetection';
+import { ImportSuggestionBanner } from '../trips/ImportSuggestionBanner';
 import { Id } from '../../../convex/_generated/dataModel';
 
 interface ChatMessage {
@@ -23,6 +25,8 @@ interface AIChatWidgetProps {
   onClearDynamicPins?: () => void;
   // New props for user-created trips
   tripId?: Id<"trips">;
+  // Import itinerary callback
+  onOpenImport?: (initialText: string) => void;
 }
 
 // Default questions for legacy Malaysia trip
@@ -108,6 +112,7 @@ export function AIChatWidget({
   onClearDynamicPins,
   // Trip mode props
   tripId,
+  onOpenImport,
 }: AIChatWidgetProps) {
   // UI state
   const [isOpen, setIsOpen] = useState(false);
@@ -117,6 +122,9 @@ export function AIChatWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  // Paste detection for itinerary import
+  const { pastedText, characterCount, isPasteDetected, clearPaste, handlePaste } = usePasteDetection();
 
   // Trip-specific state (when tripId is provided)
   const [tripMessages, setTripMessages] = useState<ChatMessage[]>([]);
@@ -446,25 +454,46 @@ export function AIChatWidget({
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t border-slate-200">
+            {/* Import Suggestion Banner */}
+            <AnimatePresence>
+              {isPasteDetected && tripId && onOpenImport && (
+                <ImportSuggestionBanner
+                  characterCount={characterCount}
+                  onImport={() => {
+                    if (pastedText) {
+                      onOpenImport(pastedText);
+                      clearPaste();
+                      setInput('');
+                    }
+                  }}
+                  onSendAsMessage={() => {
+                    // Just dismiss the banner - text is already in input
+                    clearPaste();
+                  }}
+                  onDismiss={clearPaste}
+                />
+              )}
+            </AnimatePresence>
+
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder="Ask about your trip..."
                 rows={1}
                 className="flex-1 bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 resize-none max-h-24"
                 style={{ minHeight: '44px' }}
               />
-              <GlassButton
+              <button
                 type="submit"
-                variant="primary"
                 disabled={!input.trim() || isLoading}
-                className="h-11 w-11 flex items-center justify-center !p-0"
+                className="h-11 w-11 flex items-center justify-center rounded-xl bg-gradient-to-r from-sunset-500 to-ocean-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
-              </GlassButton>
+              </button>
             </div>
             <p className="text-[10px] text-slate-500 mt-2 text-center">
               Press Enter to send, Shift+Enter for new line

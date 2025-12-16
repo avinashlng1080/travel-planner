@@ -297,7 +297,12 @@ export default defineSchema({
       v.literal("updated_activity"),
       v.literal("deleted_activity"),
       v.literal("added_comment"),
-      v.literal("resolved_comment")
+      v.literal("resolved_comment"),
+      v.literal("added_location"),
+      v.literal("added_ai_locations"),
+      v.literal("ai_generated_itinerary"),
+      v.literal("deleted_locations"),
+      v.literal("deleted_schedule_items")
     ),
     targetId: v.optional(v.string()),
     targetType: v.optional(v.string()),

@@ -4,11 +4,27 @@ import { X, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { GlassPanel, GlassInput } from '../ui/GlassPanel';
+import type { Id } from '../../../convex/_generated/dataModel';
 
-export interface CreateTripModalProps {
+export interface EditTripModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (tripId: string) => void;
+  trip: {
+    _id: Id<"trips">;
+    name: string;
+    description?: string;
+    destination?: string;
+    travelerInfo?: string;
+    startDate: string;
+    endDate: string;
+    homeBase?: {
+      name: string;
+      lat: number;
+      lng: number;
+      city?: string;
+    };
+  };
+  onSuccess: () => void;
 }
 
 interface FormData {
@@ -31,14 +47,14 @@ interface FormErrors {
   homeBaseLng?: string;
 }
 
-export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalProps) {
+export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModalProps) {
   const [formData, setFormData] = useState<FormData>({
     tripName: '',
     description: '',
     destination: '',
     travelerInfo: '',
-    startDate: getTomorrowDate(),
-    endDate: getNextWeekDate(),
+    startDate: '',
+    endDate: '',
     homeBaseName: '',
     homeBaseLat: '',
     homeBaseLng: '',
@@ -51,12 +67,29 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   // Convex mutation
-  const createTrip = useMutation(api.trips.createTrip);
+  const updateTrip = useMutation(api.trips.updateTrip);
+
+  // Pre-populate form when trip data changes
+  useEffect(() => {
+    if (trip) {
+      setFormData({
+        tripName: trip.name || '',
+        description: trip.description || '',
+        destination: trip.destination || '',
+        travelerInfo: trip.travelerInfo || '',
+        startDate: trip.startDate || '',
+        endDate: trip.endDate || '',
+        homeBaseName: trip.homeBase?.name || '',
+        homeBaseLat: trip.homeBase?.lat?.toString() || '',
+        homeBaseLng: trip.homeBase?.lng?.toString() || '',
+      });
+      setShowHomeBase(!!trip.homeBase);
+    }
+  }, [trip]);
 
   // Focus trap: focus first input when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Small delay to ensure animation has started
       const timer = setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
@@ -79,21 +112,8 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
   const handleClose = () => {
     if (!isSubmitting) {
       onClose();
-      // Reset form after animation completes
       setTimeout(() => {
-        setFormData({
-          tripName: '',
-          description: '',
-          destination: '',
-          travelerInfo: '',
-          startDate: getTomorrowDate(),
-          endDate: getNextWeekDate(),
-          homeBaseName: '',
-          homeBaseLat: '',
-          homeBaseLng: '',
-        });
         setErrors({});
-        setShowHomeBase(false);
       }, 200);
     }
   };
@@ -155,26 +175,24 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
             name: formData.homeBaseName,
             lat: parseFloat(formData.homeBaseLat),
             lng: parseFloat(formData.homeBaseLng),
-            city: '', // TODO: Add city field or extract from name
+            city: '',
           }
         : undefined;
 
       // Call Convex mutation
-      const tripId = await createTrip({
+      await updateTrip({
+        tripId: trip._id,
         name: formData.tripName,
         description: formData.description || undefined,
-        destination: formData.destination || undefined,
-        travelerInfo: formData.travelerInfo || undefined,
         startDate: formData.startDate,
         endDate: formData.endDate,
         homeBase,
       });
 
-      onSuccess(tripId);
+      onSuccess();
       handleClose();
     } catch (error) {
-      console.error('Failed to create trip:', error);
-      // TODO: Show error toast/notification
+      console.error('Failed to update trip:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -212,7 +230,7 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
             className="fixed inset-0 z-[61] flex items-center justify-center p-4"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="create-trip-title"
+            aria-labelledby="edit-trip-title"
           >
             <GlassPanel
               className="w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto"
@@ -242,15 +260,15 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                     />
                   </svg>
                 </div>
-                <h2 id="create-trip-title" className="text-xl font-semibold text-slate-900">
-                  Create New Trip
+                <h2 id="edit-trip-title" className="text-xl font-semibold text-slate-900">
+                  Edit Trip
                 </h2>
                 <p className="text-sm text-slate-600 mt-1">
-                  Start planning your perfect adventure
+                  Update your trip details
                 </p>
               </div>
 
@@ -471,10 +489,10 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
                     {isSubmitting ? (
                       <div className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Creating Trip...</span>
+                        <span>Updating Trip...</span>
                       </div>
                     ) : (
-                      'Create Trip'
+                      'Update Trip'
                     )}
                   </button>
                 </div>
@@ -488,18 +506,6 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
 }
 
 // Helper functions
-function getTomorrowDate(): string {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split('T')[0];
-}
-
-function getNextWeekDate(): string {
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 8);
-  return nextWeek.toISOString().split('T')[0];
-}
-
 function isValidLatitude(lat: string): boolean {
   const num = parseFloat(lat);
   return !isNaN(num) && num >= -90 && num <= 90;

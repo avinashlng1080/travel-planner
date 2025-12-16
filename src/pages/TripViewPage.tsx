@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from 'convex/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Calendar,
@@ -13,10 +13,16 @@ import {
   MapPin,
   Clock,
   ChevronRight,
+  Plus,
+  Pencil,
+  Upload,
 } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../components/ui/GlassPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
+import { EditTripModal } from '../components/trips/EditTripModal';
+import { AddActivityModal } from '../components/trips/AddActivityModal';
+import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -28,6 +34,10 @@ interface TripViewPageProps {
 
 export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<Id<'tripPlans'> | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importInitialText, setImportInitialText] = useState('');
 
   // Onboarding state
   const { status: onboardingStatus, startOnboarding } = useOnboardingStore();
@@ -46,10 +56,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     }
   }, [tripData, onboardingStatus, startOnboarding]);
 
-  // TODO: Fetch schedule items for selected plan
-  // Note: The tripScheduleItems and tripPlans modules need to be added to Convex's API exports
-  // For now, this will be undefined until those modules are properly exported
-  const scheduleItems = undefined; // Will be: useQuery(api.tripScheduleItems?.getScheduleItemsByPlan, selectedPlanId ? { planId: selectedPlanId } : 'skip');
+  // Fetch schedule items for selected plan
+  const scheduleItems = useQuery(
+    api.tripScheduleItems.getScheduleItems,
+    selectedPlanId ? { planId: selectedPlanId } : 'skip'
+  );
 
   // Auto-select first plan when data loads
   if (tripData?.plans && tripData.plans.length > 0 && !selectedPlanId) {
@@ -170,6 +181,15 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
               <h1 className="text-lg sm:text-xl font-semibold text-slate-900 truncate">
                 {trip.name}
               </h1>
+              {userRole === 'owner' && (
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="p-1.5 text-slate-400 hover:text-sunset-600 hover:bg-sunset-50 rounded-lg transition-colors"
+                  aria-label="Edit trip"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
               <div
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white border ${
                   roleBadge.color === 'sunset'
@@ -224,7 +244,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-slate-400" />
               <div className="flex -space-x-2">
-                {members.slice(0, 3).map((member, i) => (
+                {members.slice(0, 3).map((member) => (
                   <div
                     key={member._id}
                     className="w-8 h-8 rounded-full bg-gradient-to-br from-sunset-500 to-ocean-600 border-2 border-white flex items-center justify-center"
@@ -258,40 +278,64 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         {/* Plan Tabs */}
         {plans.length > 0 ? (
           <div className="mb-6">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              {plans.map((plan) => (
-                <motion.button
-                  key={plan._id}
-                  onClick={() => setSelectedPlanId(plan._id)}
-                  className={`relative px-4 py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
-                    selectedPlanId === plan._id
-                      ? 'bg-white shadow-lg'
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Color indicator */}
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: plan.color }}
-                  />
-                  <span
-                    className={`text-sm font-medium ${
+            <div className="flex items-center justify-between gap-2 pb-2">
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {plans.map((plan) => (
+                  <motion.button
+                    key={plan._id}
+                    onClick={() => setSelectedPlanId(plan._id)}
+                    className={`relative px-4 py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
                       selectedPlanId === plan._id
-                        ? 'text-slate-900'
-                        : 'text-slate-600'
+                        ? 'bg-white shadow-lg'
+                        : 'bg-white/50 hover:bg-white/70'
                     }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {plan.name}
-                  </span>
-                  {plan.isDefault && (
-                    <GlassBadge color="ocean" className="text-xs">
-                      Default
-                    </GlassBadge>
-                  )}
-                </motion.button>
-              ))}
+                    {/* Color indicator */}
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: plan.color }}
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        selectedPlanId === plan._id
+                          ? 'text-slate-900'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      {plan.name}
+                    </span>
+                    {plan.isDefault && (
+                      <GlassBadge color="ocean" className="text-xs">
+                        Default
+                      </GlassBadge>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              {(userRole === 'owner' || userRole === 'editor') && selectedPlanId && (
+                <div className="flex items-center gap-2">
+                  <GlassButton
+                    variant="default"
+                    size="sm"
+                    onClick={() => setIsImportModalOpen(true)}
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">Import</span>
+                  </GlassButton>
+                  <GlassButton
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsAddActivityModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">Add Activity</span>
+                  </GlassButton>
+                </div>
+              )}
             </div>
 
             {/* Plan Description */}
@@ -325,9 +369,18 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
                   No Activities Yet
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-slate-600 mb-4">
                   Start planning by adding activities to this plan.
                 </p>
+                {(userRole === 'owner' || userRole === 'editor') && (
+                  <GlassButton
+                    variant="primary"
+                    onClick={() => setIsAddActivityModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Activity
+                  </GlassButton>
+                )}
               </GlassPanel>
             ) : (
               // Schedule items grouped by date
@@ -405,10 +458,57 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       </main>
 
       {/* AI Chat Widget */}
-      <AIChatWidget tripId={tripId} />
+      <AIChatWidget
+        tripId={tripId}
+        onOpenImport={(initialText) => {
+          setImportInitialText(initialText);
+          setIsImportModalOpen(true);
+        }}
+      />
 
       {/* Onboarding Overlay - renders when onboarding is active */}
       <OnboardingOverlay />
+
+      {/* Edit Trip Modal */}
+      <EditTripModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        trip={trip}
+        onSuccess={() => {
+          // Trip data will refresh automatically via Convex reactivity
+        }}
+      />
+
+      {/* Add Activity Modal */}
+      {selectedPlanId && (
+        <AddActivityModal
+          isOpen={isAddActivityModalOpen}
+          onClose={() => setIsAddActivityModalOpen(false)}
+          tripId={tripId}
+          planId={selectedPlanId}
+          onSuccess={() => {
+            // Schedule items will refresh automatically via Convex reactivity
+          }}
+        />
+      )}
+
+      {/* Import Itinerary Modal */}
+      {selectedPlanId && (
+        <ImportItineraryModal
+          isOpen={isImportModalOpen}
+          onClose={() => {
+            setIsImportModalOpen(false);
+            setImportInitialText('');
+          }}
+          tripId={tripId}
+          planId={selectedPlanId}
+          initialText={importInitialText}
+          onSuccess={() => {
+            // Data will refresh automatically via Convex reactivity
+            setImportInitialText('');
+          }}
+        />
+      )}
     </div>
   );
 }
