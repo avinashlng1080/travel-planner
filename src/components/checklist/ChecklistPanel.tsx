@@ -10,7 +10,7 @@ import {
   Briefcase,
   Package,
 } from 'lucide-react';
-import { GlassPanel, GlassCard, GlassInput, GlassButton, GlassBadge } from '../ui/GlassPanel';
+import { GlassPanel, GlassInput, GlassButton, GlassBadge } from '../ui/GlassPanel';
 
 interface ChecklistItem {
   id: string;

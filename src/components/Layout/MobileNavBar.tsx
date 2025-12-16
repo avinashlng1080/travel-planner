@@ -1,5 +1,6 @@
 import { Map, CheckSquare, Filter, Calendar, Lightbulb, AlertTriangle } from 'lucide-react';
-import { useFloatingPanelStore, type PanelId } from '../../stores/floatingPanelStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavItem {
   id: PanelId;
@@ -8,7 +9,8 @@ interface NavItem {
 }
 
 export function MobileNavBar() {
-  const { openPanel, panels } = useFloatingPanelStore();
+  const [panels] = useAtom(panelsAtom);
+  const openPanel = useSetAtom(openPanelAtom);
 
   const navItems: NavItem[] = [
     { id: 'tripPlanner', icon: Map, label: 'Plan' },

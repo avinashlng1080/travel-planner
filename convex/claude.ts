@@ -1,5 +1,4 @@
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
 import { LOCATIONS, DAILY_PLANS, SAFETY_INFO, WEATHER_INFO, TODDLER_SCHEDULE } from "../src/data/tripData";
 
 // Types for trip data
@@ -297,7 +296,7 @@ function getTools(tripId?: string) {
 }
 
 // HTTP action for Claude API - keeps API key server-side
-export const chat = httpAction(async (ctx, request) => {
+export const chat = httpAction(async (_ctx, request) => {
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });

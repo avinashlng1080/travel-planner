@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
-import { useOnboardingStore, STEP_CONFIGS } from '@/stores/onboardingStore';
+import { useAtom } from 'jotai';
+import { stampsAtom, isPassportExpandedAtom, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 import { PassportStamp } from './PassportStamp';
 
 /**
@@ -8,7 +9,8 @@ import { PassportStamp } from './PassportStamp';
  * Can be collapsed to a small badge or expanded to show all stamps.
  */
 export function PassportCard() {
-  const { stamps, isPassportExpanded, setPassportExpanded } = useOnboardingStore();
+  const [stamps] = useAtom(stampsAtom);
+  const [isPassportExpanded, setPassportExpanded] = useAtom(isPassportExpandedAtom);
 
   // Find which stamp was just earned (last stamp if it matches current step)
   const lastStamp = stamps[stamps.length - 1];

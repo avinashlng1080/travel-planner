@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useAtom } from 'jotai';
+import { showSkipConfirmAtom } from '@/atoms/onboardingAtoms';
 
 /**
  * Always-visible skip button for the onboarding experience.
  * Shows skip confirmation dialog when clicked.
  */
 export function SkipButton() {
-  const { setShowSkipConfirm } = useOnboardingStore();
+  const [, setShowSkipConfirm] = useAtom(showSkipConfirmAtom);
 
   return (
     <motion.button

@@ -1,7 +1,8 @@
 import { Calendar } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
@@ -51,9 +52,13 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
 }
 
 export function DaysPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
-  const { selectedDayId, selectDay } = useUIStore();
-  const { width, height, isMobile } = useResponsivePanel(320, 450);
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
+  const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
+  const { width, height } = useResponsivePanel(320, 450);
 
   const panelState = panels.days;
 
@@ -91,7 +96,7 @@ export function DaysPanel() {
       zIndex={panelState.zIndex}
       onClose={() => closePanel('days')}
       onMinimize={() => toggleMinimize('days')}
-      onPositionChange={(pos) => updatePosition('days', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'days', position: pos })}
       onFocus={() => bringToFront('days')}
     >
       <div className="p-4 space-y-2 max-h-[450px] overflow-y-auto">

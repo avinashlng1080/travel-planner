@@ -75,7 +75,7 @@ function MemberRow({
   const [showActions, setShowActions] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
-  const availableRoles: Role[] = ['editor', 'commenter', 'viewer'];
+  const availableRoles: ('editor' | 'commenter' | 'viewer')[] = ['editor', 'commenter', 'viewer'];
   const isPending = member.status === 'pending';
 
   return (

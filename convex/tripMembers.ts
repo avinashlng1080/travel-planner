@@ -612,6 +612,7 @@ export const getTripPendingInvites = query({
         const user = await ctx.db.get(member.userId);
         return {
           _id: member._id,
+          userId: member.userId,
           email: user?.email || "Unknown",
           role: member.role,
           invitedAt: member.invitedAt,

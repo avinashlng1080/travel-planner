@@ -5,7 +5,6 @@ import {
   Clock,
   ArrowRight,
   MapPin,
-  Calendar,
   MessageSquare,
   CheckCircle,
   UserPlus,

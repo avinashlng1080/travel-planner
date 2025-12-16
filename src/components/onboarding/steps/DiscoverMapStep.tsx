@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Map, MousePointer, ArrowRight } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { hasInteractedWithMarkerAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -9,7 +10,8 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  * Advances automatically when user interacts with any marker.
  */
 export function DiscoverMapStep() {
-  const { hasInteractedWithMarker, advanceToNextStep } = useOnboardingStore();
+  const [hasInteractedWithMarker] = useAtom(hasInteractedWithMarkerAtom);
+  const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
   const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'map') + 1;

@@ -30,8 +30,9 @@ import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
 import { TripPlannerPanel } from '../components/floating';
-import { useOnboardingStore } from '../stores/onboardingStore';
-import { useFloatingPanelStore } from '../stores/floatingPanelStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
+import { openPanelAtom } from '../atoms/floatingPanelAtoms';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { getTimezoneAbbr, TIMEZONE_DISPLAY_NAMES } from '../utils/timezone';
@@ -54,10 +55,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [hasOpenedPanel, setHasOpenedPanel] = useState(false);
 
   // Onboarding state
-  const { status: onboardingStatus, startOnboarding } = useOnboardingStore();
+  const [onboardingStatus] = useAtom(statusAtom);
+  const startOnboarding = useSetAtom(startOnboardingAtom);
 
   // Floating panel state
-  const { openPanel } = useFloatingPanelStore();
+  const openPanel = useSetAtom(openPanelAtom);
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -79,11 +81,10 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     ? scheduleItems?.find((item) => item._id === selectedActivityId)
     : null;
 
-  // Fetch location for selected activity
-  const activityLocation = useQuery(
-    api.tripLocations.getLocation,
-    selectedActivity?.locationId ? { locationId: selectedActivity.locationId } : 'skip'
-  );
+  // Find location for selected activity from already-fetched locations
+  const activityLocation = selectedActivity?.locationId
+    ? tripLocations?.find((loc) => loc._id === selectedActivity.locationId)
+    : null;
 
   // Trigger onboarding when trip data loads for the first time
   useEffect(() => {

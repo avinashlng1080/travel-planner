@@ -1,7 +1,8 @@
 import { Lightbulb, Sun, Cloud, Clock, MapPin, Info, Zap } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { selectedDayIdAtom, selectedLocationAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
 import { LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
@@ -17,10 +18,14 @@ interface Suggestion {
 }
 
 export function SuggestionsPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } =
-    useFloatingPanelStore();
-  const { selectedDayId, selectedLocation } = useUIStore();
-  const { width, height, isMobile } = useResponsivePanel(380, 450);
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
+  const [selectedDayId] = useAtom(selectedDayIdAtom);
+  const [selectedLocation] = useAtom(selectedLocationAtom);
+  const { width, height } = useResponsivePanel(380, 450);
 
   const panelState = panels.suggestions;
 
@@ -66,8 +71,6 @@ export function SuggestionsPanel() {
     }
 
     // Time-based suggestions (nap time reminders)
-    const morningNapTime = 10 * 60; // 10:00 AM in minutes
-    const afternoonNapTime = 15 * 60; // 3:00 PM in minutes
     const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
     // Morning nap reminder (9:30 AM - 10:30 AM)
@@ -244,7 +247,7 @@ export function SuggestionsPanel() {
       zIndex={panelState.zIndex}
       onClose={() => closePanel('suggestions')}
       onMinimize={() => toggleMinimize('suggestions')}
-      onPositionChange={(pos) => updatePosition('suggestions', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'suggestions', position: pos })}
       onFocus={() => bringToFront('suggestions')}
     >
       <div className="p-5">

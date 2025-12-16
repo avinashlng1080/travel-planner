@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { CheckSquare } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { ChecklistPanel } from '../checklist/ChecklistPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import {
   FileText,
   Heart,
@@ -79,9 +80,13 @@ const DEFAULT_CHECKLISTS: ChecklistCategory[] = [
 ];
 
 export function ChecklistFloatingPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
   const panel = panels.checklist;
-  const { width, height, isMobile } = useResponsivePanel(400, 500);
+  const { width, height } = useResponsivePanel(400, 500);
 
   // Manage checklist state internally
   const [checklists, setChecklists] = useState<ChecklistCategory[]>(DEFAULT_CHECKLISTS);
@@ -133,7 +138,7 @@ export function ChecklistFloatingPanel() {
       zIndex={panel.zIndex}
       onClose={() => closePanel('checklist')}
       onMinimize={() => toggleMinimize('checklist')}
-      onPositionChange={(pos) => updatePosition('checklist', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'checklist', position: pos })}
       onFocus={() => bringToFront('checklist')}
     >
       <ChecklistPanel

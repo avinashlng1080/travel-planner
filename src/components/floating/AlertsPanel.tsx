@@ -1,13 +1,18 @@
 import { AlertTriangle } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import SafetyPanel from '../Safety/SafetyPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 export function AlertsPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
   const panel = panels.alerts;
-  const { width, height, isMobile } = useResponsivePanel(400, 450);
+  const { width, height } = useResponsivePanel(400, 450);
 
   return (
     <FloatingPanel
@@ -21,7 +26,7 @@ export function AlertsPanel() {
       zIndex={panel.zIndex}
       onClose={() => closePanel('alerts')}
       onMinimize={() => toggleMinimize('alerts')}
-      onPositionChange={(pos) => updatePosition('alerts', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'alerts', position: pos })}
       onFocus={() => bringToFront('alerts')}
     >
       <SafetyPanel />

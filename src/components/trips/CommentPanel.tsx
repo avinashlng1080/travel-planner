@@ -7,14 +7,13 @@ import {
   MoreVertical,
   Edit2,
   Trash2,
-  Check,
   XCircle,
   CheckCircle,
 } from 'lucide-react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-import { GlassPanel, GlassButton, GlassBadge } from '@/components/ui/GlassPanel';
+import { GlassButton, GlassBadge } from '@/components/ui/GlassPanel';
 import { Avatar } from '@/components/ui/Avatar';
 
 interface CommentPanelProps {
@@ -277,17 +276,21 @@ export function CommentPanel({
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
   // Determine which query to use based on props
+  const queryFunction = scheduleItemId
+    ? api.tripComments.getCommentsByScheduleItem
+    : planId
+    ? api.tripComments.getCommentsByPlan
+    : null;
+
+  const queryArgs = scheduleItemId
+    ? { scheduleItemId }
+    : planId
+    ? { planId, includeResolved: true }
+    : 'skip';
+
   const comments = useQuery(
-    scheduleItemId
-      ? api.tripComments.getCommentsByScheduleItem
-      : planId
-      ? api.tripComments.getCommentsByPlan
-      : null,
-    scheduleItemId
-      ? { scheduleItemId }
-      : planId
-      ? { planId, includeResolved: true }
-      : 'skip'
+    queryFunction as any,
+    queryArgs as any
   ) as Comment[] | undefined;
 
   const addComment = useMutation(api.tripComments.addComment);

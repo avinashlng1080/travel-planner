@@ -3,10 +3,12 @@ import { X } from 'lucide-react';
 import { GlassPanel } from '../ui/GlassPanel';
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom } from 'jotai';
+import { authModalOpenAtom, authModeAtom } from '../../atoms/uiAtoms';
 
 export function AuthModal() {
-  const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
+  const [authModalOpen, setAuthModalOpen] = useAtom(authModalOpenAtom);
+  const [authMode, setAuthMode] = useAtom(authModeAtom);
 
   const handleClose = () => {
     setAuthModalOpen(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Minus, Maximize2, Minimize2, Square } from 'lucide-react';
+import { X, Minus, Minimize2, Square } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface FloatingPanelProps {
@@ -20,7 +20,6 @@ interface FloatingPanelProps {
 }
 
 export function FloatingPanel({
-  id,
   title,
   icon: Icon,
   isOpen,
@@ -94,7 +93,7 @@ export function FloatingPanel({
           dragMomentum={false}
           dragElastic={0}
           dragConstraints={dragConstraints}
-          onDragEnd={(event, info) => {
+          onDragEnd={(_event, info) => {
             if (isMaximized) return;
             const newX = position.x + info.offset.x;
             const newY = position.y + info.offset.y;

@@ -38,7 +38,7 @@ const DEFAULT_CHECKLISTS = {
 // Get all checklists for a session
 export const getAll = query({
   args: { sessionId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const checklists = await ctx.db.query("checklists").collect();
 
     // If no checklists exist, return defaults

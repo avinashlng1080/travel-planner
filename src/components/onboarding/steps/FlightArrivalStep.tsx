@@ -1,4 +1,5 @@
-import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useSetAtom } from 'jotai';
+import { advanceToNextStepAtom } from '@/atoms/onboardingAtoms';
 import { FlightPathAnimation } from '../FlightPathAnimation';
 
 /**
@@ -7,7 +8,7 @@ import { FlightPathAnimation } from '../FlightPathAnimation';
  * Auto-advances after animation completes.
  */
 export function FlightArrivalStep() {
-  const { advanceToNextStep } = useOnboardingStore();
+  const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   return (
     <FlightPathAnimation

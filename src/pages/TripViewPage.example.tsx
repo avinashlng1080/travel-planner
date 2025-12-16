@@ -29,7 +29,7 @@ export function TripViewExample() {
     return <TripViewPage tripId={selectedTripId} onBack={handleBackToDashboard} />;
   }
 
-  return <DashboardPage />;
+  return <DashboardPage onOpenTrip={handleOpenTrip} />;
 }
 
 /**

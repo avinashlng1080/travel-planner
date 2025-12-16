@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { hasToggledPlanAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -9,7 +10,8 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  * Advances automatically when user toggles the plan.
  */
 export function PlanToggleStep() {
-  const { hasToggledPlan, advanceToNextStep } = useOnboardingStore();
+  const [hasToggledPlan] = useAtom(hasToggledPlanAtom);
+  const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
   const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'plans') + 1;

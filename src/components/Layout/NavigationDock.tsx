@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Map, CheckSquare, Filter } from 'lucide-react';
-import { useFloatingPanelStore, type PanelId } from '../../stores/floatingPanelStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavIconProps {
   icon: React.ElementType;
@@ -47,7 +48,8 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
 }
 
 export function NavigationDock() {
-  const { panels, openPanel } = useFloatingPanelStore();
+  const [panels] = useAtom(panelsAtom);
+  const openPanel = useSetAtom(openPanelAtom);
 
   const navItems: Array<{
     id: PanelId;

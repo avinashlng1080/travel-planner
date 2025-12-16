@@ -1,6 +1,7 @@
 import { useEffect, ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { statusAtom, startOnboardingAtom, showSkipConfirmAtom } from '@/atoms/onboardingAtoms';
 import { OnboardingOverlay } from './OnboardingOverlay';
 
 interface OnboardingProviderProps {
@@ -16,7 +17,9 @@ interface OnboardingProviderProps {
  * 2. status is 'pending' (hasn't completed or skipped onboarding)
  */
 export function OnboardingProvider({ children, shouldTrigger = false }: OnboardingProviderProps) {
-  const { status, startOnboarding } = useOnboardingStore();
+  const [status] = useAtom(statusAtom);
+  const startOnboarding = useSetAtom(startOnboardingAtom);
+  const setShowSkipConfirm = useSetAtom(showSkipConfirmAtom);
 
   // Auto-start onboarding when triggered and status is pending
   useEffect(() => {
@@ -29,7 +32,7 @@ export function OnboardingProvider({ children, shouldTrigger = false }: Onboardi
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && status === 'active') {
-        useOnboardingStore.getState().setShowSkipConfirm(true);
+        setShowSkipConfirm(true);
       }
     };
 

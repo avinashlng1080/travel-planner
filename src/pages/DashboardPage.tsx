@@ -24,7 +24,6 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
   // Convex queries and mutations
   const trips = useQuery(api.trips.getMyTrips);
-  const createTrip = useMutation(api.trips.createTrip);
   const deleteTrip = useMutation(api.trips.deleteTrip);
 
   // Close menu when clicking outside

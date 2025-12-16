@@ -18,6 +18,12 @@ type Role = 'editor' | 'commenter' | 'viewer';
 type TabType = 'email' | 'link';
 
 const roleConfig = {
+  owner: {
+    icon: Pencil,
+    label: 'Owner',
+    description: 'Full control',
+    color: 'pink' as const,
+  },
   editor: {
     icon: Pencil,
     label: 'Editor',
@@ -98,11 +104,11 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     try {
       // Re-send by calling inviteMember again with the same email and role
       const invite = pendingInvites.find(i => i._id === inviteId);
-      if (invite) {
+      if (invite && invite.role !== 'owner') {
         await inviteMemberMutation({
           tripId,
           email: emailToResend,
-          role: invite.role,
+          role: invite.role as Role,
         });
         setSuccessMessage(`Invitation resent to ${emailToResend}`);
       }
@@ -116,9 +122,12 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
 
   const handleCancelInvite = async (memberId: Id<'tripMembers'>) => {
     try {
-      await removeMemberMutation({ tripId, memberId });
-      setSuccessMessage('Invitation cancelled');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      const invite = pendingInvites.find(i => i._id === memberId);
+      if (invite) {
+        await removeMemberMutation({ tripId, userId: invite.userId });
+        setSuccessMessage('Invitation cancelled');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
     } catch (error) {
       setErrorMessage('Failed to cancel invitation');
     }
@@ -608,7 +617,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                           {inviteLinks.map((link) => {
                             const config = roleConfig[link.role];
                             const Icon = config.icon;
-                            const isExpired = link.expiresAt && link.expiresAt < Date.now();
+                            const isExpired = !!(link.expiresAt && link.expiresAt < Date.now());
                             const linkUrl = `${window.location.origin}/join/${link.token}`;
                             return (
                               <motion.div

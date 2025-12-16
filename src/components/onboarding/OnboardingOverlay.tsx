@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { statusAtom, currentStepAtom, showSkipConfirmAtom, skipOnboardingAtom } from '@/atoms/onboardingAtoms';
 import { PassportCard } from './PassportCard';
 import { SkipButton } from './SkipButton';
 import { FlightArrivalStep } from './steps/FlightArrivalStep';
@@ -14,7 +15,10 @@ import { JourneyCompleteStep } from './steps/JourneyCompleteStep';
  * Renders the current step and persistent UI elements (passport, skip button).
  */
 export function OnboardingOverlay() {
-  const { status, currentStep, showSkipConfirm, setShowSkipConfirm, skipOnboarding } = useOnboardingStore();
+  const [status] = useAtom(statusAtom);
+  const [currentStep] = useAtom(currentStepAtom);
+  const [showSkipConfirm, setShowSkipConfirm] = useAtom(showSkipConfirmAtom);
+  const skipOnboarding = useSetAtom(skipOnboardingAtom);
 
   // Only render when onboarding is active
   if (status !== 'active') {

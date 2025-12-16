@@ -1,7 +1,8 @@
 import { Filter } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { visibleCategoriesAtom, toggleCategoryAtom } from '../../atoms/uiAtoms';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface Category {
@@ -23,9 +24,14 @@ const categories: Category[] = [
 ];
 
 export function FiltersPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } = useFloatingPanelStore();
-  const { visibleCategories, toggleCategory, setAllCategories } = useUIStore();
-  const { width, height, isMobile } = useResponsivePanel(300, 400);
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
+  const [visibleCategories, setAllCategories] = useAtom(visibleCategoriesAtom);
+  const toggleCategory = useSetAtom(toggleCategoryAtom);
+  const { width, height } = useResponsivePanel(300, 400);
 
   const panelState = panels.filters;
 
@@ -49,7 +55,7 @@ export function FiltersPanel() {
       zIndex={panelState.zIndex}
       onClose={() => closePanel('filters')}
       onMinimize={() => toggleMinimize('filters')}
-      onPositionChange={(pos) => updatePosition('filters', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'filters', position: pos })}
       onFocus={() => bringToFront('filters')}
     >
       <div className="p-4 h-full flex flex-col">

@@ -6,13 +6,11 @@ import {
   CheckSquare,
   Lightbulb,
   AlertTriangle,
-  Cloud,
-  Newspaper,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
-import { GlassCard, GlassBadge } from '../ui/GlassPanel';
+import { GlassBadge } from '../ui/GlassPanel';
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -52,7 +50,7 @@ interface DayPlanItemProps {
   onClick?: () => void;
 }
 
-function DayPlanItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayPlanItemProps) {
+function DayPlanItem({ dayOfWeek, title, isToday, isSelected, onClick }: DayPlanItemProps) {
   return (
     <button
       className={`

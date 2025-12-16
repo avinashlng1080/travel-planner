@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
+import { useSetAtom } from 'jotai';
+import { advanceToNextStepAtom, skipOnboardingAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -10,7 +11,8 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  * User can choose to continue the tour or explore on their own.
  */
 export function WelcomeHomeStep() {
-  const { advanceToNextStep, skipOnboarding } = useOnboardingStore();
+  const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
+  const skipOnboarding = useSetAtom(skipOnboardingAtom);
 
   // Get current step number for display
   const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'welcome') + 1;

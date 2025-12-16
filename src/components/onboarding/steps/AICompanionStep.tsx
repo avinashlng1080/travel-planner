@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Sparkles, MessageCircle, Send, ArrowRight } from 'lucide-react';
-import { useOnboardingStore, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { hasInteractedWithChatAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -9,7 +10,8 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
  * Advances automatically when user sends any message.
  */
 export function AICompanionStep() {
-  const { hasInteractedWithChat, advanceToNextStep } = useOnboardingStore();
+  const [hasInteractedWithChat] = useAtom(hasInteractedWithChatAtom);
+  const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
   const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'chat') + 1;

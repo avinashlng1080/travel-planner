@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
-import type { DynamicPin } from '../../stores/uiStore';
+import type { DynamicPin } from '../../atoms/uiAtoms';
 import { RoutingLayer } from './RoutingLayer';
 import 'leaflet/dist/leaflet.css';
 

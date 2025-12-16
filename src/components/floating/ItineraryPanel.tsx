@@ -1,14 +1,18 @@
 import { MapPin } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
 
 export function ItineraryPanel() {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } =
-    useFloatingPanelStore();
-  const { selectedDayId } = useUIStore();
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
+  const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   const panelState = panels.itinerary;
 
@@ -33,7 +37,7 @@ export function ItineraryPanel() {
       zIndex={panelState.zIndex}
       onClose={() => closePanel('itinerary')}
       onMinimize={() => toggleMinimize('itinerary')}
-      onPositionChange={(pos) => updatePosition('itinerary', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'itinerary', position: pos })}
       onFocus={() => bringToFront('itinerary')}
     >
       <div className="p-6">

@@ -5,8 +5,9 @@ import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
-import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
-import { useUIStore } from '../../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
@@ -44,11 +45,14 @@ interface TripPlannerPanelProps {
 }
 
 export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelProps) {
-  const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } =
-    useFloatingPanelStore();
-  const { selectedDayId, selectDay } = useUIStore();
+  const [panels] = useAtom(panelsAtom);
+  const closePanel = useSetAtom(closePanelAtom);
+  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
+  const updatePosition = useSetAtom(updatePositionAtom);
+  const bringToFront = useSetAtom(bringToFrontAtom);
+  const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
-  const { width, height, isMobile } = useResponsivePanel(420, 580);
+  const { width, height } = useResponsivePanel(420, 580);
 
   const panelState = panels?.tripPlanner;
 
@@ -294,7 +298,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelPro
       zIndex={panelState.zIndex}
       onClose={() => closePanel('tripPlanner')}
       onMinimize={() => toggleMinimize('tripPlanner')}
-      onPositionChange={(pos) => updatePosition('tripPlanner', pos)}
+      onPositionChange={(pos) => updatePosition({ panelId: 'tripPlanner', position: pos })}
       onFocus={() => bringToFront('tripPlanner')}
     >
       <div className="flex flex-col h-full">

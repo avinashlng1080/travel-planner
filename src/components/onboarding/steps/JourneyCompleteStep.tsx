@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, BookOpen, Sparkles, PartyPopper } from 'lucide-react';
-import { useOnboardingStore, STEP_CONFIGS, FALLBACK_MESSAGES } from '@/stores/onboardingStore';
+import { useAtom, useSetAtom } from 'jotai';
+import { stampsAtom, completeOnboardingAtom, STEP_CONFIGS, FALLBACK_MESSAGES } from '@/atoms/onboardingAtoms';
 import { PassportStamp } from '../PassportStamp';
 
 /**
@@ -10,7 +11,8 @@ import { PassportStamp } from '../PassportStamp';
  * Shows final message from Claude and dismisses the onboarding.
  */
 export function JourneyCompleteStep() {
-  const { stamps, completeOnboarding } = useOnboardingStore();
+  const [stamps] = useAtom(stampsAtom);
+  const completeOnboarding = useSetAtom(completeOnboardingAtom);
   const [showConfetti, setShowConfetti] = useState(true);
   const [phase, setPhase] = useState<'stamps' | 'message' | 'done'>('stamps');
 

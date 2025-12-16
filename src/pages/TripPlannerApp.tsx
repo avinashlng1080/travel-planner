@@ -1,14 +1,28 @@
 import { useMemo, useCallback } from 'react';
-import { useUIStore } from '../stores/uiStore';
+import { useAtom, useSetAtom } from 'jotai';
+import {
+  selectedLocationAtom,
+  selectedDayIdAtom,
+  activePlanAtom,
+  visibleCategoriesAtom,
+  chatMessagesAtom,
+  isAILoadingAtom,
+  dynamicPinsAtom,
+  newlyAddedPinsAtom,
+  addChatMessageAtom,
+  clearChatMessagesAtom,
+  addDynamicPinsAtom,
+  clearDynamicPinsAtom,
+  clearNewlyAddedPinsAtom,
+} from '../atoms/uiAtoms';
 import { LOCATIONS, DAILY_PLANS, HOME_BASE } from '../data/tripData';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { NavigationDock } from '../components/Layout/NavigationDock';
-import { MobileNavBar } from '../components/layout/MobileNavBar';
+import { MobileNavBar } from '../components/Layout/MobileNavBar';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
 import {
-  TripPlannerPanel,
   ChecklistFloatingPanel,
   FiltersPanel,
 } from '../components/floating';
@@ -17,25 +31,20 @@ interface TripPlannerAppProps {
   onBack?: () => void;
 }
 
-export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
-  const {
-    selectedLocation,
-    selectedDayId,
-    activePlan,
-    visibleCategories,
-    chatMessages,
-    isAILoading,
-    dynamicPins,
-    newlyAddedPins,
-    selectLocation,
-    setActivePlan,
-    addChatMessage,
-    clearChatMessages,
-    setAILoading,
-    addDynamicPins,
-    clearDynamicPins,
-    clearNewlyAddedPins,
-  } = useUIStore();
+export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
+  const [selectedLocation, selectLocation] = useAtom(selectedLocationAtom);
+  const [selectedDayId] = useAtom(selectedDayIdAtom);
+  const [activePlan, setActivePlan] = useAtom(activePlanAtom);
+  const [visibleCategories] = useAtom(visibleCategoriesAtom);
+  const [chatMessages] = useAtom(chatMessagesAtom);
+  const [isAILoading, setAILoading] = useAtom(isAILoadingAtom);
+  const [dynamicPins] = useAtom(dynamicPinsAtom);
+  const [newlyAddedPins] = useAtom(newlyAddedPinsAtom);
+  const addChatMessage = useSetAtom(addChatMessageAtom);
+  const clearChatMessages = useSetAtom(clearChatMessagesAtom);
+  const addDynamicPins = useSetAtom(addDynamicPinsAtom);
+  const clearDynamicPins = useSetAtom(clearDynamicPinsAtom);
+  const clearNewlyAddedPins = useSetAtom(clearNewlyAddedPinsAtom);
 
   // Calculate current day
   const { currentDay, totalDays, todayId } = useMemo(() => {
@@ -109,7 +118,7 @@ export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
   // Handle AI chat
   const handleSendMessage = useCallback(
     async (message: string) => {
-      addChatMessage('user', message);
+      addChatMessage({ role: 'user', content: message });
       setAILoading(true);
 
       try {
@@ -132,7 +141,7 @@ export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
           const textBlocks = data.content?.filter((block: any) => block.type === 'text') || [];
           const assistantMessage = textBlocks.map((block: any) => block.text).join('\n\n')
             || 'Sorry, I couldn\'t process that request.';
-          addChatMessage('assistant', assistantMessage);
+          addChatMessage({ role: 'assistant', content: assistantMessage });
 
           // Extract map pins from tool_use blocks
           const toolUseBlocks = data.content?.filter((block: any) => block.type === 'tool_use') || [];
@@ -145,10 +154,10 @@ export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
             }
           }
         } else {
-          addChatMessage('assistant', 'Sorry, there was an error processing your request. Please try again.');
+          addChatMessage({ role: 'assistant', content: 'Sorry, there was an error processing your request. Please try again.' });
         }
       } catch (error) {
-        addChatMessage('assistant', 'Sorry, I\'m having trouble connecting. Please check your internet connection.');
+        addChatMessage({ role: 'assistant', content: 'Sorry, I\'m having trouble connecting. Please check your internet connection.' });
       } finally {
         setAILoading(false);
       }
@@ -211,7 +220,7 @@ export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
       <NavigationDock />
 
       {/* Floating Panels */}
-      <TripPlannerPanel />
+      {/* TripPlannerPanel requires tripId and selectedPlanId - removed for fixture demo */}
       <ChecklistFloatingPanel />
       <FiltersPanel />
 
