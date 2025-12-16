@@ -168,7 +168,7 @@ export function ImportPreviewPanel({
           </div>
           <ul className="text-sm text-yellow-700 space-y-1">
             {data.warnings.map((warning, i) => (
-              <li key={i} className="flex items-start gap-2">
+              <li key={`warning-${i}-${warning.slice(0, 30)}`} className="flex items-start gap-2">
                 <span className="text-yellow-500">•</span>
                 {warning}
               </li>
@@ -186,7 +186,7 @@ export function ImportPreviewPanel({
           </div>
           <ul className="text-sm text-blue-700 space-y-1">
             {data.suggestions.map((suggestion, i) => (
-              <li key={i} className="flex items-start gap-2">
+              <li key={`suggestion-${i}-${suggestion.slice(0, 30)}`} className="flex items-start gap-2">
                 <span className="text-blue-500">•</span>
                 {suggestion}
               </li>

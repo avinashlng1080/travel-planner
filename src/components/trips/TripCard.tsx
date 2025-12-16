@@ -129,7 +129,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
               <div className="flex -space-x-2">
                 {[...Array(Math.min(3, trip.memberCount))].map((_, i) => (
                   <div
-                    key={i}
+                    key={`member-avatar-${i}`}
                     className="w-5 h-5 rounded-full bg-gradient-to-br from-sunset-500 to-ocean-600 border-2 border-white flex items-center justify-center"
                   >
                     <Users className="w-2.5 h-2.5 text-white" />

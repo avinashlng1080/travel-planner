@@ -97,7 +97,7 @@ function TypingIndicator() {
     >
       {[0, 1, 2].map((i) => (
         <motion.div
-          key={i}
+          key={`typing-dot-${i}`}
           className="w-2.5 h-2.5 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-full shadow-sm"
           animate={{
             y: [0, -8, 0],
@@ -493,7 +493,7 @@ export function AIChatWidget({
                 <div className="space-y-2.5">
                   {suggestedQuestions.map((question, i) => (
                     <motion.button
-                      key={i}
+                      key={`suggested-${i}-${question.slice(0, 20)}`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1, duration: 0.3 }}
