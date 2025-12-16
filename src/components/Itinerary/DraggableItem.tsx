@@ -9,9 +9,10 @@ interface DraggableItemProps {
   item: ScheduleItemType;
   location?: Location;
   planType?: 'A' | 'B';
+  onClick?: () => void;
 }
 
-export function DraggableItem({ item, location, planType }: DraggableItemProps) {
+export function DraggableItem({ item, location, planType, onClick }: DraggableItemProps) {
   const {
     attributes,
     listeners,
@@ -62,6 +63,7 @@ export function DraggableItem({ item, location, planType }: DraggableItemProps) 
           locationCategory={location?.category}
           location={location}
           isDragging={isDragging}
+          onClick={onClick}
         />
       </div>
     </motion.div>

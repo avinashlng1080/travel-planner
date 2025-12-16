@@ -42,9 +42,10 @@ interface Suggestion {
 interface TripPlannerPanelProps {
   tripId: Id<'trips'>;
   selectedPlanId: Id<'tripPlans'> | null;
+  onActivityClick?: (activityId: string) => void;
 }
 
-export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelProps) {
+export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: TripPlannerPanelProps) {
   const [panels] = useAtom(panelsAtom);
   const closePanel = useSetAtom(closePanelAtom);
   const toggleMinimize = useSetAtom(toggleMinimizeAtom);
@@ -380,6 +381,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelPro
                   dayPlan={selectedDayPlan}
                   locations={locations}
                   onReorder={handleReorder}
+                  onActivityClick={onActivityClick}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

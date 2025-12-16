@@ -21,7 +21,9 @@
       "WebSearch",
       "mcp__convex__runOneoffQuery",
       "mcp__convex__data",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
     ]
   }
 }

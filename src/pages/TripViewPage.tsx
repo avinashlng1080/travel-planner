@@ -9,6 +9,7 @@ import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
 import { EditTripModal } from '../components/trips/EditTripModal';
 import { AddActivityModal } from '../components/trips/AddActivityModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
+import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
@@ -33,6 +34,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importInitialText, setImportInitialText] = useState('');
+  const [isEditActivityModalOpen, setIsEditActivityModalOpen] = useState(false);
   const [hasOpenedPanel, setHasOpenedPanel] = useState(false);
   const [activePlan, setActivePlan] = useState<'A' | 'B'>('A');
 
@@ -197,7 +199,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       />
 
       {/* Navigation Dock */}
-      <NavigationDock />
+      <NavigationDock
+        onImportClick={() => setIsImportModalOpen(true)}
+      />
 
       {/* Floating Panels */}
       <ChecklistFloatingPanel />
@@ -205,6 +209,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       <TripPlannerPanel
         tripId={tripId}
         selectedPlanId={selectedPlanId}
+        onActivityClick={(activityId) => setSelectedActivityId(activityId as Id<'tripScheduleItems'>)}
       />
 
       {/* Right Detail Panel - shows when a location is clicked */}
@@ -295,8 +300,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         }
         userRole={userRole}
         onEdit={() => {
-          // TODO: Open edit activity modal
-          console.log('Edit activity:', selectedActivityId);
+          setIsEditActivityModalOpen(true);
         }}
         onDelete={async () => {
           if (selectedActivityId) {
@@ -305,6 +309,21 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           }
         }}
       />
+
+      {/* Edit Activity Modal */}
+      {selectedPlanId && selectedActivity && (
+        <EditActivityModal
+          isOpen={isEditActivityModalOpen}
+          onClose={() => setIsEditActivityModalOpen(false)}
+          activity={selectedActivity}
+          tripId={tripId}
+          planId={selectedPlanId}
+          onSuccess={() => {
+            // Data will refresh automatically via Convex reactivity
+            setIsEditActivityModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
