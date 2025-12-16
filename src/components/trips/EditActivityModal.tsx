@@ -269,9 +269,13 @@ export function EditActivityModal({
                     onChange={(e) => handleChange('title', e.target.value)}
                     className={`w-full bg-white backdrop-blur-lg border rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${errors.title ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200'}`}
                     disabled={isSubmitting}
+                    aria-invalid={errors.title ? 'true' : 'false'}
+                    aria-describedby={errors.title ? 'title-error' : undefined}
                   />
                   {errors.title && (
-                    <p className="mt-1 text-xs text-red-600">{errors.title}</p>
+                    <p id="title-error" className="mt-1 text-xs text-red-600" role="alert">
+                      {errors.title}
+                    </p>
                   )}
                 </div>
 
@@ -286,8 +290,9 @@ export function EditActivityModal({
                     value={formData.dayDate}
                     disabled={true}
                     className="opacity-70 cursor-not-allowed"
+                    aria-describedby="dayDate-help"
                   />
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p id="dayDate-help" className="mt-1 text-xs text-slate-500">
                     Cannot be changed when editing
                   </p>
                 </div>
@@ -307,11 +312,15 @@ export function EditActivityModal({
                         onChange={(e) => handleChange('startTime', e.target.value)}
                         className={errors.startTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                         disabled={isSubmitting}
+                        aria-invalid={errors.startTime || errors.timeRange ? 'true' : 'false'}
+                        aria-describedby={errors.startTime ? 'startTime-error' : errors.timeRange ? 'timeRange-error' : undefined}
                       />
-                      <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                     {errors.startTime && (
-                      <p className="mt-1 text-xs text-red-600">{errors.startTime}</p>
+                      <p id="startTime-error" className="mt-1 text-xs text-red-600" role="alert">
+                        {errors.startTime}
+                      </p>
                     )}
                   </div>
 
@@ -328,18 +337,24 @@ export function EditActivityModal({
                         onChange={(e) => handleChange('endTime', e.target.value)}
                         className={errors.endTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                         disabled={isSubmitting}
+                        aria-invalid={errors.endTime || errors.timeRange ? 'true' : 'false'}
+                        aria-describedby={errors.endTime ? 'endTime-error' : errors.timeRange ? 'timeRange-error' : undefined}
                       />
-                      <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                     {errors.endTime && (
-                      <p className="mt-1 text-xs text-red-600">{errors.endTime}</p>
+                      <p id="endTime-error" className="mt-1 text-xs text-red-600" role="alert">
+                        {errors.endTime}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Time Range Error */}
                 {errors.timeRange && (
-                  <p className="text-xs text-red-600 -mt-2">{errors.timeRange}</p>
+                  <p id="timeRange-error" className="text-xs text-red-600 -mt-2" role="alert">
+                    {errors.timeRange}
+                  </p>
                 )}
 
                 {/* Notes */}

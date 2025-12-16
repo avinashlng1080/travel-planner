@@ -24,6 +24,7 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
         className={`
           w-11 h-11 rounded-lg flex items-center justify-center
           transition-all duration-200
+          focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2
           ${
             isActive
               ? 'bg-sunset-100 text-sunset-600 shadow-sm'
