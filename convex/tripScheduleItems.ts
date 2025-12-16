@@ -308,7 +308,7 @@ export const createScheduleItem = mutation({
 
     const maxOrder =
       existingItems.length > 0
-        ? Math.max(...existingItems.map((item) => item.order))
+        ? Math.max(...existingItems.map((i) => i.order))
         : -1;
 
     // Create the schedule item
@@ -862,6 +862,77 @@ export const deleteMultipleScheduleItems = mutation({
     }
 
     return { success: true, deletedCount: items.length };
+  },
+});
+
+/**
+ * Recalculate order values for all schedule items in a plan/day based on their start times
+ * Useful for fixing order after bulk imports or manual time adjustments
+ * Checks editor/owner permission
+ * Updates each item's order to timeToMinutes(startTime)
+ */
+export const recalculateOrdersFromTime = mutation({
+  args: {
+    planId: v.id("tripPlans"),
+    dayDate: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
+
+    // Get the plan to access tripId
+    const plan = await ctx.db.get(args.planId);
+    if (!plan) {
+      throw new ConvexError("Plan not found");
+    }
+
+    // Check user is owner or editor
+    const { canEdit } = await checkTripAccess(
+      ctx,
+      plan.tripId,
+      userId,
+      "editor"
+    );
+
+    if (!canEdit) {
+      throw new ConvexError("Access denied: Editor or owner role required");
+    }
+
+    // Get all items for this plan/date
+    const items = await ctx.db
+      .query("tripScheduleItems")
+      .withIndex("by_plan_and_date", (q) =>
+        q.eq("planId", args.planId).eq("dayDate", args.dayDate)
+      )
+      .collect();
+
+    // Update each item's order based on its start time
+    let updateCount = 0;
+    for (const item of items) {
+      const newOrder = timeToMinutes(item.startTime);
+      if (item.order !== newOrder) {
+        await ctx.db.patch(item._id, {
+          order: newOrder,
+          updatedAt: Date.now(),
+          updatedBy: userId,
+        });
+        updateCount++;
+      }
+    }
+
+    // Log activity
+    await logActivity(ctx, plan.tripId, userId, "recalculated_orders" as any, {
+      planId: args.planId,
+      dayDate: args.dayDate,
+      totalItems: items.length,
+      updatedItems: updateCount,
+    });
+
+    return {
+      success: true,
+      totalItems: items.length,
+      updatedItems: updateCount,
+    };
   },
 });
 

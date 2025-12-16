@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
 import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 import { DraggableItem } from './DraggableItem';
+import { useScheduleReordering } from '../../hooks/useScheduleReordering';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
@@ -32,32 +33,18 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
   );
 
   const currentPlan = selectedPlan === 'A' ? localPlanA : localPlanB;
-  const itemIds = currentPlan.map((item) => item.id);
+
+  // Use the reordering hook
+  const { sortedItems, handleDragEnd } = useScheduleReordering({
+    items: currentPlan,
+    onReorder,
+    planType: selectedPlan,
+  });
+
+  const itemIds = sortedItems.map((item) => item.id);
 
   const getLocation = (locationId: string) => {
     return locations.find((loc) => loc.id === locationId);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const plan = selectedPlan === 'A' ? localPlanA : localPlanB;
-      const oldIndex = plan.findIndex((item) => item.id === active.id);
-      const newIndex = plan.findIndex((item) => item.id === over.id);
-
-      const reordered = arrayMove(plan, oldIndex, newIndex);
-
-      if (selectedPlan === 'A') {
-        setLocalPlanA(reordered);
-      } else {
-        setLocalPlanB(reordered);
-      }
-
-      if (onReorder) {
-        onReorder(selectedPlan, reordered.map((item) => item.id));
-      }
-    }
   };
 
   const weatherIcon = dayPlan.weatherConsideration === 'outdoor-heavy' ? (
@@ -96,8 +83,12 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
       </div>
 
       {dayPlan.planB.length > 0 && (
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6" role="tablist" aria-label="Day plan options">
           <button
+            id={`plan-a-tab-${dayPlan.date}`}
+            role="tab"
+            aria-selected={selectedPlan === 'A'}
+            aria-controls={`plan-content-${dayPlan.date}`}
             onClick={() => setSelectedPlan('A')}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'A'
@@ -108,6 +99,10 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
             Plan A - Main
           </button>
           <button
+            id={`plan-b-tab-${dayPlan.date}`}
+            role="tab"
+            aria-selected={selectedPlan === 'B'}
+            aria-controls={`plan-content-${dayPlan.date}`}
             onClick={() => setSelectedPlan('B')}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'B'
@@ -122,9 +117,14 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3">
-            {currentPlan.length > 0 ? (
-              currentPlan.map((item) => (
+          <div
+            id={`plan-content-${dayPlan.date}`}
+            role="tabpanel"
+            aria-labelledby={`plan-${selectedPlan.toLowerCase()}-tab-${dayPlan.date}`}
+            className="space-y-3"
+          >
+            {sortedItems.length > 0 ? (
+              sortedItems.map((item) => (
                 <DraggableItem
                   key={item.id}
                   item={item}

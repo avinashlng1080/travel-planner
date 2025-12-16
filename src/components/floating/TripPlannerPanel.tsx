@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
+import { sortScheduleItems } from '../../utils/sortScheduleItems';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
@@ -70,6 +71,9 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
 
   const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
 
+  // Get mutation for reordering
+  const reorderScheduleItems = useMutation(api.tripScheduleItems.reorderScheduleItems);
+
   // Transform tripLocations to Location format for child components
   const locations = useMemo(() => {
     if (!tripLocations) return [];
@@ -125,16 +129,17 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
         const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'long' });
 
         // Transform items to ScheduleItemType format
-        const scheduleItemsForDay: ScheduleItemType[] = items
-          .sort((a, b) => a.order - b.order)
-          .map((item) => ({
+        const scheduleItemsForDay: ScheduleItemType[] = sortScheduleItems(
+          items.map((item) => ({
             id: item._id,
             locationId: item.locationId || '',
             startTime: item.startTime,
             endTime: item.endTime,
             notes: item.notes,
             isFlexible: item.isFlexible,
-          }));
+            order: item.order,
+          }))
+        );
 
         return {
           id: date,
@@ -189,8 +194,18 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   };
 
   // Itinerary handlers
-  const handleReorder = (plan: 'A' | 'B', itemIds: string[]) => {
-    console.log('Reorder:', plan, itemIds);
+  const handleReorder = async (plan: 'A' | 'B', itemIds: string[]) => {
+    if (!selectedPlanId || !selectedDayPlan) return;
+
+    try {
+      await reorderScheduleItems({
+        planId: selectedPlanId,
+        dayDate: selectedDayPlan.date,
+        itemIds: itemIds as Id<'tripScheduleItems'>[],
+      });
+    } catch (error) {
+      console.error('Failed to reorder schedule items:', error);
+    }
   };
 
   // Generate suggestions

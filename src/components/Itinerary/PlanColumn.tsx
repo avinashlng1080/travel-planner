@@ -58,10 +58,15 @@ export function PlanColumn({ planType, items, locations, isOver }: PlanColumnPro
       <motion.div
         ref={setNodeRef}
         animate={{
-          borderColor: showDropIndicator ? (planType === 'A' ? '#10B981' : '#3B82F6') : 'rgb(226, 232, 240)',
-          backgroundColor: showDropIndicator ? (planType === 'A' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(59, 130, 246, 0.05)') : 'transparent',
+          borderColor: showDropIndicator ? (planType === 'A' ? 'rgba(16, 185, 129, 1)' : 'rgba(59, 130, 246, 1)') : 'rgba(226, 232, 240, 1)',
+          backgroundColor: showDropIndicator ? (planType === 'A' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(59, 130, 246, 0.05)') : 'rgba(255, 255, 255, 0)',
         }}
-        transition={{ duration: 0.15 }}
+        transition={{
+          duration: 0.15,
+          ease: 'easeInOut',
+          borderColor: { duration: 0.15 },
+          backgroundColor: { duration: 0.15 }
+        }}
         className={`
           flex-1 p-2 rounded-b-xl border-2 border-t-0
           ${showDropIndicator ? 'border-dashed' : 'border-slate-200'}
