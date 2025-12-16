@@ -14,16 +14,16 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import { LOCATIONS } from '../../data/tripData';
-import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType } from '../../data/tripData';
+import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 import { PlanColumn } from './PlanColumn';
 import { ScheduleItem } from './ScheduleItem';
 
 interface PlanBuilderProps {
   dayPlan: DayPlanType;
+  locations?: Location[];
 }
 
-export function PlanBuilder({ dayPlan }: PlanBuilderProps) {
+export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
   // Local state for optimistic updates
   const [planAItems, setPlanAItems] = useState<ScheduleItemType[]>(dayPlan.planA);
   const [planBItems, setPlanBItems] = useState<ScheduleItemType[]>(dayPlan.planB);
@@ -61,7 +61,7 @@ export function PlanBuilder({ dayPlan }: PlanBuilderProps) {
 
   // Get location for an item
   const getLocation = (locationId: string) => {
-    return LOCATIONS.find((loc) => loc.id === locationId);
+    return locations.find((loc) => loc.id === locationId);
   };
 
   // Handle drag start
@@ -169,13 +169,13 @@ export function PlanBuilder({ dayPlan }: PlanBuilderProps) {
         <PlanColumn
           planType="A"
           items={planAItems}
-          locations={LOCATIONS}
+          locations={locations}
           isOver={activeContainer === 'B'}
         />
         <PlanColumn
           planType="B"
           items={planBItems}
-          locations={LOCATIONS}
+          locations={locations}
           isOver={activeContainer === 'A'}
         />
       </div>

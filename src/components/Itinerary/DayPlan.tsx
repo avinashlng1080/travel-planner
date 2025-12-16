@@ -2,16 +2,16 @@ import { useState } from 'react';
 import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
-import { LOCATIONS } from '../../data/tripData';
-import type { DayPlan as DayPlanType } from '../../data/tripData';
+import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 import { DraggableItem } from './DraggableItem';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
+  locations?: Location[];
   onReorder?: (plan: 'A' | 'B', itemIds: string[]) => void;
 }
 
-export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
+export function DayPlan({ dayPlan, locations = [], onReorder }: DayPlanProps) {
   const [selectedPlan, setSelectedPlan] = useState<'A' | 'B'>('A');
   const [localPlanA, setLocalPlanA] = useState(dayPlan.planA);
   const [localPlanB, setLocalPlanB] = useState(dayPlan.planB);
@@ -28,7 +28,7 @@ export function DayPlan({ dayPlan, onReorder }: DayPlanProps) {
   const itemIds = currentPlan.map((item) => item.id);
 
   const getLocation = (locationId: string) => {
-    return LOCATIONS.find((loc) => loc.id === locationId);
+    return locations.find((loc) => loc.id === locationId);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {

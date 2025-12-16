@@ -29,7 +29,9 @@ import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
+import { TripPlannerPanel } from '../components/floating';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useFloatingPanelStore } from '../stores/floatingPanelStore';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { getTimezoneAbbr, TIMEZONE_DISPLAY_NAMES } from '../utils/timezone';
@@ -52,6 +54,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Onboarding state
   const { status: onboardingStatus, startOnboarding } = useOnboardingStore();
+
+  // Floating panel state
+  const { openPanel } = useFloatingPanelStore();
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -420,24 +425,36 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
               </div>
 
               {/* Action Buttons */}
-              {(userRole === 'owner' || userRole === 'editor') && selectedPlanId && (
+              {selectedPlanId && (
                 <div className="flex items-center gap-2">
                   <GlassButton
                     variant="default"
                     size="sm"
-                    onClick={() => setIsImportModalOpen(true)}
+                    onClick={() => openPanel('tripPlanner')}
                   >
-                    <Upload className="w-4 h-4" />
-                    <span className="hidden sm:inline ml-1">Import</span>
+                    <Calendar className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">Plan</span>
                   </GlassButton>
-                  <GlassButton
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setIsAddActivityModalOpen(true)}
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline ml-1">Add Activity</span>
-                  </GlassButton>
+                  {(userRole === 'owner' || userRole === 'editor') && (
+                    <>
+                      <GlassButton
+                        variant="default"
+                        size="sm"
+                        onClick={() => setIsImportModalOpen(true)}
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span className="hidden sm:inline ml-1">Import</span>
+                      </GlassButton>
+                      <GlassButton
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setIsAddActivityModalOpen(true)}
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline ml-1">Add Activity</span>
+                      </GlassButton>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -667,6 +684,12 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
             setSelectedActivityId(null);
           }
         }}
+      />
+
+      {/* Trip Planner Floating Panel */}
+      <TripPlannerPanel
+        tripId={tripId}
+        selectedPlanId={selectedPlanId}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from 'convex/react';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
@@ -6,10 +7,12 @@ import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { useFloatingPanelStore } from '../../stores/floatingPanelStore';
 import { useUIStore } from '../../stores/uiStore';
-import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
+import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType } from '../../data/tripData';
 
 type TabId = 'itinerary' | 'builder' | 'suggestions' | 'alerts';
 
@@ -35,23 +38,120 @@ interface Suggestion {
   action?: { label: string; locationId?: string };
 }
 
-export function TripPlannerPanel() {
+interface TripPlannerPanelProps {
+  tripId: Id<'trips'>;
+  selectedPlanId: Id<'tripPlans'> | null;
+}
+
+export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelProps) {
   const { panels, closePanel, toggleMinimize, updatePosition, bringToFront } =
     useFloatingPanelStore();
-  const { selectedDayId, selectDay, selectLocation } = useUIStore();
+  const { selectedDayId, selectDay } = useUIStore();
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height, isMobile } = useResponsivePanel(420, 580);
 
   const panelState = panels.tripPlanner;
 
+  // Fetch data from Convex
+  const scheduleItems = useQuery(
+    api.tripScheduleItems.getScheduleItems,
+    selectedPlanId ? { planId: selectedPlanId } : 'skip'
+  );
+
+  const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
+
+  // Transform tripLocations to Location format for child components
+  const locations = useMemo(() => {
+    if (!tripLocations) return [];
+
+    return tripLocations.map((loc) => ({
+      id: loc._id,
+      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
+      lat: loc.customLat || loc.baseLocation?.lat || 0,
+      lng: loc.customLng || loc.baseLocation?.lng || 0,
+      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
+      description: loc.customDescription || loc.baseLocation?.description || '',
+      city: loc.baseLocation?.city || 'Malaysia',
+      toddlerRating: loc.toddlerRating || loc.baseLocation?.toddlerRating || 3,
+      isIndoor: loc.baseLocation?.isIndoor || false,
+      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
+      estimatedDuration: loc.estimatedDuration || loc.baseLocation?.estimatedDuration || 'Varies',
+      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
+      distanceFromBase: loc.baseLocation?.distanceFromBase || 'Unknown',
+      drivingTime: loc.baseLocation?.drivingTime || 'Unknown',
+      warnings: loc.baseLocation?.warnings || [],
+      tips: loc.tips || loc.baseLocation?.tips || [],
+      dressCode: loc.baseLocation?.dressCode,
+      whatToBring: loc.baseLocation?.whatToBring || [],
+      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
+      feedingTimes: loc.baseLocation?.feedingTimes,
+      bookingRequired: loc.baseLocation?.bookingRequired || false,
+      bookingUrl: loc.baseLocation?.bookingUrl,
+      entranceFee: loc.baseLocation?.entranceFee,
+      openingHours: loc.baseLocation?.openingHours || 'Not specified',
+      planIds: [],
+    }));
+  }, [tripLocations]);
+
+  // Group schedule items by dayDate to create "virtual" day plans
+  const dailyPlans = useMemo<DayPlanType[]>(() => {
+    if (!scheduleItems || !tripLocations) return [];
+
+    // Group items by dayDate
+    const groupedByDate = scheduleItems.reduce((acc, item) => {
+      const date = item.dayDate;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(item);
+      return acc;
+    }, {} as Record<string, typeof scheduleItems>);
+
+    // Convert to DayPlan format
+    return Object.entries(groupedByDate)
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .map(([date, items]) => {
+        const dayDate = new Date(date);
+        const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Transform items to ScheduleItemType format
+        const scheduleItemsForDay: ScheduleItemType[] = items
+          .sort((a, b) => a.order - b.order)
+          .map((item) => ({
+            id: item._id,
+            locationId: item.locationId || '',
+            startTime: item.startTime,
+            endTime: item.endTime,
+            notes: item.notes,
+            isFlexible: item.isFlexible,
+          }));
+
+        return {
+          id: date,
+          date,
+          dayOfWeek,
+          title: `Day ${Object.keys(groupedByDate).indexOf(date) + 1}`,
+          planA: scheduleItemsForDay,
+          planB: [],
+          notes: [],
+          weatherConsideration: 'mixed' as const,
+        };
+      });
+  }, [scheduleItems, tripLocations]);
+
+  // Auto-select first day if none selected
+  if (dailyPlans.length > 0 && !selectedDayId) {
+    selectDay(dailyPlans[0].id);
+  }
+
   // Find current day index
   const currentDayIndex = useMemo(() => {
     if (!selectedDayId) return 0;
-    const index = DAILY_PLANS.findIndex((p) => p.id === selectedDayId);
+    const index = dailyPlans.findIndex((p) => p.id === selectedDayId);
     return index >= 0 ? index : 0;
-  }, [selectedDayId]);
+  }, [selectedDayId, dailyPlans]);
 
-  const selectedDayPlan = DAILY_PLANS[currentDayIndex];
+  const selectedDayPlan = dailyPlans[currentDayIndex];
 
   // Check if today
   const isToday = useMemo(() => {
@@ -66,13 +166,13 @@ export function TripPlannerPanel() {
   // Navigation handlers
   const goToPrevDay = () => {
     if (currentDayIndex > 0) {
-      selectDay(DAILY_PLANS[currentDayIndex - 1].id);
+      selectDay(dailyPlans[currentDayIndex - 1].id);
     }
   };
 
   const goToNextDay = () => {
-    if (currentDayIndex < DAILY_PLANS.length - 1) {
-      selectDay(DAILY_PLANS[currentDayIndex + 1].id);
+    if (currentDayIndex < dailyPlans.length - 1) {
+      selectDay(dailyPlans[currentDayIndex + 1].id);
     }
   };
 
@@ -224,13 +324,13 @@ export function TripPlannerPanel() {
                     day: 'numeric',
                   })
                 : ''}{' '}
-              • Day {currentDayIndex + 1} of {DAILY_PLANS.length}
+              • Day {currentDayIndex + 1} of {dailyPlans.length}
             </p>
           </div>
 
           <button
             onClick={goToNextDay}
-            disabled={currentDayIndex === DAILY_PLANS.length - 1}
+            disabled={currentDayIndex === dailyPlans.length - 1}
             className="p-1.5 rounded-lg hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             <ChevronRight className="w-5 h-5 text-slate-600" />
@@ -265,7 +365,11 @@ export function TripPlannerPanel() {
           {activeTab === 'itinerary' && (
             <div className="p-4">
               {selectedDayPlan ? (
-                <DayPlan dayPlan={selectedDayPlan} onReorder={handleReorder} />
+                <DayPlan
+                  dayPlan={selectedDayPlan}
+                  locations={locations}
+                  onReorder={handleReorder}
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <MapPin className="w-10 h-10 text-slate-300 mb-3" />
@@ -285,7 +389,10 @@ export function TripPlannerPanel() {
                       Drag activities between Plan A and Plan B to create your custom itinerary
                     </p>
                   </div>
-                  <PlanBuilder dayPlan={selectedDayPlan} />
+                  <PlanBuilder
+                    dayPlan={selectedDayPlan}
+                    locations={locations}
+                  />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

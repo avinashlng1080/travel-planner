@@ -18,7 +18,9 @@
       "mcp__convex__run",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__convex__runOneoffQuery",
+      "mcp__convex__data"
     ]
   }
 }
