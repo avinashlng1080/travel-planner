@@ -25,7 +25,7 @@ interface TripViewPageProps {
   onBack: () => void;
 }
 
-export function TripViewPage({ tripId }: TripViewPageProps) {
+export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<Id<'tripPlans'> | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(null);
@@ -188,6 +188,8 @@ export function TripViewPage({ tripId }: TripViewPageProps) {
         totalDays={totalDays}
         activePlan={activePlan}
         onPlanChange={setActivePlan}
+        tripName={trip.name}
+        onBack={onBack}
       />
 
       {/* Navigation Dock */}
