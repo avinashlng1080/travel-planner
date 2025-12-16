@@ -92,6 +92,10 @@ export interface ParsedItinerary {
   warnings: string[];
   /** AI suggestions for improving the itinerary */
   suggestions: string[];
+  /** Detected IANA timezone (e.g., "Asia/Kuala_Lumpur") */
+  detectedTimezone?: string | null;
+  /** Detected GMT offset (e.g., "GMT+8") */
+  detectedGmtOffset?: string | null;
 }
 
 /**

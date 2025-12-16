@@ -16,6 +16,7 @@ import {
   Plus,
   Pencil,
   Upload,
+  Globe,
 } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../components/ui/GlassPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
@@ -26,6 +27,7 @@ import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { getTimezoneAbbr, TIMEZONE_DISPLAY_NAMES } from '../utils/timezone';
 
 interface TripViewPageProps {
   tripId: Id<'trips'>;
@@ -234,6 +236,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
                 <span className="text-sm font-medium">
                   {formatDateRange(trip.startDate, trip.endDate)}
                 </span>
+                {trip.timezone && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <div className="flex items-center gap-1 text-slate-500">
+                      <Globe className="w-3.5 h-3.5" />
+                      <span className="text-xs font-medium" title={TIMEZONE_DISPLAY_NAMES[trip.timezone] || trip.timezone}>
+                        {getTimezoneAbbr(trip.timezone)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
               {trip.description && (
                 <p className="text-slate-700 text-sm">{trip.description}</p>

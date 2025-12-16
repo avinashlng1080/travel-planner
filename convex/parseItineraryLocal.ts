@@ -245,6 +245,31 @@ async function geocodeLocation(name: string, address?: string): Promise<{ lat: n
   }
 }
 
+// Extract timezone from TripIt text
+function extractTimezoneFromText(text: string): {
+  timezone: string | null;
+  gmtOffset: string | null;
+} {
+  // Look for GMT+X pattern
+  const gmtMatch = text.match(/GMT([+-]\d{1,2}(?::\d{2})?)/i);
+  if (gmtMatch) {
+    const gmtOffset = `GMT${gmtMatch[1]}`;
+    // Map GMT offset to IANA timezone
+    const gmtToTimezone: Record<string, string> = {
+      'GMT+8': 'Asia/Kuala_Lumpur',
+      'GMT+7': 'Asia/Bangkok',
+      'GMT+9': 'Asia/Tokyo',
+      'GMT+0': 'Europe/London',
+      'GMT-5': 'America/New_York',
+      'GMT-8': 'America/Los_Angeles',
+    };
+    const timezone = gmtToTimezone[gmtOffset] || null;
+    return { timezone, gmtOffset };
+  }
+
+  return { timezone: null, gmtOffset: null };
+}
+
 // Parse TripIt format
 function parseTripItFormat(text: string, tripYear: number): {
   activities: Array<{
@@ -255,6 +280,8 @@ function parseTripItFormat(text: string, tripYear: number): {
     endTime: string;
     notes?: string;
   }>;
+  detectedTimezone: string | null;
+  detectedGmtOffset: string | null;
 } {
   const activities: Array<{
     date: string;
@@ -342,7 +369,10 @@ function parseTripItFormat(text: string, tripYear: number): {
     });
   }
 
-  return { activities };
+  // Extract timezone from the text
+  const { timezone, gmtOffset } = extractTimezoneFromText(text);
+
+  return { activities, detectedTimezone: timezone, detectedGmtOffset: gmtOffset };
 }
 
 function addHours(time: string, hours: number): string {
@@ -380,7 +410,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
       : new Date().getFullYear();
 
     // Parse the text locally
-    const { activities } = parseTripItFormat(rawText, tripYear);
+    const { activities, detectedTimezone, detectedGmtOffset } = parseTripItFormat(rawText, tripYear);
 
     if (activities.length === 0) {
       return new Response(
@@ -403,7 +433,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
     const warnings: string[] = [];
 
     let geocodeCount = 0;
-    for (const [key, loc] of uniqueLocations) {
+    for (const [key, loc] of Array.from(uniqueLocations.entries())) {
       // Check known locations first (no API call needed)
       const known = findKnownLocation(loc.name);
       if (known) {
@@ -442,7 +472,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
     }
 
     // Build locations array
-    const locations = Array.from(uniqueLocations.entries()).map(([key, loc]) => {
+    const locations = Array.from(uniqueLocations.entries()).map(([key, loc]: [string, { name: string; address?: string }]) => {
       const coords = locationCoords.get(key) || { lat: 3.1390, lng: 101.6869, category: 'attraction' };
       return {
         id: generateId(),
@@ -492,12 +522,31 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
 
     // Convert to days array
     const days = Array.from(dayMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, dayActivities]) => ({
+      .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b))
+      .map(([date, dayActivities]: [string, Array<{
+        id: string;
+        locationId: string;
+        locationName: string;
+        startTime: string;
+        endTime: string;
+        notes?: string;
+        isFlexible: boolean;
+        originalText: string;
+      }>]) => ({
         date,
         title: undefined,
         activities: dayActivities.sort((a, b) => a.startTime.localeCompare(b.startTime)),
       }));
+
+    // Build suggestions
+    const suggestions = [
+      `Parsed ${activities.length} activities across ${days.length} days`,
+      'Review locations with "low" confidence and verify coordinates',
+    ];
+
+    if (detectedTimezone) {
+      suggestions.unshift(`Detected timezone: ${detectedGmtOffset} (${detectedTimezone})`);
+    }
 
     return new Response(
       JSON.stringify({
@@ -506,10 +555,10 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
           locations,
           days,
           warnings,
-          suggestions: [
-            `Parsed ${activities.length} activities across ${days.length} days`,
-            'Review locations with "low" confidence and verify coordinates',
-          ],
+          suggestions,
+          // Timezone info
+          detectedTimezone,
+          detectedGmtOffset,
         },
       }),
       { headers: corsHeaders }

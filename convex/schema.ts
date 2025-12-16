@@ -164,6 +164,7 @@ export default defineSchema({
     destination: v.optional(v.string()),    // "Tokyo, Japan"
     travelerInfo: v.optional(v.string()),   // "2 adults, 1 toddler (2yo)"
     interests: v.optional(v.string()),      // "nature, food, culture"
+    timezone: v.optional(v.string()),       // IANA timezone e.g. "Asia/Kuala_Lumpur"
   }).index("by_owner", ["ownerId"]),
 
   // Trip Members - Trip membership and permissions

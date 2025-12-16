@@ -8,6 +8,7 @@ import {
   MapPin,
   Clock,
   Calendar,
+  Globe,
 } from 'lucide-react';
 import type {
   ParsedItinerary,
@@ -16,9 +17,12 @@ import type {
   ConfidenceLevel,
   LocationCategory,
 } from '@/types/itinerary';
+import { getTimezoneOptions, getTimezoneAbbr, getGMTOffset } from '@/utils/timezone';
 
 interface ImportPreviewPanelProps {
   data: ParsedItinerary;
+  selectedTimezone: string | null;
+  onTimezoneChange: (timezone: string) => void;
   onUpdateLocation: (id: string, updates: Partial<ParsedLocation>) => void;
   onDeleteLocation: (id: string) => void;
   onUpdateActivity: (dayIndex: number, activityId: string, updates: Partial<ParsedActivity>) => void;
@@ -71,12 +75,16 @@ function formatDate(dateStr: string): string {
 
 export function ImportPreviewPanel({
   data,
+  selectedTimezone,
+  onTimezoneChange,
   onDeleteLocation,
   onDeleteActivity,
 }: ImportPreviewPanelProps) {
   const [expandedDays, setExpandedDays] = useState<Set<number>>(
     new Set(data.days.map((_, i) => i))
   );
+
+  const timezoneOptions = getTimezoneOptions();
 
   const toggleDay = (index: number) => {
     setExpandedDays((prev) => {
@@ -116,6 +124,39 @@ export function ImportPreviewPanel({
           <div className="text-2xl font-bold text-slate-700">{totalDays}</div>
           <div className="text-xs text-slate-600">Days</div>
         </div>
+      </div>
+
+      {/* Timezone Selector */}
+      <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl">
+        <div className="flex items-center gap-2 mb-3">
+          <Globe className="w-4 h-4 text-indigo-600" />
+          <span className="font-medium text-indigo-900">Timezone</span>
+          {data.detectedGmtOffset && (
+            <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">
+              Detected: {data.detectedGmtOffset}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-indigo-700 mb-3">
+          All times will be stored in this timezone. Change if needed.
+        </p>
+        <select
+          value={selectedTimezone || ''}
+          onChange={(e) => onTimezoneChange(e.target.value)}
+          className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <option value="">Select timezone...</option>
+          {timezoneOptions.map((tz) => (
+            <option key={tz.value} value={tz.value}>
+              {tz.label} ({tz.offset})
+            </option>
+          ))}
+        </select>
+        {selectedTimezone && (
+          <p className="mt-2 text-xs text-indigo-600">
+            Times like "16:30" will be stored as {getTimezoneAbbr(selectedTimezone)} (GMT{getGMTOffset(selectedTimezone)})
+          </p>
+        )}
       </div>
 
       {/* Warnings */}

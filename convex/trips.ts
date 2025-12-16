@@ -208,6 +208,7 @@ export const updateTrip = mutation({
       lng: v.number(),
       city: v.string(),
     })),
+    timezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -236,6 +237,7 @@ export const updateTrip = mutation({
     if (args.endDate !== undefined) updates.endDate = args.endDate;
     if (args.coverImageUrl !== undefined) updates.coverImageUrl = args.coverImageUrl;
     if (args.homeBase !== undefined) updates.homeBase = args.homeBase;
+    if (args.timezone !== undefined) updates.timezone = args.timezone;
 
     // Update the trip
     await ctx.db.patch(args.tripId, updates);

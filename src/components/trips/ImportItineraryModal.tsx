@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, Check, ChevronDown, FileText } from 'lucide-react';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
 import { GlassPanel } from '../ui/GlassPanel';
 import { useItineraryParser } from '@/hooks/useItineraryParser';
 import { ImportPreviewPanel } from './ImportPreviewPanel';
+import { detectTimezoneFromDestination } from '@/utils/timezone';
 
 export interface ImportItineraryModalProps {
   isOpen: boolean;
@@ -55,10 +56,14 @@ export function ImportItineraryModal({
 }: ImportItineraryModalProps) {
   const [showExamples, setShowExamples] = useState(false);
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [selectedTimezone, setSelectedTimezone] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Get trip data for context
   const trip = useQuery(api.trips.getTrip, { tripId });
+
+  // Mutation to update trip timezone
+  const updateTrip = useMutation(api.trips.updateTrip);
 
   // Parser hook
   const parser = useItineraryParser();
@@ -69,6 +74,19 @@ export function ImportItineraryModal({
       parser.setRawText(initialText);
     }
   }, [initialText, isOpen]);
+
+  // Set timezone when parsed data becomes available
+  useEffect(() => {
+    if (parser.parsedData?.detectedTimezone && !selectedTimezone) {
+      setSelectedTimezone(parser.parsedData.detectedTimezone);
+    } else if (trip?.destination && !selectedTimezone && parser.step === 'preview') {
+      // Fallback to trip destination timezone
+      const detectedTz = detectTimezoneFromDestination(trip.destination);
+      if (detectedTz) {
+        setSelectedTimezone(detectedTz);
+      }
+    }
+  }, [parser.parsedData, trip?.destination, selectedTimezone, parser.step]);
 
   // Focus textarea when modal opens
   useEffect(() => {
@@ -106,6 +124,7 @@ export function ImportItineraryModal({
       setTimeout(() => {
         parser.reset();
         setShowExamples(false);
+        setSelectedTimezone(null);
       }, 200);
     }
   };
@@ -124,6 +143,11 @@ export function ImportItineraryModal({
 
   const handleImport = async () => {
     await parser.confirmImport(tripId, planId);
+
+    // Save timezone to trip if selected and different from current
+    if (selectedTimezone && trip?.timezone !== selectedTimezone) {
+      await updateTrip({ tripId, timezone: selectedTimezone });
+    }
 
     // Set up auto-close after success
     const timeout = setTimeout(() => {
@@ -313,6 +337,8 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                 <div className="space-y-6">
                   <ImportPreviewPanel
                     data={parser.parsedData}
+                    selectedTimezone={selectedTimezone}
+                    onTimezoneChange={setSelectedTimezone}
                     onUpdateLocation={parser.updateLocation}
                     onDeleteLocation={parser.deleteLocation}
                     onUpdateActivity={parser.updateActivity}
