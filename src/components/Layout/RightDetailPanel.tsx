@@ -45,6 +45,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
   return (
     <AnimatePresence>
       <motion.aside
+        key={location.id}
         initial={{ x: 400, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 400, opacity: 0 }}
