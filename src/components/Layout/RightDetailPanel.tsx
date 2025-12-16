@@ -68,7 +68,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
                 <div className="flex items-center gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => (
                     <Star
-                      key={i}
+                      key={`star-${i}`}
                       className={`w-3 h-3 ${i < location.toddlerRating ? 'fill-current' : 'opacity-30'}`}
                     />
                   ))}
@@ -170,7 +170,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               </div>
               <ul className="space-y-1">
                 {location.warnings.map((warning, i) => (
-                  <li key={i} className="text-xs text-red-200/80 flex items-start gap-2">
+                  <li key={`warning-${i}`} className="text-xs text-red-200/80 flex items-start gap-2">
                     <span className="text-red-400">•</span>
                     {warning}
                   </li>
@@ -188,7 +188,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               </div>
               <ul className="space-y-1">
                 {location.tips.map((tip, i) => (
-                  <li key={i} className="text-xs text-green-200/80 flex items-start gap-2">
+                  <li key={`tip-${i}`} className="text-xs text-green-200/80 flex items-start gap-2">
                     <span className="text-green-400">•</span>
                     {tip}
                   </li>
@@ -203,7 +203,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               <h4 className="text-sm font-medium text-slate-600 mb-2">What to Bring</h4>
               <div className="flex flex-wrap gap-2">
                 {location.whatToBring.map((item, i) => (
-                  <GlassBadge key={i} color="green">
+                  <GlassBadge key={`bring-${i}`} color="green">
                     {item}
                   </GlassBadge>
                 ))}
@@ -217,7 +217,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               <h4 className="text-sm font-medium text-slate-600 mb-2">Best Time to Visit</h4>
               <div className="flex flex-wrap gap-2">
                 {location.bestTimeToVisit.map((time, i) => (
-                  <GlassBadge key={i} color="cyan">
+                  <GlassBadge key={`time-${i}`} color="cyan">
                     {time}
                   </GlassBadge>
                 ))}
