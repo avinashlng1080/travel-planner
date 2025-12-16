@@ -64,41 +64,54 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+    >
       <div
         className={`
-          max-w-[80%] rounded-2xl px-4 py-3
+          max-w-[85%] rounded-2xl px-4 py-3 shadow-sm
           ${isUser
-            ? 'bg-gradient-to-r from-sunset-500 to-ocean-600 text-white'
-            : 'bg-slate-100 text-slate-900'
+            ? 'bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 text-white shadow-sunset-500/20'
+            : 'bg-white border border-slate-200 text-slate-900 shadow-slate-200/50'
           }
         `}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-        <p className="text-[10px] mt-1 opacity-60">
+        <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">{message.content}</p>
+        <p className={`text-[10px] mt-1.5 font-medium ${isUser ? 'opacity-70' : 'opacity-50'}`}>
           {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-4 py-3 bg-slate-100 rounded-2xl w-fit">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-1.5 px-5 py-3.5 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm"
+    >
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="w-2 h-2 bg-ocean-400 rounded-full"
-          animate={{ y: [0, -6, 0] }}
+          className="w-2.5 h-2.5 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-full shadow-sm"
+          animate={{
+            y: [0, -8, 0],
+            scale: [1, 1.1, 1],
+          }}
           transition={{
-            duration: 0.6,
+            duration: 0.7,
             repeat: Infinity,
-            delay: i * 0.15,
+            delay: i * 0.2,
+            ease: "easeInOut",
           }}
         />
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -197,7 +210,7 @@ export function AIChatWidget({
 
   const currentWidth = isMaximized ? maximizedSize.width : normalSize.width;
   const currentHeight = isMinimized ? 56 : (isMaximized ? maximizedSize.height : normalSize.height);
-  const messagesHeight = isMaximized ? maximizedSize.height - 180 : 360;
+  const messagesHeight = isMaximized ? maximizedSize.height - 180 : 320;
 
   const toggleMaximize = () => {
     setIsMaximized(!isMaximized);
@@ -314,99 +327,127 @@ export function AIChatWidget({
   if (!isOpen) {
     return (
       <motion.button
-        className={`fixed right-4 z-50 w-14 h-14 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center shadow-lg shadow-glow-sunset ${
-          isMobile ? 'bottom-20' : 'bottom-4'
+        className={`fixed z-50 w-16 h-16 bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sunset-500/40 ${
+          isMobile ? 'right-4 bottom-20' : 'right-6 bottom-6'
         }`}
         onClick={() => setIsOpen(true)}
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.95 }}
+        animate={{
+          boxShadow: [
+            '0 20px 40px -12px rgba(236, 72, 153, 0.4)',
+            '0 25px 50px -12px rgba(236, 72, 153, 0.5)',
+            '0 20px 40px -12px rgba(236, 72, 153, 0.4)',
+          ],
+        }}
+        transition={{
+          boxShadow: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        }}
         aria-label="Open AI Travel Assistant"
       >
-        <MessageSquare className="w-6 h-6 text-white" />
+        <Sparkles className="w-7 h-7 text-white" />
       </motion.button>
     );
   }
 
   return (
     <motion.div
-      className="fixed z-50 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
+      className="fixed z-50 bg-white/98 backdrop-blur-2xl border-2 border-slate-200/60 rounded-2xl shadow-2xl overflow-hidden"
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{
         opacity: 1,
         scale: 1,
         width: currentWidth,
         height: currentHeight,
-        right: isMaximized ? PADDING : 16,
-        bottom: isMaximized ? PADDING + MOBILE_NAV_HEIGHT : (isMobile ? 80 : 16),
+        right: isMaximized ? PADDING : (isMobile ? 16 : 24),
+        bottom: isMaximized ? PADDING + MOBILE_NAV_HEIGHT : (isMobile ? 80 : 24),
       }}
-      transition={{ duration: 0.2 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200 cursor-pointer select-none"
+        className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-sunset-50 via-white to-ocean-50 border-b border-slate-200/80 cursor-pointer select-none backdrop-blur-sm"
         onDoubleClick={toggleMaximize}
       >
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center shadow-glow-sunset">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="w-9 h-9 bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 rounded-xl flex items-center justify-center shadow-lg shadow-sunset-500/30"
+            whileHover={{ scale: 1.05, rotate: 5 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Sparkles className="w-5 h-5 text-white" />
+          </motion.div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Travel Assistant</h3>
-            <p className="text-[10px] text-slate-600">
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight">Travel Assistant</h3>
+            <p className="text-[10px] text-slate-500 font-medium">
               {isMaximized ? 'Double-click to restore' : 'Powered by Claude • Double-click to maximize'}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {dynamicPinsCount > 0 && (
-            <button
+            <motion.button
               onClick={onClearDynamicPins}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-sunset-600 hover:text-sunset-800 hover:bg-sunset-50 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-sunset-700 bg-sunset-50 hover:bg-sunset-100 rounded-lg transition-all"
               title="Clear AI-suggested pins"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <MapPin className="w-3 h-3" />
-              <span>{dynamicPinsCount}</span>
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="font-semibold">{dynamicPinsCount}</span>
               <X className="w-3 h-3" />
-            </button>
+            </motion.button>
           )}
-          <button
+          <motion.button
             onClick={handleClearHistory}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Clear history"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Trash2 className="w-4 h-4" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => {
               if (isMaximized) setIsMaximized(false);
               setIsMinimized(!isMinimized);
             }}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Minimize"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Minus className="w-4 h-4" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={toggleMaximize}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title={isMaximized ? 'Restore' : 'Maximize'}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {isMaximized ? (
               <Minimize2 className="w-4 h-4" />
             ) : (
               <Square className="w-4 h-4" />
             )}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => {
               setIsOpen(false);
               setIsMaximized(false);
             }}
-            className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Close"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <X className="w-4 h-4" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -414,18 +455,34 @@ export function AIChatWidget({
         <>
           {/* Messages */}
           <div
-            className="overflow-y-auto p-4 space-y-4"
+            className="overflow-y-auto p-4 space-y-4 scroll-smooth scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent hover:scrollbar-thumb-slate-400"
             style={{ height: messagesHeight }}
           >
             {messages.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-sunset-500/20 to-ocean-600/20 rounded-full flex items-center justify-center">
-                  <MessageSquare className="w-8 h-8 text-sunset-500" />
-                </div>
-                <h4 className="text-slate-900 font-medium mb-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-center py-10 px-4"
+              >
+                <motion.div
+                  className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-sunset-100 via-sunset-50 to-ocean-100 rounded-2xl flex items-center justify-center shadow-lg"
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, -5, 0],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <MessageSquare className="w-10 h-10 text-gradient bg-gradient-to-br from-sunset-600 to-ocean-600" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } as any} />
+                </motion.div>
+                <h4 className="text-slate-900 font-bold text-base mb-2">
                   {isTripMode ? `Let's plan your trip!` : 'How can I help?'}
                 </h4>
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm text-slate-600 mb-6 leading-relaxed max-w-sm mx-auto">
                   {isTripMode
                     ? tripData?.trip?.destination
                       ? `I'll help you discover amazing places in ${tripData.trip.destination}. Ask me anything!`
@@ -433,18 +490,23 @@ export function AIChatWidget({
                     : 'Ask me anything about your Malaysia trip!'
                   }
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {suggestedQuestions.map((question, i) => (
-                    <button
+                    <motion.button
                       key={i}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-600 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1, duration: 0.3 }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 bg-gradient-to-r from-white to-slate-50 hover:from-sunset-50 hover:to-ocean-50 rounded-xl transition-all border border-slate-200 hover:border-sunset-300 shadow-sm hover:shadow-md group"
                       onClick={() => handleSendMessage(question)}
+                      whileHover={{ scale: 1.02, x: 4 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      {question}
-                    </button>
+                      <span className="group-hover:text-slate-900 transition-colors">{question}</span>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ) : (
               messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
             )}
@@ -453,7 +515,7 @@ export function AIChatWidget({
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-slate-200">
+          <form onSubmit={handleSubmit} className="p-5 border-t border-slate-200/80 bg-gradient-to-b from-transparent to-slate-50/50">
             {/* Import Suggestion Banner */}
             <AnimatePresence>
               {isPasteDetected && tripId && onOpenImport && (
@@ -475,28 +537,32 @@ export function AIChatWidget({
               )}
             </AnimatePresence>
 
-            <div className="flex items-end gap-2">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder="Ask about your trip..."
-                rows={1}
-                className="flex-1 bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 resize-none max-h-24"
-                style={{ minHeight: '44px' }}
-              />
-              <button
+            <div className="flex items-end gap-2.5">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder="Ask about your trip..."
+                  rows={1}
+                  className="w-full bg-white/80 backdrop-blur-lg border-2 border-slate-200 hover:border-slate-300 focus:border-sunset-400 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sunset-500/10 resize-none max-h-24 transition-all shadow-sm"
+                  style={{ minHeight: '48px' }}
+                />
+              </div>
+              <motion.button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="h-11 w-11 flex items-center justify-center rounded-xl bg-gradient-to-r from-sunset-500 to-ocean-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 text-white shadow-lg shadow-sunset-500/30 hover:shadow-xl hover:shadow-sunset-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                whileHover={input.trim() && !isLoading ? { scale: 1.05 } : {}}
+                whileTap={input.trim() && !isLoading ? { scale: 0.95 } : {}}
               >
                 <Send className="w-5 h-5" />
-              </button>
+              </motion.button>
             </div>
-            <p className="text-[10px] text-slate-500 mt-2 text-center">
-              Press Enter to send, Shift+Enter for new line
+            <p className="text-[10px] text-slate-500 font-medium mt-2.5 text-center">
+              Press <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-semibold">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-semibold">Shift+Enter</kbd> for new line
             </p>
           </form>
         </>

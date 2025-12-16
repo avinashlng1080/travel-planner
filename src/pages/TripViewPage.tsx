@@ -126,8 +126,7 @@ export function TripViewPage({ tripId }: TripViewPageProps) {
     );
   }
 
-  const { trip, plans, members } = tripData;
-  const selectedPlan = plans.find((p) => p._id === selectedPlanId);
+  const { trip, members } = tripData;
 
   // Calculate current day and total days for FloatingHeader
   const currentDay = tripData ? Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
