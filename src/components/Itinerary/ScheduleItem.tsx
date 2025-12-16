@@ -7,6 +7,7 @@ interface ScheduleItemProps {
   locationCategory?: string;
   location?: Location;
   isDragging?: boolean;
+  onClick?: () => void;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -27,8 +28,16 @@ export function ScheduleItem({
   locationCategory = 'attraction',
   location,
   isDragging = false,
+  onClick,
 }: ScheduleItemProps) {
   const bgColor = CATEGORY_COLORS[locationCategory] || 'bg-slate-400';
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
   const calculateDuration = (start: string, end: string): string => {
     const [startHour, startMin] = start.split(':').map(Number);
@@ -68,9 +77,15 @@ export function ScheduleItem({
         bg-white rounded-xl p-3 border border-slate-200
         transition-all duration-200
         ${isDragging ? 'opacity-50 shadow-xl scale-105' : 'hover:border-slate-300 hover:shadow-sm'}
+        ${onClick && !isDragging ? 'cursor-pointer hover:shadow-md hover:border-sunset-300' : ''}
         ${item.isNapTime ? 'bg-blue-50 border-blue-200' : ''}
         ${item.isFlexible ? 'border-dashed' : ''}
       `}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? `View details for ${item.isNapTime ? 'Nap Time' : locationName} from ${item.startTime} to ${item.endTime}` : undefined}
     >
       <div className="flex items-start gap-3">
         {/* Time badge */}

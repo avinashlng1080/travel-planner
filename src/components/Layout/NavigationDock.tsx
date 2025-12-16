@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { Map, CheckSquare, Filter } from 'lucide-react';
+import { Map, CheckSquare, Filter, Upload } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavIconProps {
   icon: React.ElementType;
   label: string;
-  panelId: PanelId;
+  panelId?: PanelId;
   isActive: boolean;
   onClick: () => void;
+}
+
+interface NavigationDockProps {
+  onImportClick?: () => void;
 }
 
 function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
@@ -20,6 +24,7 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
         className={`
           w-11 h-11 rounded-lg flex items-center justify-center
           transition-all duration-200
+          focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2
           ${
             isActive
               ? 'bg-sunset-100 text-sunset-600 shadow-sm'
@@ -47,7 +52,7 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
   );
 }
 
-export function NavigationDock() {
+export function NavigationDock({ onImportClick }: NavigationDockProps) {
   const [panels] = useAtom(panelsAtom);
   const openPanel = useSetAtom(openPanelAtom);
 
@@ -67,6 +72,17 @@ export function NavigationDock() {
       style={{ top: '56px', bottom: 0 }}
     >
       <nav className="flex flex-col items-center gap-2 p-2">
+        {/* Import Button */}
+        {onImportClick && (
+          <NavIcon
+            icon={Upload}
+            label="Import Itinerary"
+            isActive={false}
+            onClick={onImportClick}
+          />
+        )}
+
+        {/* Panel Navigation Items */}
         {navItems.map((item) => (
           <NavIcon
             key={item.id}

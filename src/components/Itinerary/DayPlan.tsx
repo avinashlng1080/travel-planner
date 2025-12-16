@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
@@ -9,12 +9,19 @@ interface DayPlanProps {
   dayPlan: DayPlanType;
   locations?: Location[];
   onReorder?: (plan: 'A' | 'B', itemIds: string[]) => void;
+  onActivityClick?: (activityId: string) => void;
 }
 
-export function DayPlan({ dayPlan, locations = [], onReorder }: DayPlanProps) {
+export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }: DayPlanProps) {
   const [selectedPlan, setSelectedPlan] = useState<'A' | 'B'>('A');
   const [localPlanA, setLocalPlanA] = useState(dayPlan.planA);
   const [localPlanB, setLocalPlanB] = useState(dayPlan.planB);
+
+  // Sync local state with props when dayPlan changes
+  useEffect(() => {
+    setLocalPlanA(dayPlan.planA);
+    setLocalPlanB(dayPlan.planB);
+  }, [dayPlan.planA, dayPlan.planB]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -118,7 +125,13 @@ export function DayPlan({ dayPlan, locations = [], onReorder }: DayPlanProps) {
           <div className="space-y-3">
             {currentPlan.length > 0 ? (
               currentPlan.map((item) => (
-                <DraggableItem key={item.id} item={item} location={getLocation(item.locationId)} />
+                <DraggableItem
+                  key={item.id}
+                  item={item}
+                  location={getLocation(item.locationId)}
+                  planType={selectedPlan}
+                  onClick={() => onActivityClick?.(item.id)}
+                />
               ))
             ) : (
               <div className="text-center py-8 text-slate-500">
