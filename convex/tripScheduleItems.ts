@@ -3,6 +3,19 @@ import { v, ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
+ * Convert time string (HH:MM) to minutes since midnight
+ * @param timeStr - Time in HH:MM format (e.g., "09:30")
+ * @returns Minutes since midnight (e.g., 570 for "09:30")
+ */
+function timeToMinutes(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes)) {
+    return 0; // Default to midnight if invalid
+  }
+  return hours * 60 + minutes;
+}
+
+/**
  * Helper function to check trip access and permissions
  * Returns trip, member, and whether user can edit
  */

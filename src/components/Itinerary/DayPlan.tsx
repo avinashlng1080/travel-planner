@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
 import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 import { DraggableItem } from './DraggableItem';
-import { useScheduleReordering } from '../../hooks/useScheduleReordering';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
@@ -34,14 +33,52 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
   const currentPlan = selectedPlan === 'A' ? localPlanA : localPlanB;
 
-  // Use the reordering hook
-  const { sortedItems, handleDragEnd } = useScheduleReordering({
-    items: currentPlan,
-    onReorder,
-    planType: selectedPlan,
-  });
+  // Sort items by order field
+  const sortedItems = useMemo(() => {
+    return [...currentPlan].sort((a, b) => a.order - b.order);
+  }, [currentPlan]);
 
   const itemIds = sortedItems.map((item) => item.id);
+
+  // Handle drag-and-drop reordering
+  const handleDragEnd = (event: { active: { id: string }; over: { id: string } | null }) => {
+    const { active, over } = event;
+
+    // No-op if dropped outside or on itself
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    // Find indices in the sorted items
+    const oldIndex = sortedItems.findIndex(item => item.id === active.id);
+    const newIndex = sortedItems.findIndex(item => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Create reordered array
+    const reordered = [...sortedItems];
+    const [movedItem] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, movedItem);
+
+    // Update local state immediately for smooth UI
+    const updatedPlan = reordered.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+
+    if (selectedPlan === 'A') {
+      setLocalPlanA(updatedPlan);
+    } else {
+      setLocalPlanB(updatedPlan);
+    }
+
+    // Call the onReorder callback with the new item IDs in order
+    if (onReorder) {
+      onReorder(selectedPlan, updatedPlan.map(item => item.id));
+    }
+  };
 
   const getLocation = (locationId: string) => {
     return locations.find((loc) => loc.id === locationId);

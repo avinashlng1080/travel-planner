@@ -56,13 +56,6 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height } = useResponsivePanel(420, 580);
 
-  const panelState = panels?.tripPlanner;
-
-  // Don't render if panel state not initialized
-  if (!panelState) {
-    return null;
-  }
-
   // Fetch data from Convex
   const scheduleItems = useQuery(
     api.tripScheduleItems.getScheduleItems,
@@ -73,6 +66,13 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
 
   // Get mutation for reordering
   const reorderScheduleItems = useMutation(api.tripScheduleItems.reorderScheduleItems);
+
+  const panelState = panels?.tripPlanner;
+
+  // Don't render if panel state not initialized
+  if (!panelState) {
+    return null;
+  }
 
   // Transform tripLocations to Location format for child components
   const locations = useMemo(() => {
