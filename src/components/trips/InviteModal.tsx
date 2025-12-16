@@ -1,33 +1,21 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Link2, Pencil, MessageCircle, Eye, Check, Copy, Send, XCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
 import { GlassPanel, GlassInput, GlassButton, GlassBadge } from '../ui/GlassPanel';
 
 interface InviteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  tripId: string;
+  tripId: Id<'trips'>;
   tripName: string;
 }
 
 type Role = 'editor' | 'commenter' | 'viewer';
 
 type TabType = 'email' | 'link';
-
-interface PendingInvite {
-  id: string;
-  email: string;
-  role: Role;
-  sentAt: Date;
-}
-
-interface ShareLink {
-  id: string;
-  role: Role;
-  url: string;
-  createdAt: Date;
-  expiresAt?: Date;
-}
 
 const roleConfig = {
   editor: {
@@ -59,34 +47,18 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<Id<'tripInviteLinks'> | null>(null);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 
-  // Mock data - will be replaced with Convex queries
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([
-    {
-      id: '1',
-      email: 'sarah@example.com',
-      role: 'editor',
-      sentAt: new Date(Date.now() - 86400000), // 1 day ago
-    },
-    {
-      id: '2',
-      email: 'john@example.com',
-      role: 'viewer',
-      sentAt: new Date(Date.now() - 3600000), // 1 hour ago
-    },
-  ]);
+  // Queries
+  const pendingInvites = useQuery(api.tripMembers.getTripPendingInvites, { tripId }) || [];
+  const inviteLinks = useQuery(api.tripMembers.getTripInviteLinks, { tripId }) || [];
 
-  const [shareLinks, setShareLinks] = useState<ShareLink[]>([
-    {
-      id: '1',
-      role: 'viewer',
-      url: `https://travelplanner.app/join/${tripId}/abc123`,
-      createdAt: new Date(Date.now() - 172800000), // 2 days ago
-      expiresAt: new Date(Date.now() + 432000000), // expires in 5 days
-    },
-  ]);
+  // Mutations
+  const inviteMemberMutation = useMutation(api.tripMembers.inviteMember);
+  const createInviteLinkMutation = useMutation(api.tripMembers.createInviteLink);
+  const revokeInviteLinkMutation = useMutation(api.tripMembers.revokeInviteLink);
+  const removeMemberMutation = useMutation(api.tripMembers.removeMember);
 
   const handleSendInvite = async () => {
     if (!email.trim()) {
@@ -104,35 +76,36 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     setErrorMessage('');
 
     try {
-      // TODO: Replace with actual Convex mutation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Add to pending invites (mock)
-      const newInvite: PendingInvite = {
-        id: Date.now().toString(),
-        email,
+      await inviteMemberMutation({
+        tripId,
+        email: email.trim(),
         role: selectedRole,
-        sentAt: new Date(),
-      };
-      setPendingInvites([...pendingInvites, newInvite]);
+      });
 
       setSuccessMessage(`Invitation sent to ${email}`);
       setEmail('');
 
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setErrorMessage('Failed to send invitation. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send invitation. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendInvite = async (inviteId: string, email: string) => {
+  const handleResendInvite = async (inviteId: Id<'tripMembers'>, emailToResend: string) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual Convex mutation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setSuccessMessage(`Invitation resent to ${email}`);
+      // Re-send by calling inviteMember again with the same email and role
+      const invite = pendingInvites.find(i => i._id === inviteId);
+      if (invite) {
+        await inviteMemberMutation({
+          tripId,
+          email: emailToResend,
+          role: invite.role,
+        });
+        setSuccessMessage(`Invitation resent to ${emailToResend}`);
+      }
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       setErrorMessage('Failed to resend invitation');
@@ -141,11 +114,14 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     }
   };
 
-  const handleCancelInvite = (inviteId: string) => {
-    // TODO: Replace with actual Convex mutation
-    setPendingInvites(pendingInvites.filter(invite => invite.id !== inviteId));
-    setSuccessMessage('Invitation cancelled');
-    setTimeout(() => setSuccessMessage(''), 3000);
+  const handleCancelInvite = async (memberId: Id<'tripMembers'>) => {
+    try {
+      await removeMemberMutation({ tripId, memberId });
+      setSuccessMessage('Invitation cancelled');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      setErrorMessage('Failed to cancel invitation');
+    }
   };
 
   const handleGenerateLink = async () => {
@@ -153,25 +129,21 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     setErrorMessage('');
 
     try {
-      // TODO: Replace with actual Convex mutation
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const expiresAt = expiration === 'never'
+      const expiresInDays = expiration === 'never'
         ? undefined
         : expiration === '7days'
-          ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-          : new Date(Date.now() + 24 * 60 * 60 * 1000);
+          ? 7
+          : 1;
 
-      const newLink: ShareLink = {
-        id: Date.now().toString(),
+      const result = await createInviteLinkMutation({
+        tripId,
         role: linkRole,
-        url: `https://travelplanner.app/join/${tripId}/${Math.random().toString(36).substring(7)}`,
-        createdAt: new Date(),
-        expiresAt,
-      };
+        expiresInDays,
+      });
 
-      setShareLinks([...shareLinks, newLink]);
-      setGeneratedLink(newLink.url);
+      // Generate the full URL with the token
+      const linkUrl = `${window.location.origin}/join/${result.token}`;
+      setGeneratedLink(linkUrl);
       setSuccessMessage('Share link generated');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
@@ -181,7 +153,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     }
   };
 
-  const handleCopyLink = async (url: string, linkId: string) => {
+  const handleCopyLink = async (url: string, linkId: Id<'tripInviteLinks'>) => {
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLinkId(linkId);
@@ -191,19 +163,26 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     }
   };
 
-  const handleRevokeLink = (linkId: string) => {
-    // TODO: Replace with actual Convex mutation
-    setShareLinks(shareLinks.filter(link => link.id !== linkId));
-    if (generatedLink && shareLinks.find(l => l.id === linkId)?.url === generatedLink) {
-      setGeneratedLink(null);
+  const handleRevokeLink = async (linkId: Id<'tripInviteLinks'>) => {
+    try {
+      await revokeInviteLinkMutation({ linkId });
+
+      // Clear generated link if it was this one
+      const revokedLink = inviteLinks.find(l => l._id === linkId);
+      if (generatedLink && revokedLink && generatedLink.includes(revokedLink.token)) {
+        setGeneratedLink(null);
+      }
+
+      setSuccessMessage('Share link revoked');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      setErrorMessage('Failed to revoke link');
     }
-    setSuccessMessage('Share link revoked');
-    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
-  const formatRelativeTime = (date: Date) => {
+  const formatRelativeTime = (timestamp: number) => {
     const now = Date.now();
-    const diff = now - date.getTime();
+    const diff = now - timestamp;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -214,9 +193,9 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     return `${days}d ago`;
   };
 
-  const formatExpirationTime = (date: Date) => {
+  const formatExpirationTime = (timestamp: number) => {
     const now = Date.now();
-    const diff = date.getTime() - now;
+    const diff = timestamp - now;
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
@@ -449,7 +428,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                             const Icon = config.icon;
                             return (
                               <motion.div
-                                key={invite.id}
+                                key={invite._id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
@@ -464,7 +443,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                       {invite.email}
                                     </div>
                                     <div className="text-xs text-slate-500">
-                                      Sent {formatRelativeTime(invite.sentAt)}
+                                      Sent {formatRelativeTime(invite.invitedAt)}
                                     </div>
                                   </div>
                                   <GlassBadge color={config.color} className="flex-shrink-0">
@@ -473,7 +452,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                 </div>
                                 <div className="flex items-center gap-1 ml-3 flex-shrink-0">
                                   <button
-                                    onClick={() => handleResendInvite(invite.id, invite.email)}
+                                    onClick={() => handleResendInvite(invite._id, invite.email)}
                                     className="p-1.5 text-slate-500 hover:text-ocean-600 hover:bg-ocean-50 rounded transition-colors"
                                     aria-label="Resend invitation"
                                     title="Resend"
@@ -481,7 +460,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                     <RefreshCw className="w-4 h-4" />
                                   </button>
                                   <button
-                                    onClick={() => handleCancelInvite(invite.id)}
+                                    onClick={() => handleCancelInvite(invite._id)}
                                     className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                     aria-label="Cancel invitation"
                                     title="Cancel"
@@ -597,12 +576,12 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                             <GlassButton
                               variant="default"
                               onClick={() => {
-                                const link = shareLinks.find(l => l.url === generatedLink);
-                                if (link) handleCopyLink(generatedLink, link.id);
+                                const link = inviteLinks.find(l => generatedLink.includes(l.token));
+                                if (link) handleCopyLink(generatedLink, link._id);
                               }}
                               className="flex-shrink-0"
                             >
-                              {copiedLinkId === shareLinks.find(l => l.url === generatedLink)?.id ? (
+                              {copiedLinkId === inviteLinks.find(l => generatedLink.includes(l.token))?._id ? (
                                 <>
                                   <Check className="w-4 h-4 mr-2 text-green-600" />
                                   Copied!
@@ -620,19 +599,20 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                     </div>
 
                     {/* Active Links */}
-                    {shareLinks.length > 0 && (
+                    {inviteLinks.length > 0 && (
                       <div>
                         <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                          Active Links ({shareLinks.length})
+                          Active Links ({inviteLinks.length})
                         </h3>
                         <div className="space-y-2">
-                          {shareLinks.map((link) => {
+                          {inviteLinks.map((link) => {
                             const config = roleConfig[link.role];
                             const Icon = config.icon;
-                            const isExpired = link.expiresAt && link.expiresAt.getTime() < Date.now();
+                            const isExpired = link.expiresAt && link.expiresAt < Date.now();
+                            const linkUrl = `${window.location.origin}/join/${link.token}`;
                             return (
                               <motion.div
-                                key={link.id}
+                                key={link._id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
@@ -666,13 +646,13 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                         )}
                                       </div>
                                       <div className="text-xs text-slate-500">
-                                        Created {formatRelativeTime(link.createdAt)}
+                                        Created {formatRelativeTime(link.createdAt)} • {link.useCount} uses
                                       </div>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1 flex-shrink-0">
                                     <button
-                                      onClick={() => handleCopyLink(link.url, link.id)}
+                                      onClick={() => handleCopyLink(linkUrl, link._id)}
                                       disabled={isExpired}
                                       className={`
                                         p-1.5 rounded transition-colors
@@ -684,14 +664,14 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                       aria-label="Copy link"
                                       title="Copy"
                                     >
-                                      {copiedLinkId === link.id ? (
+                                      {copiedLinkId === link._id ? (
                                         <Check className="w-4 h-4 text-green-600" />
                                       ) : (
                                         <Copy className="w-4 h-4" />
                                       )}
                                     </button>
                                     <button
-                                      onClick={() => handleRevokeLink(link.id)}
+                                      onClick={() => handleRevokeLink(link._id)}
                                       className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                       aria-label="Revoke link"
                                       title="Revoke"
@@ -701,7 +681,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                   </div>
                                 </div>
                                 <div className="bg-slate-50 rounded px-2 py-1.5 font-mono text-xs text-slate-600 truncate">
-                                  {link.url}
+                                  {linkUrl}
                                 </div>
                               </motion.div>
                             );

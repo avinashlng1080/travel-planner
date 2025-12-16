@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
@@ -572,6 +572,96 @@ export const getPendingInvites = query({
     );
 
     return invites;
+  },
+});
+
+/**
+ * Get pending invites sent for a trip
+ */
+export const getTripPendingInvites = query({
+  args: { tripId: v.id("trips") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    // Check user is owner or editor
+    const membership = await ctx.db
+      .query("tripMembers")
+      .withIndex("by_trip_and_user", (q) =>
+        q.eq("tripId", args.tripId).eq("userId", userId)
+      )
+      .filter((q) => q.eq(q.field("status"), "accepted"))
+      .first();
+
+    if (!membership || (membership.role !== "owner" && membership.role !== "editor")) {
+      throw new ConvexError("Access denied");
+    }
+
+    // Get all pending memberships for this trip
+    const pendingMemberships = await ctx.db
+      .query("tripMembers")
+      .withIndex("by_trip", (q) => q.eq("tripId", args.tripId))
+      .filter((q) => q.eq(q.field("status"), "pending"))
+      .collect();
+
+    // Enrich with user emails
+    const invites = await Promise.all(
+      pendingMemberships.map(async (member) => {
+        const user = await ctx.db.get(member.userId);
+        return {
+          _id: member._id,
+          email: user?.email || "Unknown",
+          role: member.role,
+          invitedAt: member.invitedAt,
+        };
+      })
+    );
+
+    return invites;
+  },
+});
+
+/**
+ * Get active invite links for a trip
+ */
+export const getTripInviteLinks = query({
+  args: { tripId: v.id("trips") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    // Check user is owner or editor
+    const membership = await ctx.db
+      .query("tripMembers")
+      .withIndex("by_trip_and_user", (q) =>
+        q.eq("tripId", args.tripId).eq("userId", userId)
+      )
+      .filter((q) => q.eq(q.field("status"), "accepted"))
+      .first();
+
+    if (!membership || (membership.role !== "owner" && membership.role !== "editor")) {
+      throw new ConvexError("Access denied");
+    }
+
+    // Get all invite links for this trip
+    const inviteLinks = await ctx.db
+      .query("tripInviteLinks")
+      .withIndex("by_trip", (q) => q.eq("tripId", args.tripId))
+      .collect();
+
+    return inviteLinks.map((link) => ({
+      _id: link._id,
+      token: link.token,
+      role: link.role,
+      createdAt: link.createdAt,
+      expiresAt: link.expiresAt,
+      maxUses: link.maxUses,
+      useCount: link.useCount,
+    }));
   },
 });
 
