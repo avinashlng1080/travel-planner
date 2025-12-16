@@ -50,7 +50,12 @@ export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelPro
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height, isMobile } = useResponsivePanel(420, 580);
 
-  const panelState = panels.tripPlanner;
+  const panelState = panels?.tripPlanner;
+
+  // Don't render if panel state not initialized
+  if (!panelState) {
+    return null;
+  }
 
   // Fetch data from Convex
   const scheduleItems = useQuery(
