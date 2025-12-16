@@ -122,7 +122,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
     }, {} as Record<string, typeof scheduleItems>);
 
     // Convert to DayPlan format
-    return Object.entries(groupedByDate)
+    const result = Object.entries(groupedByDate)
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
       .map(([date, items]) => {
         const dayDate = new Date(date);
@@ -141,7 +141,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
           }))
         );
 
-        return {
+        const dayPlan = {
           id: date,
           date,
           dayOfWeek,
@@ -151,7 +151,11 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
           notes: [],
           weatherConsideration: 'mixed' as const,
         };
+
+        return dayPlan;
       });
+
+    return result;
   }, [scheduleItems, tripLocations]);
 
   // Auto-select first day if none selected

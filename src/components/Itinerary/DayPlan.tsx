@@ -35,8 +35,9 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
   // Sort items by order field
   const sortedItems = useMemo(() => {
-    return [...currentPlan].sort((a, b) => a.order - b.order);
-  }, [currentPlan]);
+    const sorted = [...currentPlan].sort((a, b) => a.order - b.order);
+    return sorted;
+  }, [currentPlan, dayPlan.date, selectedPlan]);
 
   const itemIds = sortedItems.map((item) => item.id);
 
