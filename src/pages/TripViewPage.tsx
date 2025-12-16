@@ -62,6 +62,12 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Fetch trip locations for map view
   const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
 
+  // Fetch schedule items for selected plan
+  const scheduleItems = useQuery(
+    api.tripScheduleItems.getScheduleItems,
+    selectedPlanId ? { planId: selectedPlanId } : 'skip'
+  );
+
   // Fetch selected activity details
   const selectedActivity = selectedActivityId
     ? scheduleItems?.find((item) => item._id === selectedActivityId)
@@ -83,12 +89,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       return () => clearTimeout(timer);
     }
   }, [tripData, onboardingStatus, startOnboarding]);
-
-  // Fetch schedule items for selected plan
-  const scheduleItems = useQuery(
-    api.tripScheduleItems.getScheduleItems,
-    selectedPlanId ? { planId: selectedPlanId } : 'skip'
-  );
 
   // Auto-select first plan when data loads
   if (tripData?.plans && tripData.plans.length > 0 && !selectedPlanId) {
