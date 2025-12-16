@@ -77,7 +77,7 @@ const DEFAULT_PANELS: Record<PanelId, PanelState> = {
 
 const INITIAL_Z_INDEX = 8;
 
-// Base atoms with persistence (only position is persisted, other states reset on reload)
+// Storage atom for persisting positions only
 const panelsStorageAtom = atomWithStorage<Record<PanelId, Partial<PanelState>>>(
   'malaysia-trip-floating-panels-storage',
   {} as Record<PanelId, Partial<PanelState>>
@@ -88,28 +88,47 @@ const nextZIndexStorageAtom = atomWithStorage<number>(
   INITIAL_Z_INDEX
 );
 
-// Derived atom that merges persisted positions with default states
-export const panelsAtom = atom(
-  (get) => {
-    const stored = get(panelsStorageAtom) as Record<PanelId, Partial<PanelState>>;
-    const panels = {} as Record<PanelId, PanelState>;
+// Initialize panel state with persisted positions but reset open/minimized states
+const initializePanels = (): Record<PanelId, PanelState> => {
+  const panels = {} as Record<PanelId, PanelState>;
 
-    for (const [key, defaultState] of Object.entries(DEFAULT_PANELS)) {
-      const panelId = key as PanelId;
-      panels[panelId] = {
-        ...defaultState,
-        position: stored[panelId]?.position || defaultState.position,
-        zIndex: stored[panelId]?.zIndex || defaultState.zIndex,
-        // Always reset open/minimized states on reload
-        isOpen: false,
-        isMinimized: false,
-      };
+  // Try to get stored positions from localStorage
+  let stored: Record<PanelId, Partial<PanelState>> = {} as Record<PanelId, Partial<PanelState>>;
+  try {
+    const storedData = localStorage.getItem('malaysia-trip-floating-panels-storage');
+    if (storedData) {
+      stored = JSON.parse(storedData);
     }
+  } catch (_e) {
+    // Ignore localStorage errors
+  }
 
-    return panels;
-  },
+  for (const [key, defaultState] of Object.entries(DEFAULT_PANELS)) {
+    const panelId = key as PanelId;
+    panels[panelId] = {
+      ...defaultState,
+      position: stored[panelId]?.position || defaultState.position,
+      zIndex: stored[panelId]?.zIndex || defaultState.zIndex,
+      // Always reset open/minimized states on reload
+      isOpen: false,
+      isMinimized: false,
+    };
+  }
+
+  return panels;
+};
+
+// Main panels atom - holds the actual state
+const panelsStateAtom = atom<Record<PanelId, PanelState>>(initializePanels());
+
+// Derived atom that syncs position changes to localStorage
+export const panelsAtom = atom(
+  (get) => get(panelsStateAtom),
   (_get, set, update: Record<PanelId, PanelState>) => {
-    // Store only positions and z-indices
+    // Update the main state
+    set(panelsStateAtom, update);
+
+    // Persist only positions and z-indices to localStorage
     const toStore = {} as Record<PanelId, Partial<PanelState>>;
     for (const [key, panel] of Object.entries(update)) {
       toStore[key as PanelId] = {
