@@ -1,9 +1,13 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, LayersControl } from 'react-leaflet';
+import { useEffect, useState, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, LayersControl, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
 import type { DynamicPin } from '../../atoms/uiAtoms';
+import type { POIMapBounds } from '../../types/poi';
 import { RoutingLayer } from './RoutingLayer';
+import { DayRouteLayer } from './DayRouteLayer';
+import { POILayer } from './POILayer';
+import type { Id } from '../../../convex/_generated/dataModel';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default icon issue
@@ -287,6 +291,38 @@ function MapBoundsController({ planRoute, selectedLocation }: MapBoundsControlle
   return null;
 }
 
+// Map Bounds Tracker - tracks viewport bounds for POI loading
+interface MapBoundsTrackerProps {
+  onBoundsChange: (bounds: POIMapBounds) => void;
+}
+
+function MapBoundsTracker({ onBoundsChange }: MapBoundsTrackerProps) {
+  const map = useMapEvents({
+    moveend: () => {
+      const bounds = map.getBounds();
+      onBoundsChange({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      });
+    },
+  });
+
+  // Set initial bounds on mount
+  useEffect(() => {
+    const bounds = map.getBounds();
+    onBoundsChange({
+      north: bounds.getNorth(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      west: bounds.getWest(),
+    });
+  }, [map, onBoundsChange]);
+
+  return null;
+}
+
 // Controller for auto-focusing on newly added AI-suggested pins
 interface DynamicPinBoundsControllerProps {
   newlyAddedPins: DynamicPin[] | null;
@@ -340,6 +376,8 @@ interface FullScreenMapProps {
   newlyAddedPins?: DynamicPin[] | null; // Pins just added by AI, triggers auto-focus
   planALocationIds?: string[];  // IDs of locations in current day's Plan A
   planBLocationIds?: string[];  // IDs of locations in current day's Plan B
+  tripId?: Id<'trips'> | null;  // Trip ID for day route visualization
+  selectedPlanId?: Id<'tripPlans'> | null;  // Selected plan ID for day route visualization
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
   onNewPinsFocused?: () => void; // Called after map focuses on new pins
@@ -355,6 +393,8 @@ export function FullScreenMap({
   newlyAddedPins = null,
   planALocationIds = [],
   planBLocationIds = [],
+  tripId = null,
+  selectedPlanId = null,
   onLocationSelect,
   onDynamicPinSelect,
   onNewPinsFocused,
@@ -365,6 +405,19 @@ export function FullScreenMap({
 
   const routeColor = activePlan === 'A' ? '#10B981' : '#6366F1'; // Plan A: solid green, Plan B: indigo
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
+
+  // Track map bounds for POI loading
+  // Default bounds: Malaysia region (north: 6.5, south: 1.0, east: 120.0, west: 99.0)
+  const [mapBounds, setMapBounds] = useState<POIMapBounds>({
+    north: 6.5,
+    south: 1.0,
+    east: 120.0,
+    west: 99.0,
+  });
+
+  const handleBoundsChange = useCallback((bounds: POIMapBounds) => {
+    setMapBounds(bounds);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-0">
@@ -465,6 +518,7 @@ export function FullScreenMap({
 
         <MapController selectedLocation={selectedLocation} />
         <MapBoundsController planRoute={planRoute} selectedLocation={selectedLocation} />
+        <MapBoundsTracker onBoundsChange={handleBoundsChange} />
         {newlyAddedPins && newlyAddedPins.length > 0 && onDynamicPinSelect && onNewPinsFocused && (
           <DynamicPinBoundsController
             newlyAddedPins={newlyAddedPins}
@@ -482,6 +536,16 @@ export function FullScreenMap({
           opacity={0.8}
           enabled={planRoute.length > 1}
         />
+
+        {/* Day-by-Day Route Visualization - Shows route for selected day only */}
+        <DayRouteLayer
+          tripId={tripId}
+          planId={selectedPlanId}
+          activePlan={activePlan}
+        />
+
+        {/* POI Layer - Shopping malls, zoos, museums, parks, attractions */}
+        <POILayer bounds={mapBounds} visible={true} />
 
         {/* Location Markers */}
         {filteredLocations.map((location) => {

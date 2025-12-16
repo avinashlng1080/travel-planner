@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from 'convex/react';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
@@ -149,9 +149,11 @@ export function TripPlannerPanel({ tripId, selectedPlanId }: TripPlannerPanelPro
   }, [scheduleItems, tripLocations]);
 
   // Auto-select first day if none selected
-  if (dailyPlans.length > 0 && !selectedDayId) {
-    selectDay(dailyPlans[0].id);
-  }
+  useEffect(() => {
+    if (dailyPlans.length > 0 && !selectedDayId) {
+      selectDay(dailyPlans[0].id);
+    }
+  }, [dailyPlans, selectedDayId, selectDay]);
 
   // Find current day index
   const currentDayIndex = useMemo(() => {
