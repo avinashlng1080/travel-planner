@@ -122,6 +122,28 @@ export default defineSchema({
     .index("by_sessionId", ["sessionId"])
     .index("by_userId", ["userId"]),
 
+  // POIs (Points of Interest) - OpenStreetMap data for shopping malls, zoos, museums, etc.
+  pois: defineTable({
+    osmId: v.string(),
+    osmType: v.string(),
+    category: v.string(),
+    name: v.string(),
+    lat: v.number(),
+    lng: v.number(),
+    tags: v.optional(v.any()),
+    bounds: v.optional(
+      v.object({
+        north: v.number(),
+        south: v.number(),
+        east: v.number(),
+        west: v.number(),
+      })
+    ),
+    lastUpdated: v.number(),
+  })
+    .index("by_category", ["category"])
+    .index("by_osmId", ["osmId"]),
+
   // User Preferences
   userPreferences: defineTable({
     userId: v.optional(v.id("users")),

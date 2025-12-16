@@ -91,9 +91,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   }, [tripData, hasOpenedPanel, openPanel]);
 
   // Auto-select first plan when data loads
-  if (tripData?.plans && tripData.plans.length > 0 && !selectedPlanId) {
-    setSelectedPlanId(tripData.plans[0]._id);
-  }
+  useEffect(() => {
+    if (tripData?.plans && tripData.plans.length > 0 && !selectedPlanId) {
+      setSelectedPlanId(tripData.plans[0]._id);
+    }
+  }, [tripData, selectedPlanId]);
 
   // Loading state
   if (tripData === undefined) {
@@ -179,6 +181,8 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         visibleCategories={visibleCategories}
         activePlan={activePlan}
         planRoute={[]}
+        tripId={tripId}
+        selectedPlanId={selectedPlanId}
         onLocationSelect={(location) => setSelectedLocation(location)}
       />
 
