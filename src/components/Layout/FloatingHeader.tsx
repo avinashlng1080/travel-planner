@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MapPin, Calendar, Settings, User, ChevronDown, LogOut } from 'lucide-react';
+import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { GlassBadge } from '../ui/GlassPanel';
 
@@ -9,6 +9,7 @@ interface FloatingHeaderProps {
   activePlan: 'A' | 'B';
   onPlanChange: (plan: 'A' | 'B') => void;
   tripName?: string;
+  onBack?: () => void;
 }
 
 export function FloatingHeader({
@@ -17,6 +18,7 @@ export function FloatingHeader({
   activePlan,
   onPlanChange,
   tripName = 'Malaysia Dec 21 - Jan 6',
+  onBack,
 }: FloatingHeaderProps) {
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;
   const { signOut } = useAuthActions();
@@ -42,8 +44,18 @@ export function FloatingHeader({
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
       <div className="h-full flex items-center justify-between px-4">
-        {/* Left: Logo and Trip Name */}
+        {/* Left: Back Button, Logo and Trip Name */}
         <div className="flex items-center gap-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Back to trips"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-lg flex items-center justify-center shadow-glow-sunset">
               <MapPin className="w-5 h-5 text-white" />
