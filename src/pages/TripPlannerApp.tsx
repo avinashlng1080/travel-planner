@@ -13,7 +13,11 @@ import {
   FiltersPanel,
 } from '../components/floating';
 
-export function TripPlannerApp() {
+interface TripPlannerAppProps {
+  onBack?: () => void;
+}
+
+export function TripPlannerApp({ onBack }: TripPlannerAppProps) {
   const {
     selectedLocation,
     selectedDayId,
