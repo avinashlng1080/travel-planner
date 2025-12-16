@@ -72,6 +72,51 @@ Every commit tells a story. Make it a story worth reading:
 - Commit messages that explain *why*, not just *what*
 - A clean history that future developers will thank you for
 
+## Feature Branch Workflow
+
+**CRITICAL**: Every suggestion, fix, or feature MUST follow this workflow:
+
+1. **Create a feature branch** from `main`:
+   ```bash
+   git checkout -b <type>/<description>
+   ```
+   - Use `feat/` for new features (e.g., `feat/trip-dashboard`)
+   - Use `fix/` for bug fixes (e.g., `fix/panel-not-opening`)
+   - Use `refactor/` for code improvements (e.g., `refactor/simplify-routing`)
+   - Use `docs/` for documentation (e.g., `docs/update-readme`)
+
+2. **Make all changes on the branch**:
+   - Implement the feature/fix
+   - Test thoroughly
+   - Commit with descriptive messages
+
+3. **Push the branch** to remote:
+   ```bash
+   git push -u origin <branch-name>
+   ```
+
+4. **Create a Pull Request** back to `main`:
+   ```bash
+   gh pr create --title "..." --body "..."
+   ```
+   - Clear title describing the change
+   - Detailed description with context
+   - Include test plan or verification steps
+   - Reference any related issues
+
+5. **Never commit directly to `main`**:
+   - This keeps `main` stable and production-ready
+   - Enables code review and collaboration
+   - Makes it easy to track what changed and why
+   - Allows for easy rollback if needed
+
+**Benefits of this workflow**:
+- `main` always stays stable
+- Changes are isolated and reviewable
+- Easy to track progress on specific features
+- Simple to revert if something goes wrong
+- Professional, scalable team workflow
+
 ## Now: What Are We Building Today?
 
 Don't just tell me how you'll solve it. *Show me* why this solution is the only solution that makes sense. Make me see the future you're creating.
