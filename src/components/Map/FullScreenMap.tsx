@@ -2,7 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, LayersControl, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
-import type { DynamicPin } from '../../atoms/uiAtoms';
+import type { DynamicPin, FocusedActivity } from '../../atoms/uiAtoms';
+import { useAtom, useSetAtom } from 'jotai';
+import { focusedActivityAtom } from '../../atoms/uiAtoms';
 import type { POIMapBounds } from '../../types/poi';
 import { RoutingLayer } from './RoutingLayer';
 import { DayRouteLayer } from './DayRouteLayer';
@@ -190,6 +192,35 @@ function createCustomIcon(category: string, isSelected: boolean = false, planInd
   });
 }
 
+// Enhanced home base marker - larger, more prominent with pulsing animation
+function createHomeBaseIcon(isSelected: boolean = false) {
+  const size = isSelected ? 60 : 52;
+  const color = '#F97316'; // Sunset coral
+  const shadow = isSelected ? 'filter: drop-shadow(0 6px 12px rgba(249, 115, 22, 0.5));' : 'filter: drop-shadow(0 4px 8px rgba(249, 115, 22, 0.4));';
+  const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
+
+  return L.divIcon({
+    html: `
+      <svg width="${size}" height="${size + 4}" viewBox="0 0 52 56" style="${shadow}${pulse}">
+        <!-- Pulsing ring animation -->
+        <circle cx="26" cy="28" r="24" fill="none" stroke="${color}" stroke-width="3" opacity="0.5">
+          <animate attributeName="r" values="24;28;24" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite" />
+        </circle>
+        <!-- Enhanced house shape -->
+        <path d="M26 4 L48 22 L48 52 L4 52 L4 22 Z" fill="${color}" stroke="white" stroke-width="3"/>
+        <rect x="19" y="30" width="14" height="22" fill="white" opacity="0.3"/>
+        <polygon points="26,4 4,22 48,22" fill="${color}" stroke="white" stroke-width="3"/>
+        <rect x="32" y="22" width="8" height="8" fill="white" opacity="0.4"/>
+      </svg>
+    `,
+    className: 'custom-marker home-base-marker',
+    iconSize: [size, size + 4],
+    iconAnchor: [size / 2, size + 2],
+    popupAnchor: [0, -(size + 2)],
+  });
+}
+
 // Special icon for AI-suggested dynamic pins with sparkle badge
 function createDynamicPinIcon(isSelected: boolean = false) {
   const size = isSelected ? 48 : 40;
@@ -366,6 +397,30 @@ function DynamicPinBoundsController({
   return null;
 }
 
+// Controller for focusing map on clicked activity from TripPlannerPanel
+function FocusedActivityController() {
+  const map = useMap();
+  const [focusedActivity, setFocusedActivity] = useAtom(focusedActivityAtom);
+
+  useEffect(() => {
+    if (!focusedActivity) return;
+
+    // Fly to the activity location
+    map.flyTo([focusedActivity.lat, focusedActivity.lng], 15, {
+      duration: 0.8,
+    });
+
+    // Clear the focused activity after animation
+    const timer = setTimeout(() => {
+      setFocusedActivity(null);
+    }, 850);
+
+    return () => clearTimeout(timer);
+  }, [focusedActivity, map, setFocusedActivity]);
+
+  return null;
+}
+
 interface FullScreenMapProps {
   locations: Location[];
   selectedLocation: Location | null;
@@ -399,7 +454,12 @@ export function FullScreenMap({
   onDynamicPinSelect,
   onNewPinsFocused,
 }: FullScreenMapProps) {
-  const filteredLocations = locations.filter((loc) =>
+  // Split home-base locations from regular locations
+  const homeBaseLocations = locations.filter((loc) => loc.category === 'home-base');
+  const regularLocations = locations.filter((loc) => loc.category !== 'home-base');
+
+  // Filter regular locations by visible categories (home-base always visible)
+  const filteredLocations = regularLocations.filter((loc) =>
     visibleCategories.includes(loc.category)
   );
 
@@ -430,6 +490,9 @@ export function FullScreenMap({
           .custom-marker {
             background: transparent !important;
             border: none !important;
+          }
+          .home-base-marker {
+            z-index: 1000 !important;
           }
           .leaflet-container {
             background: #f8fafc;
@@ -527,6 +590,9 @@ export function FullScreenMap({
           />
         )}
 
+        {/* Activity Focus Controller - syncs map with TripPlannerPanel clicks */}
+        <FocusedActivityController />
+
         {/* Real Road Routing Layer */}
         <RoutingLayer
           waypoints={planRoute}
@@ -547,7 +613,7 @@ export function FullScreenMap({
         {/* POI Layer - Shopping malls, zoos, museums, parks, attractions */}
         <POILayer bounds={mapBounds} visible={true} />
 
-        {/* Location Markers */}
+        {/* Regular Location Markers (excluding home-base) */}
         {filteredLocations.map((location) => {
           const isSelected = selectedLocation?.id === location.id;
           const inPlanA = planALocationIds.includes(location.id);
@@ -586,6 +652,23 @@ export function FullScreenMap({
             }}
           />
         ))}
+
+        {/* Home Base Markers - Rendered last with high z-index to always be on top */}
+        {homeBaseLocations.map((location) => {
+          const isSelected = selectedLocation?.id === location.id;
+
+          return (
+            <Marker
+              key={location.id}
+              position={[location.lat, location.lng]}
+              icon={createHomeBaseIcon(isSelected)}
+              zIndexOffset={1000}
+              eventHandlers={{
+                click: () => onLocationSelect(location),
+              }}
+            />
+          );
+        })}
       </MapContainer>
     </div>
   );

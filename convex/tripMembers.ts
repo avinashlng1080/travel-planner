@@ -701,3 +701,37 @@ export const revokeInviteLink = mutation({
     return { success: true };
   },
 });
+
+/**
+ * Get member count for a trip (accepted members only)
+ */
+export const getMemberCount = query({
+  args: { tripId: v.id("trips") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return 0;
+    }
+
+    // Check user has access
+    const userMembership = await ctx.db
+      .query("tripMembers")
+      .withIndex("by_trip_and_user", (q) =>
+        q.eq("tripId", args.tripId).eq("userId", userId)
+      )
+      .first();
+
+    if (!userMembership || userMembership.status !== "accepted") {
+      return 0;
+    }
+
+    // Count accepted members
+    const members = await ctx.db
+      .query("tripMembers")
+      .withIndex("by_trip", (q) => q.eq("tripId", args.tripId))
+      .filter((q) => q.eq(q.field("status"), "accepted"))
+      .collect();
+
+    return members.length;
+  },
+});

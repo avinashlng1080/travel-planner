@@ -60,6 +60,15 @@ export const selectedLocationAtom = atom(
 export const selectedDayIdAtom = atom<string | null>(null);
 export const activeSectionAtom = atom<string>('itinerary');
 export const isAILoadingAtom = atom<boolean>(false);
+
+// Focused activity for map synchronization
+export interface FocusedActivity {
+  activityId: string;
+  locationId: string;
+  lat: number;
+  lng: number;
+}
+export const focusedActivityAtom = atom<FocusedActivity | null>(null);
 export const authModalOpenAtom = atom<boolean>(false);
 export const authModeAtom = atom<'login' | 'signup'>('login');
 export const dynamicPinsAtom = atom<DynamicPin[]>([]);
