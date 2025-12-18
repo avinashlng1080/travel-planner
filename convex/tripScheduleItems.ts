@@ -5,12 +5,19 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 /**
  * Convert time string (HH:MM) to minutes since midnight
  * @param timeStr - Time in HH:MM format (e.g., "09:30")
- * @returns Minutes since midnight (e.g., 570 for "09:30")
+ * @returns Minutes since midnight (e.g., 570 for "09:30"), or MAX_SAFE_INTEGER for invalid times
  */
 function timeToMinutes(timeStr: string): number {
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  if (isNaN(hours) || isNaN(minutes)) {
-    return 0; // Default to midnight if invalid
+  if (!timeStr || typeof timeStr !== 'string') {
+    return Number.MAX_SAFE_INTEGER; // Invalid times sort to end
+  }
+  const parts = timeStr.split(':');
+  if (parts.length !== 2) {
+    return Number.MAX_SAFE_INTEGER; // Invalid format sorts to end
+  }
+  const [hours, minutes] = parts.map(Number);
+  if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return Number.MAX_SAFE_INTEGER; // Invalid values sort to end
   }
   return hours * 60 + minutes;
 }

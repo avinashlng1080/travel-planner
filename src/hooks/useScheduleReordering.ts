@@ -69,7 +69,7 @@ interface ScheduleItem {
   updatedBy?: Id<'users'>;
   createdAt: number;
   updatedAt: number;
-  order: number;
+  order?: number;
   aiGenerated?: boolean;
   location?: {
     _id: Id<'tripLocations'>;
@@ -113,16 +113,16 @@ function sortByTime(items: ScheduleItem[]): ScheduleItem[] {
     const timeCompare = a.startTime.localeCompare(b.startTime);
     if (timeCompare !== 0) return timeCompare;
 
-    // If start times are equal, compare by order
-    return a.order - b.order;
+    // If start times are equal, compare by order (undefined orders go last)
+    return (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER);
   });
 }
 
 /**
- * Sort items by order field
+ * Sort items by order field (undefined orders go last)
  */
 function sortByOrder(items: ScheduleItem[]): ScheduleItem[] {
-  return [...items].sort((a, b) => a.order - b.order);
+  return [...items].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
 }
 
 /**

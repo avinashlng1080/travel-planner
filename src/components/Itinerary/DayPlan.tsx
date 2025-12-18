@@ -33,9 +33,11 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
   const currentPlan = selectedPlan === 'A' ? localPlanA : localPlanB;
 
-  // Sort items by order field
+  // Sort items by order field (undefined orders go last)
   const sortedItems = useMemo(() => {
-    const sorted = [...currentPlan].sort((a, b) => a.order - b.order);
+    const sorted = [...currentPlan].sort((a, b) =>
+      (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)
+    );
     return sorted;
   }, [currentPlan, dayPlan.date, selectedPlan]);
 

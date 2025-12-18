@@ -44,6 +44,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
   // Queries
   const members = useQuery(api.tripMembers.getMembers, { tripId });
   const comments = useQuery(api.tripComments.getCommentsByTrip, { tripId });
+  const currentUserProfile = useQuery(api.userProfiles.getMyProfile);
 
   // Mutations
   const updateMemberRole = useMutation(api.tripMembers.updateMemberRole);
@@ -151,6 +152,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
                 tripId={tripId}
                 userRole={userRole}
                 comments={comments}
+                currentUserId={currentUserProfile?.userId}
                 onAddComment={addComment}
                 onDeleteComment={deleteComment}
               />
@@ -273,12 +275,14 @@ function CommentsTabContent({
   tripId,
   userRole,
   comments,
+  currentUserId,
   onAddComment,
   onDeleteComment,
 }: {
   tripId: Id<'trips'>;
   userRole: 'owner' | 'editor' | 'commenter' | 'viewer';
   comments: any[] | undefined;
+  currentUserId?: Id<'users'>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onAddComment: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -382,7 +386,7 @@ function CommentsTabContent({
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  {(userRole === 'owner' || comment.userId === comment.currentUserId) && (
+                  {(userRole === 'owner' || comment.userId === currentUserId) && (
                     <button
                       onClick={() => handleDelete(comment._id)}
                       className="p-1 text-slate-400 hover:text-red-600 transition-colors"
