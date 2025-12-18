@@ -23,10 +23,14 @@
       "mcp__convex__data",
       "Bash(git checkout:*)",
       "Bash(git push:*)",
-      "Bash(gh pr create:*)",
+       "Bash(gh pr create:*)" ,
       "Bash(test:*)",
       "Bash(git rev-parse:*)",
-      "Bash(gh pr view:*)"
-    ]
+      "Bash(gh pr view:*)",
+      "Bash(grep:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo view:*)"
+     ]
   }
 }
