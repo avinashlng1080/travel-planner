@@ -60,8 +60,12 @@ export function WeatherPanel({ className = '' }: WeatherPanelProps) {
         {/* Location Selector */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-slate-400" />
+            <MapPin className="w-4 h-4 text-slate-400" aria-hidden="true" />
+            <label htmlFor="weather-location-select" className="sr-only">
+              Select weather location
+            </label>
             <select
+              id="weather-location-select"
               value={`${location.lat},${location.lng}`}
               onChange={(e) => {
                 const loc = MALAYSIA_WEATHER_LOCATIONS.find(

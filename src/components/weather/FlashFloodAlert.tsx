@@ -27,8 +27,9 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
   const [isExpanded, setIsExpanded] = useState(!compact);
   const styles = RISK_LEVEL_STYLES[alert.level];
   const Icon = RISK_ICONS[alert.level];
+  const alertId = `flash-flood-alert-${alert.level}`;
 
-  if (compact) {
+  if (compact && !isExpanded) {
     return (
       <motion.button
         initial={{ opacity: 0, y: -10 }}
@@ -38,7 +39,9 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
           ${styles.bg} ${styles.border}
           hover:brightness-95 transition-all
         `}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => setIsExpanded(true)}
+        aria-expanded={false}
+        aria-controls={alertId}
       >
         <Icon className={`w-5 h-5 ${styles.icon} flex-shrink-0`} />
         <div className="flex-1 text-left">
@@ -47,17 +50,14 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
             {alert.affectedDays.join(', ')}
           </p>
         </div>
-        {isExpanded ? (
-          <ChevronUp className={`w-4 h-4 ${styles.icon}`} />
-        ) : (
-          <ChevronDown className={`w-4 h-4 ${styles.icon}`} />
-        )}
+        <ChevronDown className={`w-4 h-4 ${styles.icon}`} />
       </motion.button>
     );
   }
 
   return (
     <motion.div
+      id={alertId}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-xl border-2 overflow-hidden ${styles.bg} ${styles.border}`}
@@ -78,6 +78,15 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
         >
           {styles.label}
         </span>
+        {compact && (
+          <button
+            onClick={() => setIsExpanded(false)}
+            className={`p-1.5 rounded-lg hover:bg-white/30 transition-colors ${styles.text}`}
+            aria-label="Collapse alert"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -115,27 +124,31 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
  */
 export function MalaysiaWeatherTips() {
   const [expanded, setExpanded] = useState(false);
+  const tipsContentId = 'malaysia-weather-tips-content';
 
   return (
     <div className="rounded-xl border border-slate-200 overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+        aria-expanded={expanded}
+        aria-controls={tipsContentId}
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg">🇲🇾</span>
+          <span className="text-lg" aria-hidden="true">🇲🇾</span>
           <span className="text-sm font-medium text-slate-700">Malaysia Weather Tips</span>
         </div>
         {expanded ? (
-          <ChevronUp className="w-4 h-4 text-slate-500" />
+          <ChevronUp className="w-4 h-4 text-slate-500" aria-hidden="true" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-slate-500" />
+          <ChevronDown className="w-4 h-4 text-slate-500" aria-hidden="true" />
         )}
       </button>
 
       <AnimatePresence>
         {expanded && (
           <motion.div
+            id={tipsContentId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

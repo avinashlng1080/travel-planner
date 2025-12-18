@@ -209,20 +209,19 @@ export function getPlanBSuggestion(level: FlashFloodRiskLevel): string | undefin
 export function generateFlashFloodAlert(
   dailyForecasts: ProcessedDailyForecast[]
 ): FlashFloodAlert | null {
-  // Find the highest risk level in the forecast
-  let maxRiskLevel: FlashFloodRiskLevel = 'low';
-  const affectedDays: string[] = [];
+  // Risk level priority for comparison
+  const riskPriority: Record<FlashFloodRiskLevel, number> = {
+    low: 0,
+    moderate: 1,
+    high: 2,
+    severe: 3,
+  };
 
+  // First pass: determine the maximum risk level
+  let maxRiskLevel: FlashFloodRiskLevel = 'low';
   for (const day of dailyForecasts) {
-    if (day.flashFloodRisk === 'severe') {
-      maxRiskLevel = 'severe';
-      affectedDays.push(day.dayOfWeek);
-    } else if (day.flashFloodRisk === 'high' && maxRiskLevel !== 'severe') {
-      maxRiskLevel = 'high';
-      affectedDays.push(day.dayOfWeek);
-    } else if (day.flashFloodRisk === 'moderate' && maxRiskLevel === 'low') {
-      maxRiskLevel = 'moderate';
-      affectedDays.push(day.dayOfWeek);
+    if (riskPriority[day.flashFloodRisk] > riskPriority[maxRiskLevel]) {
+      maxRiskLevel = day.flashFloodRisk;
     }
   }
 
@@ -230,6 +229,11 @@ export function generateFlashFloodAlert(
   if (maxRiskLevel === 'low') {
     return null;
   }
+
+  // Second pass: collect all days with elevated risk (above 'low')
+  const affectedDays: string[] = dailyForecasts
+    .filter((day) => day.flashFloodRisk !== 'low')
+    .map((day) => day.dayOfWeek);
 
   const titles: Record<FlashFloodRiskLevel, string> = {
     low: '',
