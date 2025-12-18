@@ -125,23 +125,25 @@ export function WeatherIndicator() {
                 />
               )}
 
-              {/* Refresh Button (visible on hover) */}
-              <motion.button
+              {/* Refresh Icon (visible on hover) */}
+              <motion.div
+                role="button"
+                tabIndex={0}
                 onClick={handleRefresh}
+                onKeyDown={(e) => e.key === 'Enter' && handleRefresh(e as unknown as React.MouseEvent)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className={`
-                  ml-1 p-1 rounded-md
+                  ml-1 p-1 rounded-md cursor-pointer
                   text-slate-400 hover:text-slate-600
                   hover:bg-slate-100
                   transition-colors
-                  ${isLoading ? 'animate-spin' : ''}
+                  ${isLoading ? 'animate-spin pointer-events-none' : ''}
                 `}
                 aria-label="Refresh weather"
-                disabled={isLoading}
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-              </motion.button>
+              </motion.div>
             </>
           )}
         </motion.button>
