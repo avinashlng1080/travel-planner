@@ -13,7 +13,8 @@ import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel } from '../components/floating';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
+import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
@@ -235,6 +236,10 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           }
         }}
       />
+      <WeatherFloatingPanel />
+
+      {/* Weather Indicator - floating badge on map */}
+      <WeatherIndicator />
 
       {/* Right Detail Panel - shows when a location is clicked */}
       {selectedLocation && (
