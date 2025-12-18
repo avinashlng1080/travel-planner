@@ -11,3 +11,12 @@ export function sortScheduleItems(items: ScheduleItemType[]): ScheduleItemType[]
     return orderA - orderB;
   });
 }
+
+/**
+ * Sort schedule items by their start time (chronological order)
+ * This is used for route visualization to ensure logical travel progression
+ * without backtracking caused by manual reordering
+ */
+export function sortScheduleItemsForRoute(items: ScheduleItemType[]): ScheduleItemType[] {
+  return [...items].sort((a, b) => a.startTime.localeCompare(b.startTime));
+}

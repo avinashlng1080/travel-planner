@@ -13,10 +13,11 @@ import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel } from '../components/floating';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel } from '../components/floating';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
+import { focusedActivityAtom } from '../atoms/uiAtoms';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -44,6 +45,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Floating panel state
   const openPanel = useSetAtom(openPanelAtom);
+
+  // Map sync state
+  const setFocusedActivity = useSetAtom(focusedActivityAtom);
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -206,10 +210,30 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Floating Panels */}
       <ChecklistFloatingPanel />
       <FiltersPanel />
+      <CollaborationPanel
+        tripId={tripId}
+        tripName={trip.name}
+        userRole={userRole}
+      />
       <TripPlannerPanel
         tripId={tripId}
         selectedPlanId={selectedPlanId}
-        onActivityClick={(activityId) => setSelectedActivityId(activityId as Id<'tripScheduleItems'>)}
+        onActivityClick={(activityId) => {
+          setSelectedActivityId(activityId as Id<'tripScheduleItems'>);
+          // Find activity and sync map to its location
+          const activity = scheduleItems?.find(item => item._id === activityId);
+          if (activity?.locationId) {
+            const location = tripLocations?.find(loc => loc._id === activity.locationId);
+            if (location) {
+              setFocusedActivity({
+                activityId,
+                locationId: activity.locationId as string,
+                lat: location.customLat || location.baseLocation?.lat || 0,
+                lng: location.customLng || location.baseLocation?.lng || 0,
+              });
+            }
+          }
+        }}
       />
 
       {/* Right Detail Panel - shows when a location is clicked */}
