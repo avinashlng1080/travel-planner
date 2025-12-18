@@ -85,7 +85,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
         onFocus={() => bringToFront('collaboration')}
       >
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-200/50 bg-white">
+        <div role="tablist" aria-label="Collaboration options" className="flex border-b border-slate-200/50 bg-white">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -96,6 +96,10 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
             return (
               <button
                 key={tab.id}
+                role="tab"
+                id={`collab-tab-${tab.id}`}
+                aria-selected={isActive}
+                aria-controls={`collab-panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
                   flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-colors relative
@@ -120,7 +124,12 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div
+          role="tabpanel"
+          id={`collab-panel-${activeTab}`}
+          aria-labelledby={`collab-tab-${activeTab}`}
+          className="flex-1 overflow-y-auto"
+        >
           <AnimatePresence mode="wait">
             {activeTab === 'share' && userRole === 'owner' && (
               <ShareTabContent
