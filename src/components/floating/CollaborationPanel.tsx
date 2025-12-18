@@ -308,7 +308,6 @@ function CommentsTabContent({
       await onAddComment({
         tripId,
         content: newComment.trim(),
-        targetType: 'trip' as const,
       });
       setNewComment('');
     } catch (error) {
