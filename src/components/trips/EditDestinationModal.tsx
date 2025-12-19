@@ -94,8 +94,10 @@ export default function EditDestinationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPredictions, setShowPredictions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const predictionsRef = useRef<HTMLDivElement>(null);
 
   // Convex mutation
   const updateDestination = useMutation(api.commuteDestinations.updateDestination);
@@ -142,6 +144,36 @@ export default function EditDestinationModal({
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
+
+  // Click outside predictions handler
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        predictionsRef.current &&
+        !predictionsRef.current.contains(e.target as Node)
+      ) {
+        setShowPredictions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Reset selected index when predictions change
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [predictions]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && predictionsRef.current) {
+      const selectedElement = document.getElementById(`prediction-${selectedIndex}`);
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -253,6 +285,34 @@ export default function EditDestinationModal({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showPredictions || predictions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev =>
+          prev < predictions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < predictions.length) {
+          handlePlaceSelect(predictions[selectedIndex].placeId, predictions[selectedIndex].description);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowPredictions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
+
   const handlePlaceSelect = async (placeId: string, description: string) => {
     const details = await getPlaceDetails(placeId);
 
@@ -267,6 +327,7 @@ export default function EditDestinationModal({
       }));
       setSearchQuery(description);
       setShowPredictions(false);
+      setSelectedIndex(-1);
       clearPredictions();
 
       // Clear errors
@@ -348,10 +409,22 @@ export default function EditDestinationModal({
                       id="location-search"
                       ref={searchInputRef}
                       type="text"
+                      role="combobox"
+                      aria-expanded={showPredictions && predictions.length > 0}
+                      aria-autocomplete="list"
+                      aria-controls="predictions-list"
+                      aria-activedescendant={
+                        selectedIndex >= 0 ? `prediction-${selectedIndex}` : undefined
+                      }
                       placeholder="Search for a place..."
                       value={searchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
-                      onFocus={() => setShowPredictions(true)}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => {
+                        if (predictions.length > 0) {
+                          setShowPredictions(true);
+                        }
+                      }}
                       className={`w-full bg-white backdrop-blur-lg border rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${
                         errors.name || errors.location
                           ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
@@ -360,19 +433,32 @@ export default function EditDestinationModal({
                       disabled={isSubmitting}
                       aria-invalid={errors.name || errors.location ? 'true' : 'false'}
                       aria-describedby={errors.name ? 'name-error' : errors.location ? 'location-error' : undefined}
+                      autoComplete="off"
                     />
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" aria-hidden="true" />
                   </div>
 
                   {/* Predictions Dropdown */}
                   {showPredictions && predictions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white rounded-xl border border-slate-200 shadow-xl max-h-60 overflow-y-auto">
-                      {predictions.map((prediction) => (
+                    <div
+                      id="predictions-list"
+                      ref={predictionsRef}
+                      role="listbox"
+                      className="absolute z-10 w-full mt-1 bg-white rounded-xl border border-slate-200 shadow-xl max-h-60 overflow-y-auto"
+                    >
+                      {predictions.map((prediction, index) => (
                         <button
                           key={prediction.placeId}
+                          id={`prediction-${index}`}
                           type="button"
+                          role="option"
+                          aria-selected={index === selectedIndex}
                           onClick={() => handlePlaceSelect(prediction.placeId, prediction.description)}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl min-h-[44px]"
+                          className={`w-full text-left px-4 py-3 transition-colors border-b border-slate-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl min-h-[44px] ${
+                            index === selectedIndex
+                              ? 'bg-sunset-50 border-sunset-200'
+                              : 'hover:bg-slate-50'
+                          }`}
                         >
                           <div className="flex items-start gap-3">
                             <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
@@ -394,9 +480,9 @@ export default function EditDestinationModal({
 
                   {/* Loading State */}
                   {isLoading && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      Searching...
-                    </p>
+                    <div className="absolute right-3 top-[42px] pointer-events-none">
+                      <div className="w-4 h-4 border-2 border-slate-300 border-t-sunset-500 rounded-full animate-spin" aria-label="Loading" />
+                    </div>
                   )}
 
                   {/* Errors */}

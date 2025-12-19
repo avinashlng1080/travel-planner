@@ -368,7 +368,7 @@ export const reorderDestinations = mutation({
     }
 
     // Validate all destinations exist and belong to this trip
-    const destinations = await Promise.all(
+    await Promise.all(
       args.destinationIds.map(async (id) => {
         const dest = await ctx.db.get(id);
         if (!dest) {

@@ -3,6 +3,7 @@ import { auth } from "./auth";
 import { chat } from "./claude";
 import { parseItinerary } from "./parseItinerary";
 import { parseItineraryLocal } from "./parseItineraryLocal";
+import { distanceMatrix } from "./distanceMatrix";
 
 const http = httpRouter();
 
@@ -48,6 +49,19 @@ http.route({
   path: "/parseItineraryLocal",
   method: "OPTIONS",
   handler: parseItineraryLocal,
+});
+
+// Distance Matrix API proxy (for commute calculations)
+http.route({
+  path: "/api/distance-matrix",
+  method: "GET",
+  handler: distanceMatrix,
+});
+
+http.route({
+  path: "/api/distance-matrix",
+  method: "OPTIONS",
+  handler: distanceMatrix,
 });
 
 export default http;

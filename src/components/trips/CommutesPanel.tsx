@@ -279,7 +279,7 @@ export default function CommutesPanel({
                             e.stopPropagation();
                             setOpenMenuId(menuOpen ? null : dest.id);
                           }}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                          className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                           aria-label="More options"
                         >
                           <MoreVertical className="w-4 h-4 text-slate-500" />

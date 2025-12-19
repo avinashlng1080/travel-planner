@@ -71,6 +71,7 @@ export default function AddDestinationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPredictions, setShowPredictions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const firstInputRef = useRef<HTMLInputElement>(null);
   const predictionsRef = useRef<HTMLDivElement>(null);
@@ -136,7 +137,18 @@ export default function AddDestinationModal({
       clearPredictions();
       setShowPredictions(false);
     }
+    setSelectedIndex(-1); // Reset selection when search changes
   }, [searchQuery, search, clearPredictions]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && predictionsRef.current) {
+      const selectedElement = document.getElementById(`prediction-${selectedIndex}`);
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [selectedIndex]);
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -174,11 +186,40 @@ export default function AddDestinationModal({
       }));
       setSearchQuery(details.name);
       setShowPredictions(false);
+      setSelectedIndex(-1);
 
       // Clear location error if it exists
       if (errors.location) {
         setErrors(prev => ({ ...prev, location: undefined }));
       }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showPredictions || predictions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev =>
+          prev < predictions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < predictions.length) {
+          handleSelectPlace(predictions[selectedIndex].placeId);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowPredictions(false);
+        setSelectedIndex(-1);
+        break;
     }
   };
 
@@ -320,9 +361,17 @@ export default function AddDestinationModal({
                     id="location"
                     ref={firstInputRef}
                     type="text"
+                    role="combobox"
+                    aria-expanded={showPredictions && predictions.length > 0}
+                    aria-autocomplete="list"
+                    aria-controls="predictions-list"
+                    aria-activedescendant={
+                      selectedIndex >= 0 ? `prediction-${selectedIndex}` : undefined
+                    }
                     placeholder="Search for a place..."
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     onFocus={() => {
                       if (predictions.length > 0) {
                         setShowPredictions(true);
@@ -336,22 +385,31 @@ export default function AddDestinationModal({
                   {/* Loading indicator */}
                   {isLoadingPredictions && (
                     <div className="absolute right-3 top-[42px] pointer-events-none">
-                      <div className="w-4 h-4 border-2 border-slate-300 border-t-sunset-500 rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-slate-300 border-t-sunset-500 rounded-full animate-spin" aria-label="Loading" />
                     </div>
                   )}
 
                   {/* Predictions Dropdown */}
                   {showPredictions && predictions.length > 0 && (
                     <div
+                      id="predictions-list"
                       ref={predictionsRef}
+                      role="listbox"
                       className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto"
                     >
-                      {predictions.map((prediction) => (
+                      {predictions.map((prediction, index) => (
                         <button
                           key={prediction.placeId}
+                          id={`prediction-${index}`}
                           type="button"
+                          role="option"
+                          aria-selected={index === selectedIndex}
                           onClick={() => handleSelectPlace(prediction.placeId)}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl min-h-[44px]"
+                          className={`w-full text-left px-4 py-3 transition-colors border-b border-slate-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl min-h-[44px] ${
+                            index === selectedIndex
+                              ? 'bg-sunset-50 border-sunset-200'
+                              : 'hover:bg-slate-50'
+                          }`}
                         >
                           <div className="flex items-start gap-3">
                             <MapPin className="w-4 h-4 text-slate-400 mt-1 flex-shrink-0" />
@@ -371,13 +429,13 @@ export default function AddDestinationModal({
 
                   {/* Error messages */}
                   {errors.name && (
-                    <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+                    <p role="alert" className="mt-1 text-xs text-red-600">{errors.name}</p>
                   )}
                   {errors.location && (
-                    <p className="mt-1 text-xs text-red-600">{errors.location}</p>
+                    <p role="alert" className="mt-1 text-xs text-red-600">{errors.location}</p>
                   )}
                   {placesError && (
-                    <p className="mt-1 text-xs text-red-600">{placesError}</p>
+                    <p role="alert" className="mt-1 text-xs text-red-600">{placesError}</p>
                   )}
 
                   {/* Selected location confirmation */}
