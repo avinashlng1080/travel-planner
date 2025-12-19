@@ -11,6 +11,9 @@ import { AddActivityModal } from '../components/trips/AddActivityModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
+import AddDestinationModal from '../components/trips/AddDestinationModal';
+import EditDestinationModal from '../components/trips/EditDestinationModal';
+import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
@@ -18,7 +21,14 @@ import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
-import { focusedActivityAtom } from '../atoms/uiAtoms';
+import {
+  focusedActivityAtom,
+  addDestinationModalOpenAtom,
+  editDestinationModalOpenAtom,
+  editingDestinationIdAtom,
+  deleteDestinationDialogOpenAtom,
+  deletingDestinationIdAtom
+} from '../atoms/uiAtoms';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -50,8 +60,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Map sync state
   const setFocusedActivity = useSetAtom(focusedActivityAtom);
 
+  // Commute destination modal state
+  const [addDestinationModalOpen, setAddDestinationModalOpen] = useAtom(addDestinationModalOpenAtom);
+  const [editDestinationModalOpen, setEditDestinationModalOpen] = useAtom(editDestinationModalOpenAtom);
+  const [editingDestinationId, setEditingDestinationId] = useAtom(editingDestinationIdAtom);
+  const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
+  const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
+  const deleteDestination = useMutation(api.commuteDestinations.deleteDestination);
 
   // Fetch trip details with members and plans
   const tripData = useQuery(api.trips.getTripWithDetails, { tripId });
@@ -73,6 +92,19 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Find location for selected activity from already-fetched locations
   const activityLocation = selectedActivity?.locationId
     ? tripLocations?.find((loc) => loc._id === selectedActivity.locationId)
+    : null;
+
+  // Fetch commute destinations for the trip
+  const commuteDestinations = useQuery(api.commuteDestinations.getDestinations, { tripId });
+
+  // Get the destination being edited
+  const editingDestination = editingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === editingDestinationId)
+    : null;
+
+  // Get the destination being deleted
+  const deletingDestination = deletingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === deletingDestinationId)
     : null;
 
   // Trigger onboarding when trip data loads for the first time
@@ -178,6 +210,23 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const visibleCategories = Array.from(
     new Set(mapLocations.map((loc) => loc.category))
   );
+
+  // Handler for deleting a destination
+  const handleDeleteDestination = async () => {
+    if (!deletingDestinationId) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteDestination({ destinationId: deletingDestinationId as Id<'commuteDestinations'> });
+      // Close dialog and reset state
+      setDeleteDestinationDialogOpen(false);
+      setDeletingDestinationId(null);
+    } catch (error) {
+      console.error('Failed to delete destination:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
@@ -353,6 +402,47 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           }}
         />
       )}
+
+      {/* Add Destination Modal */}
+      <AddDestinationModal
+        isOpen={addDestinationModalOpen}
+        onClose={() => setAddDestinationModalOpen(false)}
+        tripId={tripId}
+        onSuccess={() => {
+          // Destinations will refresh automatically via Convex reactivity
+          setAddDestinationModalOpen(false);
+        }}
+      />
+
+      {/* Edit Destination Modal */}
+      {editingDestination && (
+        <EditDestinationModal
+          isOpen={editDestinationModalOpen}
+          onClose={() => {
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+          tripId={tripId}
+          destination={editingDestination}
+          onSuccess={() => {
+            // Destinations will refresh automatically via Convex reactivity
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+        />
+      )}
+
+      {/* Delete Destination Dialog */}
+      <DeleteDestinationDialog
+        isOpen={deleteDestinationDialogOpen}
+        onClose={() => {
+          setDeleteDestinationDialogOpen(false);
+          setDeletingDestinationId(null);
+        }}
+        destinationName={deletingDestination?.name || 'this destination'}
+        onConfirm={handleDeleteDestination}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

@@ -179,3 +179,10 @@ export const clearNewlyAddedPinsAtom = atom(
     set(newlyAddedPinsAtom, null);
   }
 );
+
+// Commute Destination Modal State
+export const addDestinationModalOpenAtom = atom<boolean>(false);
+export const editDestinationModalOpenAtom = atom<boolean>(false);
+export const editingDestinationIdAtom = atom<string | null>(null);
+export const deleteDestinationDialogOpenAtom = atom<boolean>(false);
+export const deletingDestinationIdAtom = atom<string | null>(null);

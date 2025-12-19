@@ -337,4 +337,26 @@ export default defineSchema({
   })
     .index("by_trip", ["tripId"])
     .index("by_trip_and_time", ["tripId", "createdAt"]),
+
+  // Commute Destinations - Saved commute destinations for a trip
+  commuteDestinations: defineTable({
+    tripId: v.id("trips"),
+    name: v.string(),
+    placeId: v.optional(v.string()),
+    address: v.optional(v.string()),
+    lat: v.number(),
+    lng: v.number(),
+    category: v.optional(v.string()),
+    travelMode: v.union(
+      v.literal("DRIVING"),
+      v.literal("TRANSIT"),
+      v.literal("BICYCLING"),
+      v.literal("WALKING")
+    ),
+    addedBy: v.id("users"),
+    addedAt: v.number(),
+    order: v.number(),
+  })
+    .index("by_trip", ["tripId"])
+    .index("by_trip_and_order", ["tripId", "order"]),
 });
