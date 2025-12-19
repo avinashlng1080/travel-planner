@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 import {
   X,
   Clock,
@@ -15,14 +13,6 @@ import {
 } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../ui/GlassPanel';
 import type { Id } from '../../../convex/_generated/dataModel';
-
-// Fix default marker icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
 
 interface ActivityDetailPanelProps {
   isOpen: boolean;
@@ -71,6 +61,7 @@ export function ActivityDetailPanel({
   onDelete,
 }: ActivityDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const mapId = import.meta.env.VITE_GOOGLE_MAPS_ID;
 
   if (!activity) return null;
 
@@ -226,27 +217,33 @@ export function ActivityDetailPanel({
                         )}
                       </div>
 
-                      {/* Mini Map */}
+                      {/* Mini Map - Google Maps */}
                       <div className="h-40 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                        <MapContainer
-                          center={[location.lat, location.lng]}
-                          zoom={14}
-                          className="h-full w-full"
+                        <Map
+                          defaultCenter={{ lat: location.lat, lng: location.lng }}
+                          defaultZoom={14}
+                          mapId={mapId}
+                          gestureHandling="none"
+                          disableDefaultUI={true}
                           zoomControl={false}
-                          attributionControl={false}
-                          dragging={false}
-                          scrollWheelZoom={false}
-                          doubleClickZoom={false}
-                          touchZoom={false}
+                          mapTypeControl={false}
+                          fullscreenControl={false}
+                          streetViewControl={false}
+                          style={{ width: '100%', height: '100%' }}
                         >
-                          <TileLayer
-                            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                          />
-                          <Marker position={[location.lat, location.lng]}>
-                            <Popup>{location.name}</Popup>
-                          </Marker>
-                        </MapContainer>
+                          <AdvancedMarker position={{ lat: location.lat, lng: location.lng }}>
+                            <div
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#F97316',
+                                borderRadius: '50%',
+                                border: '3px solid white',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              }}
+                            />
+                          </AdvancedMarker>
+                        </Map>
                       </div>
 
                       <div className="text-xs text-slate-500">

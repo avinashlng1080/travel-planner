@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Navigation } from 'lucide-react';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { NavigationDock } from '../components/Layout/NavigationDock';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
@@ -11,12 +11,14 @@ import { AddActivityModal } from '../components/trips/AddActivityModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
+import { CommutesPanel } from '../components/trips/CommutesPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
-import { FullScreenMap } from '../components/Map/FullScreenMap';
+import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel } from '../components/floating';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
+import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom } from '../atoms/uiAtoms';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -44,6 +46,12 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Floating panel state
   const openPanel = useSetAtom(openPanelAtom);
+
+  // Commutes panel state
+  const [travelMode, setTravelMode] = useAtom(travelModeAtom);
+  const [commutesPanelOpen, setCommutesPanelOpen] = useAtom(commutesPanelOpenAtom);
+  const [, setActiveCommuteDestination] = useAtom(activeCommuteDestinationAtom);
+  const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -174,10 +182,71 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     new Set(mapLocations.map((loc) => loc.category))
   );
 
+  // Compute commute destinations from scheduled items for the selected day
+  const commuteDestinations = useMemo(() => {
+    if (!scheduleItems || !tripLocations) return [];
+
+    // Filter by selected day if there is one
+    const dayItems = selectedDayId
+      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
+      : scheduleItems;
+
+    // Sort by order/time
+    const sortedItems = [...dayItems].sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    // Map to destination format
+    return sortedItems
+      .filter((item) => item.locationId)
+      .map((item) => {
+        const loc = tripLocations.find((l) => l._id === item.locationId);
+        if (!loc) return null;
+
+        return {
+          id: item._id,
+          name: loc.customName || loc.baseLocation?.name || item.title,
+          lat: loc.customLat || loc.baseLocation?.lat || 0,
+          lng: loc.customLng || loc.baseLocation?.lng || 0,
+          category: loc.customCategory || loc.baseLocation?.category,
+        };
+      })
+      .filter((d): d is NonNullable<typeof d> => d !== null && d.lat !== 0);
+  }, [scheduleItems, tripLocations, selectedDayId]);
+
+  // Get origin point (first location or home base)
+  const commuteOrigin = useMemo(() => {
+    // Use first scheduled location as origin, or trip's first location
+    if (commuteDestinations.length > 0) {
+      const firstDest = commuteDestinations[0];
+      return {
+        lat: firstDest.lat,
+        lng: firstDest.lng,
+        name: firstDest.name,
+      };
+    }
+    // Fallback to first trip location
+    if (mapLocations.length > 0) {
+      const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
+      if (homeBase) {
+        return { lat: homeBase.lat, lng: homeBase.lng, name: homeBase.name };
+      }
+      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng, name: mapLocations[0].name };
+    }
+    return null;
+  }, [commuteDestinations, mapLocations]);
+
+  // Destinations for commute (excluding origin)
+  const commuteDestinationsWithoutOrigin = useMemo(() => {
+    if (commuteDestinations.length <= 1) return [];
+    return commuteDestinations.slice(1);
+  }, [commuteDestinations]);
+
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
-      <FullScreenMap
+      <GoogleFullScreenMap
         locations={mapLocations}
         selectedLocation={selectedLocation}
         visibleCategories={visibleCategories}
@@ -235,6 +304,38 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           setIsImportModalOpen(true);
         }}
       />
+
+      {/* Commutes Panel Toggle Button */}
+      {commuteDestinationsWithoutOrigin.length > 0 && (
+        <button
+          onClick={() => setCommutesPanelOpen(!commutesPanelOpen)}
+          className={`fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all ${
+            commutesPanelOpen
+              ? 'bg-ocean-600 text-white hover:bg-ocean-700'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+          }`}
+          aria-label={commutesPanelOpen ? 'Hide commute times' : 'Show commute times'}
+          aria-expanded={commutesPanelOpen}
+        >
+          <Navigation className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {commutesPanelOpen ? 'Hide Commutes' : `${commuteDestinationsWithoutOrigin.length} Destinations`}
+          </span>
+        </button>
+      )}
+
+      {/* Commutes Panel */}
+      {commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0 && (
+        <div className="fixed bottom-32 sm:bottom-16 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[600px] max-w-full z-30">
+          <CommutesPanel
+            origin={commuteOrigin}
+            destinations={commuteDestinationsWithoutOrigin}
+            travelMode={travelMode}
+            onTravelModeChange={setTravelMode}
+            onActiveDestinationChange={setActiveCommuteDestination}
+          />
+        </div>
+      )}
 
       {/* Mobile Navigation Bar */}
       <MobileNavBar />

@@ -2,6 +2,7 @@ import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import type { Location } from '../data/tripData';
 import { markInteractionAtom } from './onboardingAtoms';
+import type { TravelMode } from '../hooks/useCommutes';
 
 // Dynamic pin created by AI chat
 export interface DynamicPin {
@@ -170,3 +171,8 @@ export const clearNewlyAddedPinsAtom = atom(
     set(newlyAddedPinsAtom, null);
   }
 );
+
+// Commutes panel state
+export const travelModeAtom = atomWithStorage<TravelMode>('malaysia-trip-ui-travelMode', 'DRIVING');
+export const commutesPanelOpenAtom = atom<boolean>(false);
+export const activeCommuteDestinationAtom = atom<string | null>(null);

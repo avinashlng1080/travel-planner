@@ -5,6 +5,7 @@ import { TripPlannerApp } from './pages/TripPlannerApp';
 import { DashboardPage } from './pages/DashboardPage';
 import { TripViewPage } from './pages/TripViewPage';
 import { LoadingScreen } from './components/ui/LoadingScreen';
+import { GoogleMapsProvider } from './components/Map/GoogleMapsProvider';
 import type { Id } from '../convex/_generated/dataModel';
 
 type AppView = 'dashboard' | 'trip' | 'legacy-planner';
@@ -22,30 +23,28 @@ function App() {
     return <LandingPage />;
   }
 
-  // Authenticated views
-  if (currentView === 'trip' && selectedTripId) {
-    return (
-      <TripViewPage
-        tripId={selectedTripId}
-        onBack={() => {
-          setCurrentView('dashboard');
-          setSelectedTripId(null);
-        }}
-      />
-    );
-  }
-
-  if (currentView === 'legacy-planner') {
-    return <TripPlannerApp onBack={() => setCurrentView('dashboard')} />;
-  }
-
+  // Authenticated views - wrapped with GoogleMapsProvider for map access
   return (
-    <DashboardPage
-      onOpenTrip={(tripId) => {
-        setSelectedTripId(tripId);
-        setCurrentView('trip');
-      }}
-    />
+    <GoogleMapsProvider>
+      {currentView === 'trip' && selectedTripId ? (
+        <TripViewPage
+          tripId={selectedTripId}
+          onBack={() => {
+            setCurrentView('dashboard');
+            setSelectedTripId(null);
+          }}
+        />
+      ) : currentView === 'legacy-planner' ? (
+        <TripPlannerApp onBack={() => setCurrentView('dashboard')} />
+      ) : (
+        <DashboardPage
+          onOpenTrip={(tripId) => {
+            setSelectedTripId(tripId);
+            setCurrentView('trip');
+          }}
+        />
+      )}
+    </GoogleMapsProvider>
   );
 }
 
