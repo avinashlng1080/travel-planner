@@ -12,6 +12,8 @@ import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { useWeather } from '../../hooks/useWeather';
+import { WeatherBadge } from '../Weather';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType } from '../../data/tripData';
@@ -55,6 +57,9 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height } = useResponsivePanel(420, 580);
+
+  // Get weather data (defaults to Kuala Lumpur)
+  const { daily: weatherForecast } = useWeather();
 
   // Fetch data from Convex
   const scheduleItems = useQuery(
@@ -183,6 +188,12 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
     dayDate.setHours(0, 0, 0, 0);
     return dayDate.getTime() === today.getTime();
   }, [selectedDayPlan]);
+
+  // Get weather forecast for the selected day
+  const selectedDayWeather = useMemo(() => {
+    if (!selectedDayPlan || !weatherForecast.length) return null;
+    return weatherForecast.find((f) => f.date === selectedDayPlan.date) || null;
+  }, [selectedDayPlan, weatherForecast]);
 
   // Navigation handlers
   const goToPrevDay = () => {
@@ -339,6 +350,9 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
               <span className="text-xs font-medium text-slate-500">
                 {selectedDayPlan?.dayOfWeek}
               </span>
+              {selectedDayWeather && (
+                <WeatherBadge forecast={selectedDayWeather} />
+              )}
               {isToday && (
                 <GlassBadge color="sunset" className="text-xs px-1.5 py-0">
                   TODAY

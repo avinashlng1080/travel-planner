@@ -55,6 +55,9 @@ ${daySummary}
 WEATHER (Dec-Jan):
 - KL: ${WEATHER_INFO.klWeather.temperature}, ${WEATHER_INFO.klWeather.rainfall}
 - Cameron Highlands: ${WEATHER_INFO.cameronWeather.temperature} (much cooler!)
+- NOTE: The app displays LIVE weather data from Open-Meteo API with flash flood risk alerts.
+  When users ask about weather, remind them to check the weather badge in the Trip Planner.
+  If rain probability is high (>60%), proactively suggest Plan B indoor activities.
 
 SAFETY:
 - Emergency: Police/Ambulance 999
@@ -154,6 +157,7 @@ Use web search for real-time information:
 4. **Toddler considerations**: If travelers include children, prioritize family-friendly options
 5. **Plan B alternatives**: Suggest indoor options for rainy weather
 6. **Be conversational**: Explain your suggestions, don't just list places
+7. **Weather awareness**: The app displays live weather data with forecasts. Remind users to check the weather badge in the Trip Planner for daily conditions. If rain is likely, proactively suggest indoor activities.
 
 ## When User Pastes an Itinerary
 

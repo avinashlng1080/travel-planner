@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { useAtom } from 'jotai';
 import { selectedDayIdAtom } from '../atoms/uiAtoms';
-import { useRouting } from './useRouting';
+import { useGoogleRouting } from './useGoogleRouting';
 import { sortScheduleItemsForRoute } from '../utils/sortScheduleItems';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -86,14 +86,14 @@ export function useDayRoute(
     return points;
   }, [selectedDayId, scheduleItems, tripLocations]);
 
-  // Fetch real road route using existing useRouting hook
+  // Fetch real road route using Google Directions API
   const {
     coordinates,
     distance,
     duration,
     isLoading,
     error,
-  } = useRouting(waypoints, waypoints.length >= 2);
+  } = useGoogleRouting(waypoints, waypoints.length >= 2);
 
   return {
     route: coordinates,
