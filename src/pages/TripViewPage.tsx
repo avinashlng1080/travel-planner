@@ -83,6 +83,113 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     ? tripLocations?.find((loc) => loc._id === selectedActivity.locationId)
     : null;
 
+  // Transform tripLocations to Location format for map (MUST be before early returns)
+  const mapLocations: Location[] = useMemo(() =>
+    tripLocations?.map((loc) => ({
+      id: loc._id,
+      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
+      lat: loc.customLat || loc.baseLocation?.lat || 0,
+      lng: loc.customLng || loc.baseLocation?.lng || 0,
+      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
+      description: loc.customDescription || loc.baseLocation?.description || '',
+      city: loc.baseLocation?.city || 'Malaysia',
+      toddlerRating: loc.baseLocation?.toddlerRating || 3,
+      isIndoor: loc.baseLocation?.isIndoor || false,
+      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
+      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
+      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
+      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
+      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
+      warnings: loc.baseLocation?.warnings || [],
+      tips: loc.baseLocation?.tips || [],
+      whatToBring: loc.baseLocation?.whatToBring || [],
+      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
+      bookingRequired: loc.baseLocation?.bookingRequired || false,
+      openingHours: loc.baseLocation?.openingHours || 'Check locally',
+      planIds: [],
+      address: loc.baseLocation?.address,
+      entranceFee: loc.baseLocation?.entranceFee,
+      dressCode: loc.baseLocation?.dressCode,
+    })) || [], [tripLocations]);
+
+  // Get all categories for filtering (MUST be before early returns)
+  const visibleCategories = useMemo(() =>
+    Array.from(new Set(mapLocations.map((loc) => loc.category))),
+    [mapLocations]
+  );
+
+  // Compute commute destinations from scheduled items for the selected day (MUST be before early returns)
+  const commuteDestinations = useMemo(() => {
+    if (!scheduleItems || !tripLocations) return [];
+
+    // Filter by selected day if there is one
+    const dayItems = selectedDayId
+      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
+      : scheduleItems;
+
+    // Sort by order/time
+    const sortedItems = [...dayItems].sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    // Map to destination format
+    return sortedItems
+      .filter((item) => item.locationId)
+      .map((item) => {
+        const loc = tripLocations.find((l) => l._id === item.locationId);
+        if (!loc) return null;
+
+        return {
+          id: item._id,
+          name: loc.customName || loc.baseLocation?.name || item.title,
+          lat: loc.customLat || loc.baseLocation?.lat || 0,
+          lng: loc.customLng || loc.baseLocation?.lng || 0,
+          category: loc.customCategory || loc.baseLocation?.category,
+        };
+      })
+      .filter((d): d is NonNullable<typeof d> => d !== null && d.lat !== 0);
+  }, [scheduleItems, tripLocations, selectedDayId]);
+
+  // Get origin point (first location or home base) (MUST be before early returns)
+  const commuteOrigin = useMemo(() => {
+    // Use first scheduled location as origin, or trip's first location
+    if (commuteDestinations.length > 0) {
+      const firstDest = commuteDestinations[0];
+      return {
+        lat: firstDest.lat,
+        lng: firstDest.lng,
+        name: firstDest.name,
+      };
+    }
+    // Fallback to first trip location
+    if (mapLocations.length > 0) {
+      const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
+      if (homeBase) {
+        return { lat: homeBase.lat, lng: homeBase.lng, name: homeBase.name };
+      }
+      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng, name: mapLocations[0].name };
+    }
+    return null;
+  }, [commuteDestinations, mapLocations]);
+
+  // Destinations for commute (excluding origin) (MUST be before early returns)
+  const commuteDestinationsWithoutOrigin = useMemo(() => {
+    if (commuteDestinations.length <= 1) return [];
+    return commuteDestinations.slice(1);
+  }, [commuteDestinations]);
+
+  // Fetch commute data with Google Directions API (MUST be before early returns)
+  const { commutes, isLoading: isCommutesLoading } = useCommutes({
+    origin: commuteOrigin,
+    destinations: commuteDestinationsWithoutOrigin.map((d, index) => ({
+      ...d,
+      label: String.fromCharCode(65 + index), // A, B, C, etc.
+    })),
+    travelMode,
+    enabled: commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0,
+  });
+
   // Trigger onboarding when trip data loads for the first time
   useEffect(() => {
     if (tripData && onboardingStatus === 'pending') {
@@ -152,112 +259,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Get user's role from members (needed for ActivityDetailPanel)
   const currentMember = members.find((m) => m.status === 'accepted');
   const userRole = currentMember?.role || 'viewer';
-
-  // Transform tripLocations to Location format for map
-  const mapLocations: Location[] =
-    tripLocations?.map((loc) => ({
-      id: loc._id,
-      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
-      lat: loc.customLat || loc.baseLocation?.lat || 0,
-      lng: loc.customLng || loc.baseLocation?.lng || 0,
-      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
-      description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
-      toddlerRating: loc.baseLocation?.toddlerRating || 3,
-      isIndoor: loc.baseLocation?.isIndoor || false,
-      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
-      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
-      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
-      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
-      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
-      warnings: loc.baseLocation?.warnings || [],
-      tips: loc.baseLocation?.tips || [],
-      whatToBring: loc.baseLocation?.whatToBring || [],
-      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
-      bookingRequired: loc.baseLocation?.bookingRequired || false,
-      openingHours: loc.baseLocation?.openingHours || 'Check locally',
-      planIds: [],
-      address: loc.baseLocation?.address,
-      entranceFee: loc.baseLocation?.entranceFee,
-      dressCode: loc.baseLocation?.dressCode,
-    })) || [];
-
-  // Get all categories for filtering
-  const visibleCategories = Array.from(
-    new Set(mapLocations.map((loc) => loc.category))
-  );
-
-  // Compute commute destinations from scheduled items for the selected day
-  const commuteDestinations = useMemo(() => {
-    if (!scheduleItems || !tripLocations) return [];
-
-    // Filter by selected day if there is one
-    const dayItems = selectedDayId
-      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
-      : scheduleItems;
-
-    // Sort by order/time
-    const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order;
-      return a.startTime.localeCompare(b.startTime);
-    });
-
-    // Map to destination format
-    return sortedItems
-      .filter((item) => item.locationId)
-      .map((item) => {
-        const loc = tripLocations.find((l) => l._id === item.locationId);
-        if (!loc) return null;
-
-        return {
-          id: item._id,
-          name: loc.customName || loc.baseLocation?.name || item.title,
-          lat: loc.customLat || loc.baseLocation?.lat || 0,
-          lng: loc.customLng || loc.baseLocation?.lng || 0,
-          category: loc.customCategory || loc.baseLocation?.category,
-        };
-      })
-      .filter((d): d is NonNullable<typeof d> => d !== null && d.lat !== 0);
-  }, [scheduleItems, tripLocations, selectedDayId]);
-
-  // Get origin point (first location or home base)
-  const commuteOrigin = useMemo(() => {
-    // Use first scheduled location as origin, or trip's first location
-    if (commuteDestinations.length > 0) {
-      const firstDest = commuteDestinations[0];
-      return {
-        lat: firstDest.lat,
-        lng: firstDest.lng,
-        name: firstDest.name,
-      };
-    }
-    // Fallback to first trip location
-    if (mapLocations.length > 0) {
-      const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
-      if (homeBase) {
-        return { lat: homeBase.lat, lng: homeBase.lng, name: homeBase.name };
-      }
-      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng, name: mapLocations[0].name };
-    }
-    return null;
-  }, [commuteDestinations, mapLocations]);
-
-  // Destinations for commute (excluding origin)
-  const commuteDestinationsWithoutOrigin = useMemo(() => {
-    if (commuteDestinations.length <= 1) return [];
-    return commuteDestinations.slice(1);
-  }, [commuteDestinations]);
-
-  // Fetch commute data with Google Directions API
-  const { commutes, isLoading: isCommutesLoading } = useCommutes({
-    origin: commuteOrigin,
-    destinations: commuteDestinationsWithoutOrigin.map((d, index) => ({
-      ...d,
-      label: String.fromCharCode(65 + index), // A, B, C, etc.
-    })),
-    travelMode,
-    enabled: commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0,
-  });
 
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
