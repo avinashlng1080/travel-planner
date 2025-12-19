@@ -9,12 +9,13 @@ interface CommutesRoutingLayerProps {
 }
 
 // Route styling constants (matching Google's Commutes widget)
+// Increased contrast for accessibility: stroke weight, opacity, and dashed pattern
 const ACTIVE_ROUTE_COLOR = '#4285F4'; // Google blue
 const INACTIVE_ROUTE_COLOR = '#9CA3AF'; // Gray
-const ACTIVE_ROUTE_WEIGHT = 5;
-const INACTIVE_ROUTE_WEIGHT = 3;
-const ACTIVE_ROUTE_OPACITY = 1;
-const INACTIVE_ROUTE_OPACITY = 0.5;
+const ACTIVE_ROUTE_WEIGHT = 6;
+const INACTIVE_ROUTE_WEIGHT = 2.5;
+const ACTIVE_ROUTE_OPACITY = 1.0;
+const INACTIVE_ROUTE_OPACITY = 0.35;
 
 /**
  * Renders commute routes with active/inactive styling
@@ -41,8 +42,20 @@ export function CommutesRoutingLayer({
         strokeColor: isActive ? ACTIVE_ROUTE_COLOR : INACTIVE_ROUTE_COLOR,
         strokeWeight: isActive ? ACTIVE_ROUTE_WEIGHT : INACTIVE_ROUTE_WEIGHT,
         strokeOpacity: isActive ? ACTIVE_ROUTE_OPACITY : INACTIVE_ROUTE_OPACITY,
-        zIndex: isActive ? 10 : 1,
+        zIndex: isActive ? 100 : 50,
         clickable: true,
+        // Add dashed pattern to inactive routes for non-color differentiation
+        icons: isActive ? undefined : [
+          {
+            icon: {
+              path: 'M 0,-1 0,1',
+              strokeOpacity: 1,
+              scale: 4,
+            },
+            offset: '0',
+            repeat: '20px',
+          },
+        ],
       };
 
       if (existingPolyline) {
@@ -65,30 +78,17 @@ export function CommutesRoutingLayer({
         polylinesRef.current.delete(destId);
       }
     });
+  }, [map, commutes, activeDestinationId]);
 
-    // Cleanup on unmount
+  // Cleanup on unmount only
+  useEffect(() => {
     return () => {
       polylinesRef.current.forEach((polyline) => {
         polyline.setMap(null);
       });
       polylinesRef.current.clear();
     };
-  }, [map, commutes, activeDestinationId]);
-
-  // Re-render polylines when active destination changes
-  useEffect(() => {
-    if (!map) return;
-
-    polylinesRef.current.forEach((polyline, destId) => {
-      const isActive = destId === activeDestinationId;
-      polyline.setOptions({
-        strokeColor: isActive ? ACTIVE_ROUTE_COLOR : INACTIVE_ROUTE_COLOR,
-        strokeWeight: isActive ? ACTIVE_ROUTE_WEIGHT : INACTIVE_ROUTE_WEIGHT,
-        strokeOpacity: isActive ? ACTIVE_ROUTE_OPACITY : INACTIVE_ROUTE_OPACITY,
-        zIndex: isActive ? 10 : 1,
-      });
-    });
-  }, [map, activeDestinationId]);
+  }, []);
 
   return null; // This component renders imperatively
 }

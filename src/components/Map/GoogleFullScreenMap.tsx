@@ -23,6 +23,8 @@ import type { Id } from '../../../convex/_generated/dataModel';
 import { GoogleRoutingLayer } from './GoogleRoutingLayer';
 import { GoogleDayRouteLayer } from './GoogleDayRouteLayer';
 import { GooglePOILayer } from './GooglePOILayer';
+import { CommutesRoutingLayer } from './CommutesRoutingLayer';
+import type { CommuteResult } from '../../hooks/useCommutes';
 import {
   CATEGORY_COLORS,
   PLAN_A_COLOR,
@@ -423,6 +425,13 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
   const size = isSelected ? 48 : 40;
   const color = CATEGORY_COLORS[location.category] || '#64748b';
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <AdvancedMarker
       position={{ lat: location.lat, lng: location.lng }}
@@ -430,6 +439,12 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
       zIndex={isSelected ? 100 : 10}
     >
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`${location.name} - ${location.category}`}
+        aria-pressed={isSelected}
+        onKeyDown={handleKeyDown}
+        className={isSelected ? 'ring-2 ring-ocean-500 ring-offset-2 rounded-full' : ''}
         style={{
           cursor: 'pointer',
           transform: 'translateY(-50%)',
@@ -456,6 +471,13 @@ interface DynamicPinMarkerProps {
 function DynamicPinMarker({ pin, onClick }: DynamicPinMarkerProps) {
   const size = 40;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <AdvancedMarker
       position={{ lat: pin.lat, lng: pin.lng }}
@@ -463,6 +485,12 @@ function DynamicPinMarker({ pin, onClick }: DynamicPinMarkerProps) {
       zIndex={50}
     >
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`AI suggested location: ${pin.name}`}
+        aria-pressed={false}
+        onKeyDown={handleKeyDown}
+        className="focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 rounded-full"
         style={{
           cursor: 'pointer',
           transform: 'translateY(-50%)',
@@ -524,6 +552,8 @@ interface GoogleFullScreenMapProps {
   planBLocationIds?: string[];
   tripId?: Id<'trips'> | null;
   selectedPlanId?: Id<'tripPlans'> | null;
+  commutes?: Map<string, CommuteResult>;
+  activeCommuteDestinationId?: string | null;
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
   onNewPinsFocused?: () => void;
@@ -541,6 +571,8 @@ export function GoogleFullScreenMap({
   planBLocationIds = [],
   tripId = null,
   selectedPlanId = null,
+  commutes,
+  activeCommuteDestinationId,
   onLocationSelect,
   onDynamicPinSelect,
   onNewPinsFocused,
@@ -638,6 +670,14 @@ export function GoogleFullScreenMap({
           planId={selectedPlanId}
           activePlan={activePlan}
         />
+
+        {/* Commutes Routing Layer */}
+        {commutes && (
+          <CommutesRoutingLayer
+            commutes={commutes}
+            activeDestinationId={activeCommuteDestinationId || null}
+          />
+        )}
 
         {/* POI Layer */}
         <GooglePOILayer bounds={mapBounds} visible={true} />

@@ -88,15 +88,17 @@ export function GoogleRoutingLayer({
         map,
       });
     }
+  }, [map, coordinates, color, dashArray, weight, opacity, isLoading]);
 
-    // Cleanup on unmount or when dependencies change
+  // Cleanup on unmount only
+  useEffect(() => {
     return () => {
       if (polylineRef.current) {
         polylineRef.current.setMap(null);
         polylineRef.current = null;
       }
     };
-  }, [map, coordinates, color, dashArray, weight, opacity, isLoading]);
+  }, []);
 
   // This component doesn't render anything - it manages the polyline imperatively
   return null;

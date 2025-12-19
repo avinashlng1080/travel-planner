@@ -68,6 +68,15 @@ export function useCommutes({
 
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const pendingRequestsRef = useRef<Set<string>>(new Set());
+  const mountedRef = useRef(true);
+
+  // Track mounted state
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Initialize DirectionsService
   useEffect(() => {
@@ -115,6 +124,8 @@ export function useCommutes({
             travelMode: google.maps.TravelMode[travelMode],
           },
           (result, status) => {
+            if (!mountedRef.current) return;
+
             pendingRequestsRef.current.delete(cacheKey);
 
             if (status === google.maps.DirectionsStatus.OK && result) {

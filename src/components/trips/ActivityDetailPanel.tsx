@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { Map as GoogleMapComponent, AdvancedMarker } from '@vis.gl/react-google-maps';
 import {
   X,
   Clock,
@@ -62,6 +62,13 @@ export function ActivityDetailPanel({
 }: ActivityDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const mapId = import.meta.env.VITE_GOOGLE_MAPS_ID;
+
+  if (!mapId) {
+    console.warn(
+      '[ActivityDetailPanel] VITE_GOOGLE_MAPS_ID is not set. ' +
+      'AdvancedMarker requires a Map ID. See: https://console.cloud.google.com/google/maps-apis/studio/maps'
+    );
+  }
 
   if (!activity) return null;
 
@@ -219,7 +226,7 @@ export function ActivityDetailPanel({
 
                       {/* Mini Map - Google Maps */}
                       <div className="h-40 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                        <Map
+                        <GoogleMapComponent
                           defaultCenter={{ lat: location.lat, lng: location.lng }}
                           defaultZoom={14}
                           mapId={mapId}
@@ -243,7 +250,7 @@ export function ActivityDetailPanel({
                               }}
                             />
                           </AdvancedMarker>
-                        </Map>
+                        </GoogleMapComponent>
                       </div>
 
                       <div className="text-xs text-slate-500">

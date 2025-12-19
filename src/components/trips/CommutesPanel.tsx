@@ -1,8 +1,8 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Bus, Bike, PersonStanding, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GlassPanel } from '../ui/GlassPanel';
-import { useCommutes, TravelMode, Destination, CommuteResult } from '../../hooks/useCommutes';
+import { TravelMode, Destination, CommuteResult } from '../../hooks/useCommutes';
 
 interface CommutesPanelProps {
   origin: { lat: number; lng: number; name?: string } | null;
@@ -16,6 +16,8 @@ interface CommutesPanelProps {
   travelMode: TravelMode;
   onTravelModeChange: (mode: TravelMode) => void;
   onActiveDestinationChange?: (destId: string | null) => void;
+  commutes: Map<string, CommuteResult>;
+  isLoading: boolean;
   className?: string;
 }
 
@@ -52,9 +54,12 @@ export function CommutesPanel({
   travelMode,
   onTravelModeChange,
   onActiveDestinationChange,
+  commutes,
+  isLoading,
   className = '',
 }: CommutesPanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [activeDestinationId, setActiveDestinationId] = useState<string | null>(null);
 
   // Convert to Destination format with labels
   const labeledDestinations: Destination[] = useMemo(() => {
@@ -67,17 +72,12 @@ export function CommutesPanel({
     }));
   }, [destinations]);
 
-  const {
-    commutes,
-    isLoading,
-    activeDestinationId,
-    setActiveDestinationId,
-  } = useCommutes({
-    origin,
-    destinations: labeledDestinations,
-    travelMode,
-    enabled: !!origin && destinations.length > 0,
-  });
+  // Set first destination as active by default
+  useEffect(() => {
+    if (destinations.length > 0 && !activeDestinationId) {
+      setActiveDestinationId(destinations[0].id);
+    }
+  }, [destinations, activeDestinationId]);
 
   // Notify parent of active destination changes
   useEffect(() => {
@@ -126,7 +126,7 @@ export function CommutesPanel({
             <button
               key={mode}
               onClick={() => onTravelModeChange(mode)}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
                 travelMode === mode
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -147,14 +147,14 @@ export function CommutesPanel({
           <>
             <button
               onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
               aria-label="Scroll left"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
               aria-label="Scroll right"
             >
               <ChevronRight className="w-5 h-5" />
@@ -213,7 +213,7 @@ export function CommutesPanel({
                   {commute ? (
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5 text-slate-700">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                         <span className="text-sm font-semibold">
                           {commute.durationText}
                         </span>
@@ -280,7 +280,7 @@ function TotalCommuteSummary({ commutes }: { commutes: Map<string, CommuteResult
   return (
     <div className="flex items-center gap-3 text-slate-700">
       <span className="flex items-center gap-1">
-        <Clock className="w-3.5 h-3.5 text-slate-400" />
+        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
         <span className="font-medium">{totals.durationText}</span>
         <span className="text-slate-400">total</span>
       </span>

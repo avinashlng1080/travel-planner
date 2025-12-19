@@ -19,6 +19,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
 import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom } from '../atoms/uiAtoms';
+import { useCommutes } from '../hooks/useCommutes';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -50,7 +51,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Commutes panel state
   const [travelMode, setTravelMode] = useAtom(travelModeAtom);
   const [commutesPanelOpen, setCommutesPanelOpen] = useAtom(commutesPanelOpenAtom);
-  const [, setActiveCommuteDestination] = useAtom(activeCommuteDestinationAtom);
+  const [activeCommuteDestination, setActiveCommuteDestination] = useAtom(activeCommuteDestinationAtom);
   const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   // Mutations
@@ -243,6 +244,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     return commuteDestinations.slice(1);
   }, [commuteDestinations]);
 
+  // Fetch commute data with Google Directions API
+  const { commutes, isLoading: isCommutesLoading } = useCommutes({
+    origin: commuteOrigin,
+    destinations: commuteDestinationsWithoutOrigin.map((d, index) => ({
+      ...d,
+      label: String.fromCharCode(65 + index), // A, B, C, etc.
+    })),
+    travelMode,
+    enabled: commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0,
+  });
+
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
@@ -254,6 +266,8 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         planRoute={[]}
         tripId={tripId}
         selectedPlanId={selectedPlanId}
+        commutes={commutes}
+        activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
         onLocationSelect={(location) => setSelectedLocation(location)}
       />
 
@@ -333,6 +347,8 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
             travelMode={travelMode}
             onTravelModeChange={setTravelMode}
             onActiveDestinationChange={setActiveCommuteDestination}
+            commutes={commutes}
+            isLoading={isCommutesLoading}
           />
         </div>
       )}
