@@ -21,7 +21,7 @@ import { NavigationDock } from '../components/Layout/NavigationDock';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
-import { FullScreenMap } from '../components/Map/FullScreenMap';
+import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import {
   ChecklistFloatingPanel,
   FiltersPanel,
@@ -168,7 +168,7 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
-      <FullScreenMap
+      <GoogleFullScreenMap
         locations={LOCATIONS}
         selectedLocation={selectedLocation}
         visibleCategories={visibleCategories}

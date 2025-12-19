@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { TripViewPage } from './pages/TripViewPage';
 import { JoinTripPage } from './pages/JoinTripPage';
 import { LoadingScreen } from './components/ui/LoadingScreen';
+import { GoogleMapsProvider } from './components/Map/GoogleMapsProvider';
 import type { Id } from '../convex/_generated/dataModel';
 
 type AppView = 'dashboard' | 'trip' | 'legacy-planner' | 'join';
@@ -34,7 +35,7 @@ function App() {
     return <LandingPage />;
   }
 
-  // Join trip flow
+  // Join trip flow (not wrapped in GoogleMapsProvider as it doesn't need maps)
   if (currentView === 'join' && joinToken) {
     return (
       <JoinTripPage
@@ -54,30 +55,28 @@ function App() {
     );
   }
 
-  // Authenticated views
-  if (currentView === 'trip' && selectedTripId) {
-    return (
-      <TripViewPage
-        tripId={selectedTripId}
-        onBack={() => {
-          setCurrentView('dashboard');
-          setSelectedTripId(null);
-        }}
-      />
-    );
-  }
-
-  if (currentView === 'legacy-planner') {
-    return <TripPlannerApp onBack={() => setCurrentView('dashboard')} />;
-  }
-
+  // Authenticated views - wrapped with GoogleMapsProvider for map access
   return (
-    <DashboardPage
-      onOpenTrip={(tripId) => {
-        setSelectedTripId(tripId);
-        setCurrentView('trip');
-      }}
-    />
+    <GoogleMapsProvider>
+      {currentView === 'trip' && selectedTripId ? (
+        <TripViewPage
+          tripId={selectedTripId}
+          onBack={() => {
+            setCurrentView('dashboard');
+            setSelectedTripId(null);
+          }}
+        />
+      ) : currentView === 'legacy-planner' ? (
+        <TripPlannerApp onBack={() => setCurrentView('dashboard')} />
+      ) : (
+        <DashboardPage
+          onOpenTrip={(tripId) => {
+            setSelectedTripId(tripId);
+            setCurrentView('trip');
+          }}
+        />
+      )}
+    </GoogleMapsProvider>
   );
 }
 

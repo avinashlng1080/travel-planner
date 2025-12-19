@@ -33,3 +33,6 @@ npm-debug.log*
 * 2.*
 * 2
 *copy*
+
+# Claude settings (contains API keys and sensitive data)
+.claude/settings.local.json
