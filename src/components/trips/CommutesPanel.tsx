@@ -182,7 +182,7 @@ export function CommutesPanel({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={() => setActiveDestinationId(dest.id)}
-                  className={`flex-shrink-0 w-40 p-3 rounded-xl text-left transition-all ${
+                  className={`flex-shrink-0 w-40 p-3 rounded-xl text-left transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
                     isActive
                       ? 'bg-ocean-50 border-2 border-ocean-400 shadow-lg shadow-ocean-500/20'
                       : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'

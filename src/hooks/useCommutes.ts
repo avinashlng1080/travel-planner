@@ -69,6 +69,7 @@ export function useCommutes({
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const pendingRequestsRef = useRef<Set<string>>(new Set());
   const mountedRef = useRef(true);
+  const commutesRef = useRef<Map<string, CommuteResult>>(new Map());
 
   // Track mounted state
   useEffect(() => {
@@ -77,6 +78,11 @@ export function useCommutes({
       mountedRef.current = false;
     };
   }, []);
+
+  // Keep commutesRef in sync with commutes state
+  useEffect(() => {
+    commutesRef.current = commutes;
+  }, [commutes]);
 
   // Initialize DirectionsService
   useEffect(() => {
@@ -109,8 +115,12 @@ export function useCommutes({
         continue;
       }
 
-      // Skip if already pending
+      // Skip if already pending, but preserve existing result if available
       if (pendingRequestsRef.current.has(cacheKey)) {
+        // Preserve the existing result for this destination
+        if (commutesRef.current.has(dest.id)) {
+          newCommutes.set(dest.id, commutesRef.current.get(dest.id)!);
+        }
         continue;
       }
 

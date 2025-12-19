@@ -323,7 +323,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {commuteDestinationsWithoutOrigin.length > 0 && (
         <button
           onClick={() => setCommutesPanelOpen(!commutesPanelOpen)}
-          className={`fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all ${
+          className={`fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
             commutesPanelOpen
               ? 'bg-ocean-600 text-white hover:bg-ocean-700'
               : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
