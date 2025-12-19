@@ -14,11 +14,12 @@ import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { CommutesPanel } from '../components/trips/CommutesPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel } from '../components/floating';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
+import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
-import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom } from '../atoms/uiAtoms';
+import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
 import { useCommutes } from '../hooks/useCommutes';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -53,6 +54,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [commutesPanelOpen, setCommutesPanelOpen] = useAtom(commutesPanelOpenAtom);
   const [activeCommuteDestination, setActiveCommuteDestination] = useAtom(activeCommuteDestinationAtom);
   const [selectedDayId] = useAtom(selectedDayIdAtom);
+
+  // Map sync state
+  const setFocusedActivity = useSetAtom(focusedActivityAtom);
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -289,11 +293,35 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Floating Panels */}
       <ChecklistFloatingPanel />
       <FiltersPanel />
+      <CollaborationPanel
+        tripId={tripId}
+        tripName={trip.name}
+        userRole={userRole}
+      />
       <TripPlannerPanel
         tripId={tripId}
         selectedPlanId={selectedPlanId}
-        onActivityClick={(activityId) => setSelectedActivityId(activityId as Id<'tripScheduleItems'>)}
+        onActivityClick={(activityId) => {
+          setSelectedActivityId(activityId as Id<'tripScheduleItems'>);
+          // Find activity and sync map to its location
+          const activity = scheduleItems?.find(item => item._id === activityId);
+          if (activity?.locationId) {
+            const location = tripLocations?.find(loc => loc._id === activity.locationId);
+            if (location) {
+              setFocusedActivity({
+                activityId,
+                locationId: activity.locationId as string,
+                lat: location.customLat || location.baseLocation?.lat || 0,
+                lng: location.customLng || location.baseLocation?.lng || 0,
+              });
+            }
+          }
+        }}
       />
+      <WeatherFloatingPanel />
+
+      {/* Weather Indicator - floating badge on map */}
+      <WeatherIndicator />
 
       {/* Right Detail Panel - shows when a location is clicked */}
       {selectedLocation && (

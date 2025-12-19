@@ -38,44 +38,44 @@ export default function WeatherInfo() {
         <p className="text-slate-600 mb-6">{WEATHER_INFO.summary}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-orange-900/30 to-amber-900/30 border border-orange-700 rounded-lg p-5">
+          <div className="bg-gradient-to-br from-orange-100 to-amber-100 border border-orange-300 rounded-lg p-5">
             <h3 className="text-lg font-semibold text-slate-900 mb-3">Kuala Lumpur</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-600">Temperature:</span>
-                <span className="font-semibold text-orange-300">{WEATHER_INFO.klWeather.temperature}</span>
+                <span className="font-semibold text-orange-700">{WEATHER_INFO.klWeather.temperature}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Humidity:</span>
-                <span className="font-semibold text-cyan-300">{WEATHER_INFO.klWeather.humidity}</span>
+                <span className="font-semibold text-cyan-700">{WEATHER_INFO.klWeather.humidity}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Rainfall:</span>
-                <span className="font-semibold text-blue-300">{WEATHER_INFO.klWeather.rainfall}</span>
+                <span className="font-semibold text-blue-700">{WEATHER_INFO.klWeather.rainfall}</span>
               </div>
             </div>
-            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-orange-700/50">
+            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-orange-300">
               {WEATHER_INFO.klWeather.recommendation}
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-700 rounded-lg p-5">
+          <div className="bg-gradient-to-br from-green-100 to-emerald-100 border border-green-300 rounded-lg p-5">
             <h3 className="text-lg font-semibold text-slate-900 mb-3">Cameron Highlands</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-600">Temperature:</span>
-                <span className="font-semibold text-green-300">{WEATHER_INFO.cameronWeather.temperature}</span>
+                <span className="font-semibold text-green-700">{WEATHER_INFO.cameronWeather.temperature}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Humidity:</span>
-                <span className="font-semibold text-cyan-300">{WEATHER_INFO.cameronWeather.humidity}</span>
+                <span className="font-semibold text-cyan-700">{WEATHER_INFO.cameronWeather.humidity}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Rainfall:</span>
-                <span className="font-semibold text-blue-300">{WEATHER_INFO.cameronWeather.rainfall}</span>
+                <span className="font-semibold text-blue-700">{WEATHER_INFO.cameronWeather.rainfall}</span>
               </div>
             </div>
-            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-green-700/50">
+            <p className="text-xs text-slate-600 mt-4 pt-4 border-t border-green-300">
               {WEATHER_INFO.cameronWeather.recommendation}
             </p>
           </div>
@@ -88,13 +88,13 @@ export default function WeatherInfo() {
           {rainProbability.map((period, index) => (
             <div key={index} className="bg-white border border-slate-200 rounded-lg p-4">
               <h3 className="font-semibold text-slate-900 text-center mb-2">{period.time}</h3>
-              <p className="text-cyan-400 text-center font-medium mb-3">{period.probability}</p>
+              <p className="text-cyan-700 text-center font-medium mb-3">{period.probability}</p>
               <p className="text-xs text-slate-600 text-center">{period.recommendation}</p>
             </div>
           ))}
         </div>
-        <div className="mt-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-          <p className="text-sm text-blue-100">
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
             <strong>Pro Tip:</strong> Afternoon showers (2-4pm) are typically brief but heavy. Plan indoor activities during this time or schedule nap time.
           </p>
         </div>
@@ -128,12 +128,12 @@ export default function WeatherInfo() {
         </div>
       </div>
 
-      <div className="bg-amber-900/30 border-2 border-amber-600 rounded-lg p-6">
-        <h3 className="font-bold text-amber-400 text-lg mb-2">Monsoon Season Notice</h3>
-        <p className="text-amber-100 text-sm mb-3">
+      <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-6">
+        <h3 className="font-bold text-amber-800 text-lg mb-2">Monsoon Season Notice</h3>
+        <p className="text-amber-900 text-sm mb-3">
           December-January is monsoon season on Malaysia's <strong>East Coast</strong>. Heavy flooding can occur.
         </p>
-        <p className="text-amber-100 text-sm">
+        <p className="text-amber-900 text-sm">
           <strong>Good news:</strong> Your entire trip is on the <strong>West Coast</strong>. This is the BEST time to visit - dry season with occasional brief afternoon showers.
         </p>
       </div>

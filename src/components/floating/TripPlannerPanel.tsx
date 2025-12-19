@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
+import { sortScheduleItems } from '../../utils/sortScheduleItems';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
@@ -55,13 +56,6 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height } = useResponsivePanel(420, 580);
 
-  const panelState = panels?.tripPlanner;
-
-  // Don't render if panel state not initialized
-  if (!panelState) {
-    return null;
-  }
-
   // Fetch data from Convex
   const scheduleItems = useQuery(
     api.tripScheduleItems.getScheduleItems,
@@ -69,6 +63,16 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   );
 
   const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
+
+  // Get mutation for reordering
+  const reorderScheduleItems = useMutation(api.tripScheduleItems.reorderScheduleItems);
+
+  const panelState = panels?.tripPlanner;
+
+  // Don't render if panel state not initialized
+  if (!panelState) {
+    return null;
+  }
 
   // Transform tripLocations to Location format for child components
   const locations = useMemo(() => {
@@ -118,25 +122,26 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
     }, {} as Record<string, typeof scheduleItems>);
 
     // Convert to DayPlan format
-    return Object.entries(groupedByDate)
+    const result = Object.entries(groupedByDate)
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
       .map(([date, items]) => {
         const dayDate = new Date(date);
         const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'long' });
 
         // Transform items to ScheduleItemType format
-        const scheduleItemsForDay: ScheduleItemType[] = items
-          .sort((a, b) => a.order - b.order)
-          .map((item) => ({
+        const scheduleItemsForDay: ScheduleItemType[] = sortScheduleItems(
+          items.map((item) => ({
             id: item._id,
             locationId: item.locationId || '',
             startTime: item.startTime,
             endTime: item.endTime,
             notes: item.notes,
             isFlexible: item.isFlexible,
-          }));
+            order: item.order,
+          }))
+        );
 
-        return {
+        const dayPlan = {
           id: date,
           date,
           dayOfWeek,
@@ -146,7 +151,11 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
           notes: [],
           weatherConsideration: 'mixed' as const,
         };
+
+        return dayPlan;
       });
+
+    return result;
   }, [scheduleItems, tripLocations]);
 
   // Auto-select first day if none selected
@@ -189,8 +198,18 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   };
 
   // Itinerary handlers
-  const handleReorder = (plan: 'A' | 'B', itemIds: string[]) => {
-    console.log('Reorder:', plan, itemIds);
+  const handleReorder = async (plan: 'A' | 'B', itemIds: string[]) => {
+    if (!selectedPlanId || !selectedDayPlan) return;
+
+    try {
+      await reorderScheduleItems({
+        planId: selectedPlanId,
+        dayDate: selectedDayPlan.date,
+        itemIds: itemIds as Id<'tripScheduleItems'>[],
+      });
+    } catch (error) {
+      console.error('Failed to reorder schedule items:', error);
+    }
   };
 
   // Generate suggestions

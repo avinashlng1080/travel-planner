@@ -3,6 +3,7 @@ import { useQuery } from 'convex/react';
 import { useAtom } from 'jotai';
 import { selectedDayIdAtom } from '../atoms/uiAtoms';
 import { useGoogleRouting } from './useGoogleRouting';
+import { sortScheduleItemsForRoute } from '../utils/sortScheduleItems';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
@@ -63,11 +64,9 @@ export function useDayRoute(
         (item) => item.dayDate === selectedDayId
       );
 
-      // Sort by order (or start time if order is the same)
-      const sortedItems = dayScheduleItems.sort((a, b) => {
-        if (a.order !== b.order) return a.order - b.order;
-        return a.startTime.localeCompare(b.startTime);
-      });
+      // Sort by start time (chronological) for route visualization
+      // This prevents looping/star patterns caused by manual reordering
+      const sortedItems = sortScheduleItemsForRoute(dayScheduleItems);
 
       // Extract waypoints from locations
       for (const item of sortedItems) {

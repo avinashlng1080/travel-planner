@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Map, CheckSquare, Filter, Upload } from 'lucide-react';
+import { Map, CheckSquare, Filter, Upload, Users } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
@@ -64,6 +64,7 @@ export function NavigationDock({ onImportClick }: NavigationDockProps) {
     { id: 'tripPlanner', icon: Map, label: 'Trip Planner' },
     { id: 'checklist', icon: CheckSquare, label: 'Checklist' },
     { id: 'filters', icon: Filter, label: 'Filters' },
+    { id: 'collaboration', icon: Users, label: 'Collaboration' },
   ];
 
   return (

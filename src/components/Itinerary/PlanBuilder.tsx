@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -29,6 +29,12 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
   const [planBItems, setPlanBItems] = useState<ScheduleItemType[]>(dayPlan.planB);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [activeContainer, setActiveContainer] = useState<'A' | 'B' | null>(null);
+
+  // Sync local state with props when dayPlan changes
+  useEffect(() => {
+    setPlanAItems(dayPlan.planA);
+    setPlanBItems(dayPlan.planB);
+  }, [dayPlan.planA, dayPlan.planB]);
 
   // Sensors for drag
   const sensors = useSensors(

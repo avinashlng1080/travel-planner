@@ -7,6 +7,7 @@ import { api } from '../../convex/_generated/api';
 import { TripCard } from '../components/trips/TripCard';
 import { CreateTripCard } from '../components/trips/CreateTripCard';
 import { CreateTripModal } from '../components/trips/CreateTripModal';
+import { InviteModal } from '../components/trips/InviteModal';
 import type { Id } from '../../convex/_generated/dataModel';
 
 type FilterTab = 'all' | 'my-trips' | 'shared';
@@ -20,6 +21,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+  const [inviteModalTripId, setInviteModalTripId] = useState<Id<'trips'> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Convex queries and mutations
@@ -65,8 +67,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
   };
 
   const handleShareTrip = (tripId: Id<'trips'>) => {
-    console.log('Share trip:', tripId);
-    // TODO: Open InviteModal
+    setInviteModalTripId(tripId);
   };
 
   const handleDeleteTrip = async (tripId: Id<'trips'>) => {
@@ -271,6 +272,16 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleTripCreated}
       />
+
+      {/* Invite Modal */}
+      {inviteModalTripId && (
+        <InviteModal
+          isOpen={true}
+          onClose={() => setInviteModalTripId(null)}
+          tripId={inviteModalTripId}
+          tripName={trips?.find(t => t._id === inviteModalTripId)?.name || 'Trip'}
+        />
+      )}
     </div>
   );
 }
