@@ -62,7 +62,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col"
+        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col safe-area-inset-top safe-area-inset-x safe-area-inset-bottom md:!pt-0"
       >
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl p-4 border-b border-slate-200/50 z-10">

@@ -4,6 +4,7 @@ import { MapPin, Navigation } from 'lucide-react';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { NavigationDock } from '../components/Layout/NavigationDock';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
+import { FAB } from '../components/ui/FAB';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
 import { EditTripModal } from '../components/trips/EditTripModal';
@@ -384,6 +385,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* Mobile Navigation Bar */}
       <MobileNavBar />
+
+      {/* Floating Action Button - mobile only */}
+      <FAB />
 
       {/* Onboarding Overlay - renders when onboarding is active */}
       <OnboardingOverlay />

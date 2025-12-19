@@ -27,7 +27,7 @@ export function MobileNavBar() {
 
   return (
     <nav
-      className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/50 safe-area-inset-bottom"
+      className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/50 safe-area-inset-x safe-area-inset-bottom"
       role="navigation"
       aria-label="Mobile navigation"
     >

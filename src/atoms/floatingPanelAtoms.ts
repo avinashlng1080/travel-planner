@@ -163,6 +163,12 @@ export const openPanelAtom = atom(
   (get, set, panelId: PanelId) => {
     const panels = get(panelsAtom);
     const currentZIndex = get(nextZIndexAtom);
+    const isMobile = get(isMobileViewAtom);
+
+    // On mobile, set this as the single active modal
+    if (isMobile) {
+      set(activeMobileModalAtom, panelId);
+    }
 
     set(panelsAtom, {
       ...panels,
@@ -181,6 +187,12 @@ export const closePanelAtom = atom(
   null,
   (get, set, panelId: PanelId) => {
     const panels = get(panelsAtom);
+    const activeMobileModal = get(activeMobileModalAtom);
+
+    // Clear active mobile modal if closing the active one
+    if (activeMobileModal === panelId) {
+      set(activeMobileModalAtom, null);
+    }
 
     set(panelsAtom, {
       ...panels,
@@ -239,3 +251,11 @@ export const bringToFrontAtom = atom(
     set(nextZIndexAtom, currentZIndex + 1);
   }
 );
+
+// Mobile-specific state atoms
+export const isMobileViewAtom = atom<boolean>((get) => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 768; // Tailwind md breakpoint
+});
+
+export const activeMobileModalAtom = atom<PanelId | null>(null);

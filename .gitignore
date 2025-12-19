@@ -36,3 +36,5 @@ npm-debug.log*
 
 # Claude settings (contains API keys and sensitive data)
 .claude/settings.local.json
+.vercel
+.env*.local
