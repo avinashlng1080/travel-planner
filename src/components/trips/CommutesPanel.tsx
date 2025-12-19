@@ -1,291 +1,380 @@
-import { useMemo, useRef, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Bus, Bike, PersonStanding, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
-import { GlassPanel } from '../ui/GlassPanel';
-import { TravelMode, Destination, CommuteResult } from '../../hooks/useCommutes';
+import { useState, useRef, useEffect } from 'react';
+import { useQuery } from 'convex/react';
+import { useSetAtom } from 'jotai';
+import {
+  MapPin,
+  Car,
+  Train,
+  Bike,
+  PersonStanding,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Clock,
+} from 'lucide-react';
+import { api } from '../../../convex/_generated/api';
+import { Id } from '../../../convex/_generated/dataModel';
+import { GlassPanel, GlassCard } from '../ui/GlassPanel';
+import { useCommutes, TravelMode, CommuteDestination } from '@/hooks/useCommutes';
+import {
+  addDestinationModalOpenAtom,
+  editDestinationModalOpenAtom,
+  editingDestinationIdAtom,
+  deleteDestinationDialogOpenAtom,
+  deletingDestinationIdAtom,
+} from '@/atoms/uiAtoms';
 
-interface CommutesPanelProps {
-  origin: { lat: number; lng: number; name?: string } | null;
-  destinations: Array<{
-    id: string;
-    name: string;
-    lat: number;
-    lng: number;
-    category?: string;
-  }>;
+export interface CommutesPanelProps {
+  tripId: Id<'trips'>;
+  origin: { lat: number; lng: number };
   travelMode: TravelMode;
   onTravelModeChange: (mode: TravelMode) => void;
-  onActiveDestinationChange?: (destId: string | null) => void;
-  commutes: Map<string, CommuteResult>;
-  isLoading: boolean;
-  className?: string;
+  onActiveDestinationChange?: (destinationId: string | null) => void;
 }
 
-const TRAVEL_MODES: { mode: TravelMode; icon: typeof Car; label: string }[] = [
-  { mode: 'DRIVING', icon: Car, label: 'Drive' },
-  { mode: 'TRANSIT', icon: Bus, label: 'Transit' },
-  { mode: 'BICYCLING', icon: Bike, label: 'Bike' },
-  { mode: 'WALKING', icon: PersonStanding, label: 'Walk' },
+const TRAVEL_MODES: Array<{
+  mode: TravelMode;
+  icon: typeof Car;
+  label: string;
+  color: string;
+}> = [
+  { mode: 'DRIVING', icon: Car, label: 'Drive', color: 'text-blue-600' },
+  { mode: 'TRANSIT', icon: Train, label: 'Transit', color: 'text-green-600' },
+  { mode: 'BICYCLING', icon: Bike, label: 'Bike', color: 'text-yellow-600' },
+  { mode: 'WALKING', icon: PersonStanding, label: 'Walk', color: 'text-purple-600' },
 ];
 
-// Generate labels A-Z
-function getDestinationLabel(index: number): string {
-  return String.fromCharCode(65 + (index % 26));
-}
-
-// Category colors for card accents
-const CATEGORY_COLORS: Record<string, string> = {
-  restaurant: '#F59E0B',
-  attraction: '#10B981',
-  shopping: '#8B5CF6',
-  nature: '#22C55E',
-  temple: '#EF4444',
-  hotel: '#3B82F6',
-  transport: '#64748B',
-  medical: '#DC2626',
-  playground: '#06B6D4',
-  'home-base': '#EC4899',
-  'toddler-friendly': '#F472B6',
-};
-
-export function CommutesPanel({
+export default function CommutesPanel({
+  tripId,
   origin,
-  destinations,
   travelMode,
   onTravelModeChange,
   onActiveDestinationChange,
-  commutes,
-  isLoading,
-  className = '',
 }: CommutesPanelProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeDestinationId, setActiveDestinationId] = useState<string | null>(null);
+  const [hoveredDestinationId, setHoveredDestinationId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Convert to Destination format with labels
-  const labeledDestinations: Destination[] = useMemo(() => {
-    return destinations.map((d, index) => ({
-      id: d.id,
-      name: d.name,
-      lat: d.lat,
-      lng: d.lng,
-      label: getDestinationLabel(index),
-    }));
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Jotai atoms for modal state
+  const setAddModalOpen = useSetAtom(addDestinationModalOpenAtom);
+  const setEditModalOpen = useSetAtom(editDestinationModalOpenAtom);
+  const setEditingDestinationId = useSetAtom(editingDestinationIdAtom);
+  const setDeleteDialogOpen = useSetAtom(deleteDestinationDialogOpenAtom);
+  const setDeletingDestinationId = useSetAtom(deletingDestinationIdAtom);
+
+  // Fetch destinations from Convex
+  const convexDestinations = useQuery(api.commuteDestinations.getDestinations, { tripId });
+
+  // Convert Convex destinations to format expected by useCommutes
+  const destinations: CommuteDestination[] = (convexDestinations || []).map(dest => ({
+    id: dest._id,
+    name: dest.name,
+    lat: dest.lat,
+    lng: dest.lng,
+    address: dest.address,
+    category: dest.category,
+  }));
+
+  // Calculate commute times
+  const { results, isLoading: _isLoading, totalDuration, totalDurationMinutes } = useCommutes({
+    origin,
+    destinations,
+    travelMode,
+    enabled: destinations.length > 0,
+  });
+
+  // Update scroll button visibility
+  const updateScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    window.addEventListener('resize', updateScrollButtons);
+    return () => window.removeEventListener('resize', updateScrollButtons);
   }, [destinations]);
 
-  // Set first destination as active by default
   useEffect(() => {
-    if (destinations.length > 0 && !activeDestinationId) {
-      setActiveDestinationId(destinations[0].id);
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateScrollButtons);
+      return () => container.removeEventListener('scroll', updateScrollButtons);
     }
-  }, [destinations, activeDestinationId]);
+  }, []);
 
-  // Notify parent of active destination changes
-  useEffect(() => {
-    onActiveDestinationChange?.(activeDestinationId);
-  }, [activeDestinationId, onActiveDestinationChange]);
-
-  // Scroll handlers
-  const scrollLeft = () => {
+  // Scroll left/right
+  const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+      const scrollAmount = 300;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
     }
   };
 
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-    }
+  // Handle destination click
+  const handleDestinationClick = (destinationId: string) => {
+    const newActiveId = activeDestinationId === destinationId ? null : destinationId;
+    setActiveDestinationId(newActiveId);
+    onActiveDestinationChange?.(newActiveId);
   };
 
-  if (!origin || destinations.length === 0) {
-    return null;
-  }
+  // Handle edit
+  const handleEdit = (destinationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingDestinationId(destinationId);
+    setEditModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  // Handle delete
+  const handleDelete = (destinationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeletingDestinationId(destinationId);
+    setDeleteDialogOpen(true);
+    setOpenMenuId(null);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null);
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openMenuId]);
 
   return (
-    <GlassPanel className={`p-0 overflow-hidden ${className}`}>
-      {/* Header with travel mode selector */}
-      <div className="px-4 py-3 border-b border-slate-200/50 bg-white/80">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-sunset-600" />
-            <span className="text-sm font-medium text-slate-900">
-              From: {origin.name || 'Current Location'}
-            </span>
-          </div>
-          {isLoading && (
-            <div className="flex items-center gap-1 text-xs text-slate-500">
-              <div className="w-3 h-3 border-2 border-sunset-500 border-t-transparent rounded-full animate-spin" />
-              Calculating...
-            </div>
-          )}
+    <GlassPanel className="p-4 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Commute Times</h3>
+          <p className="text-xs text-slate-600 mt-0.5">
+            Calculate travel times from your home base
+          </p>
         </div>
+        <button
+          onClick={() => setAddModalOpen(true)}
+          className="p-2 rounded-lg bg-gradient-to-r from-sunset-500 to-ocean-600 text-white hover:opacity-90 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Add destination"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Travel Mode Tabs */}
-        <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
-          {TRAVEL_MODES.map(({ mode, icon: Icon, label }) => (
+      {/* Travel Mode Tabs */}
+      <div className="grid grid-cols-4 gap-2">
+        {TRAVEL_MODES.map(({ mode, icon: Icon, label, color }) => {
+          const isActive = travelMode === mode;
+          return (
             <button
               key={mode}
               onClick={() => onTravelModeChange(mode)}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
-                travelMode === mode
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-              }`}
-              aria-pressed={travelMode === mode}
+              className={`
+                flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all duration-200 min-h-[60px]
+                ${isActive
+                  ? 'bg-sunset-50 border-sunset-500'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }
+              `}
+              aria-label={`${label} mode`}
+              aria-pressed={isActive}
             >
-              <Icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{label}</span>
+              <Icon className={`w-5 h-5 mb-1 ${isActive ? 'text-sunset-600' : color}`} />
+              <span className={`text-xs font-medium ${isActive ? 'text-sunset-700' : 'text-slate-600'}`}>
+                {label}
+              </span>
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Destination Cards - Horizontal Scroll */}
-      <div className="relative">
-        {/* Scroll buttons */}
-        {destinations.length > 3 && (
-          <>
+      {/* Destinations List */}
+      {destinations.length === 0 ? (
+        /* Zero State */
+        <div className="text-center py-12 px-4">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-slate-400" />
+          </div>
+          <h4 className="text-base font-semibold text-slate-900 mb-2">No destinations yet</h4>
+          <p className="text-sm text-slate-600 mb-6">
+            Add your first commute destination to see travel times
+          </p>
+          <button
+            onClick={() => setAddModalOpen(true)}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-sunset-500 to-ocean-600 text-white font-semibold hover:opacity-90 transition-opacity min-h-[44px]"
+          >
+            Add Destination
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          {/* Left Scroll Button */}
+          {canScrollLeft && (
             <button
-              onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:bg-slate-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Scroll left"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 text-slate-700" />
             </button>
+          )}
+
+          {/* Right Scroll Button */}
+          {canScrollRight && (
             <button
-              onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 shadow-md rounded-full text-slate-600 hover:text-slate-900 hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:bg-slate-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Scroll right"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 text-slate-700" />
             </button>
-          </>
-        )}
+          )}
 
-        {/* Scrollable container */}
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-3 p-4 overflow-x-auto scrollbar-hide"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <AnimatePresence mode="popLayout">
-            {labeledDestinations.map((dest, index) => {
-              const commute = commutes.get(dest.id);
+          {/* Scrollable Container */}
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {destinations.map(dest => {
+              const result = results.get(dest.id);
               const isActive = activeDestinationId === dest.id;
-              const originalDest = destinations[index];
-              const accentColor = CATEGORY_COLORS[originalDest.category || ''] || '#64748B';
+              const isHovered = hoveredDestinationId === dest.id;
+              const menuOpen = openMenuId === dest.id;
 
               return (
-                <motion.button
+                <div
                   key={dest.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={() => setActiveDestinationId(dest.id)}
-                  className={`flex-shrink-0 w-40 p-3 rounded-xl text-left transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
-                    isActive
-                      ? 'bg-ocean-50 border-2 border-ocean-400 shadow-lg shadow-ocean-500/20'
-                      : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
-                  }`}
-                  aria-pressed={isActive}
+                  className="relative flex-shrink-0"
+                  onMouseEnter={() => setHoveredDestinationId(dest.id)}
+                  onMouseLeave={() => setHoveredDestinationId(null)}
                 >
-                  {/* Label badge */}
-                  <div className="flex items-start justify-between mb-2">
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm"
-                      style={{ backgroundColor: accentColor }}
-                    >
-                      {dest.label}
-                    </div>
-                    {isActive && (
-                      <div className="px-2 py-0.5 bg-ocean-500 text-white text-xs rounded-full">
-                        Active
+                  <GlassCard
+                    className={`
+                      w-64 p-4 relative
+                      ${isActive ? 'ring-2 ring-sunset-500 border-sunset-500' : ''}
+                    `}
+                    onClick={() => handleDestinationClick(dest.id)}
+                    hover={true}
+                  >
+                    {/* Kebab Menu */}
+                    {(isHovered || menuOpen) && (
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(menuOpen ? null : dest.id);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label="More options"
+                        >
+                          <MoreVertical className="w-4 h-4 text-slate-500" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {menuOpen && (
+                          <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-20 min-w-[140px]">
+                            <button
+                              onClick={(e) => handleEdit(dest.id, e)}
+                              className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 min-h-[40px]"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => handleDelete(dest.id, e)}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 min-h-[40px]"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
 
-                  {/* Name */}
-                  <h4 className="text-sm font-medium text-slate-900 truncate mb-2">
-                    {dest.name}
-                  </h4>
+                    {/* Destination Info */}
+                    <div className="pr-8">
+                      <div className="flex items-start gap-2 mb-2">
+                        <MapPin className="w-4 h-4 text-sunset-500 mt-1 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold text-slate-900 truncate">
+                            {dest.name}
+                          </h4>
+                          {dest.address && (
+                            <p className="text-xs text-slate-500 truncate">{dest.address}</p>
+                          )}
+                        </div>
+                      </div>
 
-                  {/* Commute info */}
-                  {commute ? (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-slate-700">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                        <span className="text-sm font-semibold">
-                          {commute.durationText}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {commute.distanceText}
-                      </div>
+                      {/* Commute Info */}
+                      {result?.isLoading ? (
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <div className="w-4 h-4 border-2 border-slate-300 border-t-sunset-500 rounded-full animate-spin" />
+                          <span>Calculating...</span>
+                        </div>
+                      ) : result?.error ? (
+                        <p className="text-xs text-red-600">{result.error}</p>
+                      ) : result?.duration ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                            <Clock className="w-4 h-4 text-ocean-600" />
+                            <span>{result.duration}</span>
+                          </div>
+                          {result.distance && (
+                            <p className="text-xs text-slate-500">{result.distance}</p>
+                          )}
+                        </div>
+                      ) : null}
+
+                      {/* Category Badge */}
+                      {dest.category && (
+                        <div className="mt-2">
+                          <span className="inline-block px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md">
+                            {dest.category}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  ) : isLoading ? (
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <div className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs">Loading...</span>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-slate-400">
-                      No route data
-                    </div>
-                  )}
-                </motion.button>
+                  </GlassCard>
+                </div>
               );
             })}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Total summary */}
-      {commutes.size > 0 && (
-        <div className="px-4 py-3 border-t border-slate-200/50 bg-slate-50/50">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-600">
-              {destinations.length} destination{destinations.length !== 1 ? 's' : ''}
-            </span>
-            <TotalCommuteSummary commutes={commutes} />
           </div>
         </div>
       )}
+
+      {/* Total Summary */}
+      {destinations.length > 0 && totalDuration && (
+        <div className="pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Total commute time:</span>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-ocean-600" />
+              <span className="text-lg font-bold text-slate-900">{totalDuration}</span>
+            </div>
+          </div>
+          {totalDurationMinutes && totalDurationMinutes > 0 && (
+            <p className="text-xs text-slate-500 text-right mt-1">
+              {Math.round(totalDurationMinutes)} minutes total
+            </p>
+          )}
+        </div>
+      )}
     </GlassPanel>
-  );
-}
-
-// Helper component for total commute summary
-function TotalCommuteSummary({ commutes }: { commutes: Map<string, CommuteResult> }) {
-  const totals = useMemo(() => {
-    let totalDuration = 0;
-    let totalDistance = 0;
-
-    commutes.forEach((c) => {
-      totalDuration += c.duration;
-      totalDistance += c.distance;
-    });
-
-    // Format duration
-    const hours = Math.floor(totalDuration / 3600);
-    const minutes = Math.floor((totalDuration % 3600) / 60);
-    const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-
-    // Format distance
-    const km = totalDistance / 1000;
-    const distanceText = km >= 1 ? `${km.toFixed(1)} km` : `${totalDistance} m`;
-
-    return { durationText, distanceText };
-  }, [commutes]);
-
-  return (
-    <div className="flex items-center gap-3 text-slate-700">
-      <span className="flex items-center gap-1">
-        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-        <span className="font-medium">{totals.durationText}</span>
-        <span className="text-slate-400">total</span>
-      </span>
-      <span className="text-slate-300">|</span>
-      <span className="font-medium">{totals.distanceText}</span>
-    </div>
   );
 }

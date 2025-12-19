@@ -11,7 +11,9 @@ import { AddActivityModal } from '../components/trips/AddActivityModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
 import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
-import { CommutesPanel } from '../components/trips/CommutesPanel';
+import AddDestinationModal from '../components/trips/AddDestinationModal';
+import EditDestinationModal from '../components/trips/EditDestinationModal';
+import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
@@ -19,8 +21,18 @@ import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
-import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
-import { useCommutes } from '../hooks/useCommutes';
+import {
+  focusedActivityAtom,
+  addDestinationModalOpenAtom,
+  editDestinationModalOpenAtom,
+  editingDestinationIdAtom,
+  deleteDestinationDialogOpenAtom,
+  deletingDestinationIdAtom,
+  travelModeAtom,
+  commutesPanelOpenAtom,
+  activeCommuteDestinationAtom,
+  selectedDayIdAtom
+} from '../atoms/uiAtoms';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -58,8 +70,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Map sync state
   const setFocusedActivity = useSetAtom(focusedActivityAtom);
 
+  // Commute destination modal state
+  const [addDestinationModalOpen, setAddDestinationModalOpen] = useAtom(addDestinationModalOpenAtom);
+  const [editDestinationModalOpen, setEditDestinationModalOpen] = useAtom(editDestinationModalOpenAtom);
+  const [editingDestinationId, setEditingDestinationId] = useAtom(editingDestinationIdAtom);
+  const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
+  const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
+  const deleteDestination = useMutation(api.commuteDestinations.deleteDestination);
 
   // Fetch trip details with members and plans
   const tripData = useQuery(api.trips.getTripWithDetails, { tripId });
@@ -81,6 +102,19 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Find location for selected activity from already-fetched locations
   const activityLocation = selectedActivity?.locationId
     ? tripLocations?.find((loc) => loc._id === selectedActivity.locationId)
+    : null;
+
+  // Fetch commute destinations for the trip
+  const commuteDestinations = useQuery(api.commuteDestinations.getDestinations, { tripId });
+
+  // Get the destination being edited
+  const editingDestination = editingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === editingDestinationId)
+    : null;
+
+  // Get the destination being deleted
+  const deletingDestination = deletingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === deletingDestinationId)
     : null;
 
   // Trigger onboarding when trip data loads for the first time
@@ -187,77 +221,22 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     new Set(mapLocations.map((loc) => loc.category))
   );
 
-  // Compute commute destinations from scheduled items for the selected day
-  const commuteDestinations = useMemo(() => {
-    if (!scheduleItems || !tripLocations) return [];
+  // Handler for deleting a destination
+  const handleDeleteDestination = async () => {
+    if (!deletingDestinationId) return;
 
-    // Filter by selected day if there is one
-    const dayItems = selectedDayId
-      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
-      : scheduleItems;
-
-    // Sort by order/time
-    const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order;
-      return a.startTime.localeCompare(b.startTime);
-    });
-
-    // Map to destination format
-    return sortedItems
-      .filter((item) => item.locationId)
-      .map((item) => {
-        const loc = tripLocations.find((l) => l._id === item.locationId);
-        if (!loc) return null;
-
-        return {
-          id: item._id,
-          name: loc.customName || loc.baseLocation?.name || item.title,
-          lat: loc.customLat || loc.baseLocation?.lat || 0,
-          lng: loc.customLng || loc.baseLocation?.lng || 0,
-          category: loc.customCategory || loc.baseLocation?.category,
-        };
-      })
-      .filter((d): d is NonNullable<typeof d> => d !== null && d.lat !== 0);
-  }, [scheduleItems, tripLocations, selectedDayId]);
-
-  // Get origin point (first location or home base)
-  const commuteOrigin = useMemo(() => {
-    // Use first scheduled location as origin, or trip's first location
-    if (commuteDestinations.length > 0) {
-      const firstDest = commuteDestinations[0];
-      return {
-        lat: firstDest.lat,
-        lng: firstDest.lng,
-        name: firstDest.name,
-      };
+    setIsDeleting(true);
+    try {
+      await deleteDestination({ destinationId: deletingDestinationId as Id<'commuteDestinations'> });
+      // Close dialog and reset state
+      setDeleteDestinationDialogOpen(false);
+      setDeletingDestinationId(null);
+    } catch (error) {
+      console.error('Failed to delete destination:', error);
+    } finally {
+      setIsDeleting(false);
     }
-    // Fallback to first trip location
-    if (mapLocations.length > 0) {
-      const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
-      if (homeBase) {
-        return { lat: homeBase.lat, lng: homeBase.lng, name: homeBase.name };
-      }
-      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng, name: mapLocations[0].name };
-    }
-    return null;
-  }, [commuteDestinations, mapLocations]);
-
-  // Destinations for commute (excluding origin)
-  const commuteDestinationsWithoutOrigin = useMemo(() => {
-    if (commuteDestinations.length <= 1) return [];
-    return commuteDestinations.slice(1);
-  }, [commuteDestinations]);
-
-  // Fetch commute data with Google Directions API
-  const { commutes, isLoading: isCommutesLoading } = useCommutes({
-    origin: commuteOrigin,
-    destinations: commuteDestinationsWithoutOrigin.map((d, index) => ({
-      ...d,
-      label: String.fromCharCode(65 + index), // A, B, C, etc.
-    })),
-    travelMode,
-    enabled: commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0,
-  });
+  };
 
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
@@ -469,6 +448,47 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           }}
         />
       )}
+
+      {/* Add Destination Modal */}
+      <AddDestinationModal
+        isOpen={addDestinationModalOpen}
+        onClose={() => setAddDestinationModalOpen(false)}
+        tripId={tripId}
+        onSuccess={() => {
+          // Destinations will refresh automatically via Convex reactivity
+          setAddDestinationModalOpen(false);
+        }}
+      />
+
+      {/* Edit Destination Modal */}
+      {editingDestination && (
+        <EditDestinationModal
+          isOpen={editDestinationModalOpen}
+          onClose={() => {
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+          tripId={tripId}
+          destination={editingDestination}
+          onSuccess={() => {
+            // Destinations will refresh automatically via Convex reactivity
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+        />
+      )}
+
+      {/* Delete Destination Dialog */}
+      <DeleteDestinationDialog
+        isOpen={deleteDestinationDialogOpen}
+        onClose={() => {
+          setDeleteDestinationDialogOpen(false);
+          setDeletingDestinationId(null);
+        }}
+        destinationName={deletingDestination?.name || 'this destination'}
+        onConfirm={handleDeleteDestination}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

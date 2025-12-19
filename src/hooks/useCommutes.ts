@@ -1,229 +1,235 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useState, useEffect, useRef } from 'react';
 
 export type TravelMode = 'DRIVING' | 'TRANSIT' | 'BICYCLING' | 'WALKING';
 
-export interface Destination {
+export interface CommuteDestination {
   id: string;
   name: string;
   lat: number;
   lng: number;
-  label?: string; // A, B, C, etc.
+  address?: string;
+  category?: string;
 }
 
 export interface CommuteResult {
   destinationId: string;
-  duration: number; // seconds
-  durationText: string;
-  distance: number; // meters
-  distanceText: string;
-  path: google.maps.LatLng[];
-  travelMode: TravelMode;
+  distance?: string;
+  duration?: string;
+  durationValue?: number; // in seconds
+  isLoading: boolean;
+  error: string | null;
 }
 
-interface UseCommutesOptions {
-  origin: { lat: number; lng: number } | null;
-  destinations: Destination[];
+interface UseCommutesProps {
+  origin: { lat: number; lng: number };
+  destinations: CommuteDestination[];
   travelMode: TravelMode;
   enabled?: boolean;
 }
 
 interface UseCommutesResult {
-  commutes: Map<string, CommuteResult>;
+  results: Map<string, CommuteResult>;
   isLoading: boolean;
-  error: string | null;
-  activeDestinationId: string | null;
-  setActiveDestinationId: (id: string | null) => void;
-  refetch: () => void;
-}
-
-// Cache for route results
-const routeCache = new Map<string, CommuteResult>();
-
-function getCacheKey(
-  origin: { lat: number; lng: number },
-  dest: Destination,
-  mode: TravelMode
-): string {
-  return `${origin.lat.toFixed(5)},${origin.lng.toFixed(5)}-${dest.lat.toFixed(5)},${dest.lng.toFixed(5)}-${mode}`;
+  totalDuration?: string;
+  totalDurationMinutes?: number;
 }
 
 /**
- * Hook for calculating commute times to multiple destinations
- * Inspired by Google's Commutes and Destinations widget
+ * Custom hook for calculating commute times using Google Maps Distance Matrix API
+ *
+ * Features:
+ * - Calculates travel time and distance from origin to multiple destinations
+ * - Supports different travel modes (driving, transit, bicycling, walking)
+ * - Caches results to avoid unnecessary API calls
+ * - Provides total duration across all destinations
+ *
+ * @param origin - Starting point coordinates
+ * @param destinations - Array of destination points
+ * @param travelMode - Mode of transportation
+ * @param enabled - Whether to fetch routes (default: true)
+ * @returns Commute results with loading state and metrics
  */
 export function useCommutes({
   origin,
   destinations,
   travelMode,
   enabled = true,
-}: UseCommutesOptions): UseCommutesResult {
-  // Note: useMap is available if we need map-specific operations in the future
-  const routesLib = useMapsLibrary('routes');
-
-  const [commutes, setCommutes] = useState<Map<string, CommuteResult>>(new Map());
+}: UseCommutesProps): UseCommutesResult {
+  const [results, setResults] = useState<Map<string, CommuteResult>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeDestinationId, setActiveDestinationId] = useState<string | null>(null);
 
-  const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
-  const pendingRequestsRef = useRef<Set<string>>(new Set());
-  const mountedRef = useRef(true);
-  const commutesRef = useRef<Map<string, CommuteResult>>(new Map());
+  // Cache to avoid repeated API calls
+  const cacheRef = useRef<Map<string, CommuteResult>>(new Map());
 
-  // Track mounted state
+  // Generate cache key
+  const getCacheKey = (
+    origin: { lat: number; lng: number },
+    destination: { lat: number; lng: number },
+    mode: TravelMode
+  ): string => {
+    return `${origin.lat.toFixed(4)},${origin.lng.toFixed(4)}|${destination.lat.toFixed(4)},${destination.lng.toFixed(4)}|${mode}`;
+  };
+
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  // Keep commutesRef in sync with commutes state
-  useEffect(() => {
-    commutesRef.current = commutes;
-  }, [commutes]);
-
-  // Initialize DirectionsService
-  useEffect(() => {
-    if (!routesLib) return;
-    directionsServiceRef.current = new routesLib.DirectionsService();
-  }, [routesLib]);
-
-  // Memoize destinations to prevent unnecessary refetches
-  const destinationsKey = useMemo(() => {
-    return destinations.map(d => `${d.id}:${d.lat}:${d.lng}`).join('|');
-  }, [destinations]);
-
-  const fetchCommutes = useCallback(async () => {
-    if (!origin || !directionsServiceRef.current || destinations.length === 0 || !enabled) {
+    if (!enabled || destinations.length === 0) {
+      setResults(new Map());
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    const fetchCommutes = async () => {
+      setIsLoading(true);
+      const newResults = new Map<string, CommuteResult>();
 
-    const newCommutes = new Map<string, CommuteResult>();
-    const fetchPromises: Promise<void>[] = [];
-
-    for (const dest of destinations) {
-      const cacheKey = getCacheKey(origin, dest, travelMode);
-
-      // Check cache first
-      if (routeCache.has(cacheKey)) {
-        newCommutes.set(dest.id, routeCache.get(cacheKey)!);
-        continue;
-      }
-
-      // Skip if already pending, but preserve existing result if available
-      if (pendingRequestsRef.current.has(cacheKey)) {
-        // Preserve the existing result for this destination
-        if (commutesRef.current.has(dest.id)) {
-          newCommutes.set(dest.id, commutesRef.current.get(dest.id)!);
-        }
-        continue;
-      }
-
-      pendingRequestsRef.current.add(cacheKey);
-
-      const fetchPromise = new Promise<void>((resolve) => {
-        directionsServiceRef.current!.route(
-          {
-            origin: new google.maps.LatLng(origin.lat, origin.lng),
-            destination: new google.maps.LatLng(dest.lat, dest.lng),
-            travelMode: google.maps.TravelMode[travelMode],
-          },
-          (result, status) => {
-            if (!mountedRef.current) return;
-
-            pendingRequestsRef.current.delete(cacheKey);
-
-            if (status === google.maps.DirectionsStatus.OK && result) {
-              const route = result.routes[0];
-              const leg = route.legs[0];
-
-              const commuteResult: CommuteResult = {
-                destinationId: dest.id,
-                duration: leg.duration?.value || 0,
-                durationText: leg.duration?.text || '',
-                distance: leg.distance?.value || 0,
-                distanceText: leg.distance?.text || '',
-                path: route.overview_path || [],
-                travelMode,
-              };
-
-              // Cache the result
-              routeCache.set(cacheKey, commuteResult);
-              newCommutes.set(dest.id, commuteResult);
-            }
-
-            resolve();
-          }
-        );
+      // Initialize all destinations with loading state
+      destinations.forEach(dest => {
+        newResults.set(dest.id, {
+          destinationId: dest.id,
+          isLoading: true,
+          error: null,
+        });
       });
+      setResults(newResults);
 
-      fetchPromises.push(fetchPromise);
+      try {
+        // Get API key from environment
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+        if (!apiKey) {
+          console.warn('[useCommutes] No Google Maps API key found.');
+          console.warn('[useCommutes] Add VITE_GOOGLE_MAPS_API_KEY to your .env file');
+
+          // Set error state for all destinations
+          destinations.forEach(dest => {
+            newResults.set(dest.id, {
+              destinationId: dest.id,
+              isLoading: false,
+              error: 'Google Maps API key not configured',
+            });
+          });
+          setResults(new Map(newResults));
+          setIsLoading(false);
+          return;
+        }
+
+        // Use Distance Matrix API to calculate all routes at once
+        const destinationCoords = destinations
+          .map(d => `${d.lat},${d.lng}`)
+          .join('|');
+
+        const originCoord = `${origin.lat},${origin.lng}`;
+
+        // Map our travel modes to Google's travel modes
+        const googleTravelMode = travelMode === 'BICYCLING' ? 'bicycling' :
+                                  travelMode === 'WALKING' ? 'walking' :
+                                  travelMode === 'TRANSIT' ? 'transit' :
+                                  'driving';
+
+        const url = new URL('https://maps.googleapis.com/maps/api/distancematrix/json');
+        url.searchParams.append('origins', originCoord);
+        url.searchParams.append('destinations', destinationCoords);
+        url.searchParams.append('mode', googleTravelMode);
+        url.searchParams.append('key', apiKey);
+
+        // Note: This requires a proxy since we're calling from the browser
+        // Google Maps Distance Matrix API doesn't support CORS
+        // We'll need to call through a Convex HTTP action
+        const response = await fetch('/api/distance-matrix?' + url.searchParams.toString());
+
+        if (!response.ok) {
+          throw new Error(`Distance Matrix API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status !== 'OK') {
+          throw new Error(`Distance Matrix API status: ${data.status}`);
+        }
+
+        // Process results
+        data.rows[0].elements.forEach((element: any, index: number) => {
+          const dest = destinations[index];
+          const cacheKey = getCacheKey(origin, dest, travelMode);
+
+          if (element.status === 'OK') {
+            const result: CommuteResult = {
+              destinationId: dest.id,
+              distance: element.distance.text,
+              duration: element.duration.text,
+              durationValue: element.duration.value,
+              isLoading: false,
+              error: null,
+            };
+
+            cacheRef.current.set(cacheKey, result);
+            newResults.set(dest.id, result);
+          } else {
+            newResults.set(dest.id, {
+              destinationId: dest.id,
+              isLoading: false,
+              error: `Route not found: ${element.status}`,
+            });
+          }
+        });
+
+        setResults(new Map(newResults));
+      } catch (err) {
+        console.error('[useCommutes] Error:', err);
+
+        // Set error state for all destinations
+        destinations.forEach(dest => {
+          newResults.set(dest.id, {
+            destinationId: dest.id,
+            isLoading: false,
+            error: err instanceof Error ? err.message : 'Failed to calculate route',
+          });
+        });
+        setResults(new Map(newResults));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Check cache first
+    const allCached = destinations.every(dest => {
+      const cacheKey = getCacheKey(origin, dest, travelMode);
+      return cacheRef.current.has(cacheKey);
+    });
+
+    if (allCached) {
+      const cachedResults = new Map<string, CommuteResult>();
+      destinations.forEach(dest => {
+        const cacheKey = getCacheKey(origin, dest, travelMode);
+        const cached = cacheRef.current.get(cacheKey);
+        if (cached) {
+          cachedResults.set(dest.id, cached);
+        }
+      });
+      setResults(cachedResults);
+      setIsLoading(false);
+      return;
     }
 
-    await Promise.all(fetchPromises);
-    setCommutes(newCommutes);
-    setIsLoading(false);
-  }, [origin, destinationsKey, travelMode, enabled]);
+    // Debounce to avoid too many API calls
+    const timeoutId = setTimeout(fetchCommutes, 300);
+    return () => clearTimeout(timeoutId);
+  }, [origin.lat, origin.lng, destinations, travelMode, enabled]);
 
-  // Fetch commutes when dependencies change
-  useEffect(() => {
-    fetchCommutes();
-  }, [fetchCommutes]);
+  // Calculate total duration
+  const totalDurationMinutes = Array.from(results.values())
+    .filter(r => r.durationValue !== undefined)
+    .reduce((sum, r) => sum + (r.durationValue || 0), 0) / 60;
 
-  // Set first destination as active by default
-  useEffect(() => {
-    if (destinations.length > 0 && !activeDestinationId) {
-      setActiveDestinationId(destinations[0].id);
-    }
-  }, [destinations, activeDestinationId]);
+  const totalDuration = totalDurationMinutes > 0
+    ? totalDurationMinutes >= 60
+      ? `${Math.floor(totalDurationMinutes / 60)}h ${Math.round(totalDurationMinutes % 60)}m`
+      : `${Math.round(totalDurationMinutes)}m`
+    : undefined;
 
   return {
-    commutes,
+    results,
     isLoading,
-    error,
-    activeDestinationId,
-    setActiveDestinationId,
-    refetch: fetchCommutes,
+    totalDuration,
+    totalDurationMinutes,
   };
-}
-
-/**
- * Get travel mode icon
- */
-export function getTravelModeIcon(mode: TravelMode): string {
-  switch (mode) {
-    case 'DRIVING':
-      return '🚗';
-    case 'TRANSIT':
-      return '🚌';
-    case 'BICYCLING':
-      return '🚴';
-    case 'WALKING':
-      return '🚶';
-    default:
-      return '🚗';
-  }
-}
-
-/**
- * Get travel mode label
- */
-export function getTravelModeLabel(mode: TravelMode): string {
-  switch (mode) {
-    case 'DRIVING':
-      return 'Drive';
-    case 'TRANSIT':
-      return 'Transit';
-    case 'BICYCLING':
-      return 'Bike';
-    case 'WALKING':
-      return 'Walk';
-    default:
-      return 'Drive';
-  }
 }
