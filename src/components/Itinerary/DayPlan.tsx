@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
+import { Calendar, AlertCircle, Droplets } from 'lucide-react';
 import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 import { DraggableItem } from './DraggableItem';
+import { useWeather } from '../../hooks/useWeather';
+import { WeatherIcon } from '../Weather';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
@@ -87,20 +89,14 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
     return locations.find((loc) => loc.id === locationId);
   };
 
-  const weatherIcon = dayPlan.weatherConsideration === 'outdoor-heavy' ? (
-    <Sun className="w-4 h-4" />
-  ) : dayPlan.weatherConsideration === 'indoor-heavy' ? (
-    <CloudRain className="w-4 h-4" />
-  ) : (
-    <Sun className="w-4 h-4" />
-  );
+  // Get live weather data
+  const { daily: weatherForecast } = useWeather();
 
-  const weatherColor =
-    dayPlan.weatherConsideration === 'outdoor-heavy'
-      ? 'text-amber-500'
-      : dayPlan.weatherConsideration === 'indoor-heavy'
-      ? 'text-blue-500'
-      : 'text-slate-500';
+  // Find weather forecast for this specific day
+  const dayWeather = useMemo(() => {
+    if (!weatherForecast.length) return null;
+    return weatherForecast.find((f) => f.date === dayPlan.date) || null;
+  }, [weatherForecast, dayPlan.date]);
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -112,12 +108,22 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
               {dayPlan.dayOfWeek}, {new Date(dayPlan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </h3>
           </div>
-          <div className={`flex items-center gap-2 ${weatherColor}`}>
-            {weatherIcon}
-            <span className="text-sm capitalize">
-              {dayPlan.weatherConsideration.replace('-', ' ')}
-            </span>
-          </div>
+          {dayWeather ? (
+            <div className="flex items-center gap-2">
+              <WeatherIcon condition={dayWeather.condition} size={18} />
+              <span className="text-sm font-medium text-slate-700">
+                {Math.round(dayWeather.tempMax)}°
+              </span>
+              {dayWeather.precipitationProbability > 20 && (
+                <span className="flex items-center gap-1 text-sm text-blue-500">
+                  <Droplets size={14} />
+                  {Math.round(dayWeather.precipitationProbability)}%
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-sm text-slate-400">Loading weather...</span>
+          )}
         </div>
         <h4 className="text-lg text-slate-600">{dayPlan.title}</h4>
       </div>

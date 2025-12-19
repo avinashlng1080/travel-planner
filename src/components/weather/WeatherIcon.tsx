@@ -22,6 +22,7 @@ interface WeatherIconProps {
   condition: WeatherCondition;
   size?: number;
   className?: string;
+  'aria-label'?: string;
 }
 
 const CONDITION_ICONS: Record<WeatherCondition, LucideIcon> = {
@@ -48,17 +49,17 @@ const CONDITION_COLORS: Record<WeatherCondition, string> = {
   snow: 'text-cyan-400',
 };
 
-export function WeatherIcon({ condition, size = 24, className = '' }: WeatherIconProps) {
+export function WeatherIcon({ condition, size = 24, className = '', 'aria-label': ariaLabel }: WeatherIconProps) {
   const Icon = CONDITION_ICONS[condition];
   const colorClass = CONDITION_COLORS[condition];
 
-  return <Icon size={size} className={`${colorClass} ${className}`} />;
+  return <Icon size={size} className={`${colorClass} ${className}`} aria-label={ariaLabel} />;
 }
 
 /**
  * Animated weather icon for indicators
  */
-export function AnimatedWeatherIcon({ condition, size = 24, className = '' }: WeatherIconProps) {
+export function AnimatedWeatherIcon({ condition, size = 24, className = '', 'aria-label': ariaLabel }: WeatherIconProps) {
   const Icon = CONDITION_ICONS[condition];
   const colorClass = CONDITION_COLORS[condition];
 
@@ -70,5 +71,5 @@ export function AnimatedWeatherIcon({ condition, size = 24, className = '' }: We
         ? 'animate-bounce'
         : '';
 
-  return <Icon size={size} className={`${colorClass} ${animationClass} ${className}`} />;
+  return <Icon size={size} className={`${colorClass} ${animationClass} ${className}`} aria-label={ariaLabel} />;
 }
