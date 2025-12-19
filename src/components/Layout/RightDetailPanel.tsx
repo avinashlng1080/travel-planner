@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
 import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { useWeather } from '../../hooks/useWeather';
+import { WeatherCard } from '../Weather';
 import type { Location, DayPlan } from '../../data/tripData';
 
 interface RightDetailPanelProps {
@@ -21,6 +23,16 @@ interface RightDetailPanelProps {
 export function RightDetailPanel({ location, days, selectedDayId, onClose, onAddToPlan }: RightDetailPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlanType, setSelectedPlanType] = useState<'A' | 'B'>('A');
+
+  // Get weather data (defaults to Kuala Lumpur)
+  const { current: currentWeather, daily: weatherForecast, isLoading: weatherLoading } = useWeather();
+
+  // Get today's forecast
+  const todayForecast = useMemo(() => {
+    if (!weatherForecast.length) return null;
+    const today = new Date().toISOString().split('T')[0];
+    return weatherForecast.find((f) => f.date === today) || weatherForecast[0];
+  }, [weatherForecast]);
 
   if (!location) return null;
 
@@ -136,6 +148,13 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               <p className="text-sm font-medium text-slate-900">{location.drivingTime}</p>
             </GlassCard>
           </div>
+
+          {/* Current Weather */}
+          <WeatherCard
+            current={currentWeather ?? undefined}
+            forecast={todayForecast ?? undefined}
+            isLoading={weatherLoading}
+          />
 
           {/* Opening Hours & Fee */}
           <div className="space-y-2">
