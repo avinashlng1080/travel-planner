@@ -50,6 +50,8 @@ export function WeatherAlertBanner({ alert, onDismiss }: WeatherAlertBannerProps
   return (
     <AnimatePresence>
       <motion.div
+        role="alert"
+        aria-live="polite"
         initial={{ opacity: 0, y: -20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -73,6 +75,7 @@ export function WeatherAlertBanner({ alert, onDismiss }: WeatherAlertBannerProps
                 ? 'text-red-600'
                 : 'text-amber-600'
               }
+              aria-label="Warning"
             />
           </div>
 
@@ -87,12 +90,12 @@ export function WeatherAlertBanner({ alert, onDismiss }: WeatherAlertBannerProps
             </div>
 
             {/* Message */}
-            <p className={`text-sm ${colors.text} opacity-90 mb-2`}>
+            <p className={`text-sm ${colors.text} mb-2`}>
               {alert.message}
             </p>
 
             {/* Recommendation */}
-            <div className={`text-xs ${colors.text} opacity-75 mb-2`}>
+            <div className={`text-xs ${colors.text} mb-2`}>
               <span className="font-semibold">Recommendation:</span> {alert.recommendation}
             </div>
 
@@ -131,8 +134,9 @@ export function WeatherAlertBanner({ alert, onDismiss }: WeatherAlertBannerProps
               onClick={onDismiss}
               className={`
                 flex-shrink-0
-                p-1.5 rounded-lg
+                p-3 rounded-lg
                 hover:bg-white/50
+                focus:ring-2 focus:ring-offset-1 focus:ring-current
                 transition-colors duration-200
                 ${colors.text}
               `}

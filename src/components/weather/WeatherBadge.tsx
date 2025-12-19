@@ -19,8 +19,17 @@ export function WeatherBadge({
 }: WeatherBadgeProps) {
   const { condition, tempMax, precipitationProbability } = forecast;
 
+  // Construct comprehensive aria-label
+  const ariaLabel = `Weather: ${condition.replace('-', ' ')}, ${Math.round(tempMax)} degrees${
+    showRainChance && precipitationProbability > 0
+      ? `, ${Math.round(precipitationProbability)}% chance of rain`
+      : ''
+  }`;
+
   return (
     <div
+      role="group"
+      aria-label={ariaLabel}
       className={`
         inline-flex items-center gap-1.5
         bg-white/80 backdrop-blur-sm
@@ -31,11 +40,11 @@ export function WeatherBadge({
         ${className}
       `}
     >
-      <WeatherIcon condition={condition} size={14} />
-      <span className="text-slate-700">{Math.round(tempMax)}°</span>
+      <WeatherIcon condition={condition} size={14} aria-label={condition.replace('-', ' ')} />
+      <span className="text-slate-700" aria-label="Temperature">{Math.round(tempMax)}°</span>
       {showRainChance && precipitationProbability > 0 && (
         <>
-          <Droplets size={12} className="text-blue-500" />
+          <Droplets size={12} className="text-blue-500" aria-label="Rain probability" />
           <span className="text-blue-600">{Math.round(precipitationProbability)}%</span>
         </>
       )}

@@ -8,7 +8,97 @@ import { httpAction } from "./_generated/server";
  * - CORS support for browser requests
  * - Error handling with fallback responses
  * - Response normalization
+ * - Request timeout protection
+ * - Coordinate validation
  */
+
+// TypeScript interfaces for Google Weather API responses
+interface GoogleWeatherTemperature {
+  high?: { value?: number };
+  low?: { value?: number };
+  value?: number;
+}
+
+interface GoogleWeatherDailyForecast {
+  date: string;
+  temperature?: GoogleWeatherTemperature;
+  totalPrecipitation?: { value?: number };
+  precipitationProbability?: number;
+  weatherCode: number;
+  description?: string;
+  sunrise?: string;
+  sunset?: string;
+}
+
+interface GoogleWeatherDailyResponse {
+  dailyForecasts?: GoogleWeatherDailyForecast[];
+}
+
+interface GoogleWeatherCurrentConditions {
+  temperature?: { value?: number };
+  humidity?: number;
+  weatherCode: number;
+  description?: string;
+  precipitation?: { value?: number };
+  windSpeed?: { value?: number };
+}
+
+interface GoogleWeatherCurrentResponse {
+  current?: GoogleWeatherCurrentConditions;
+}
+
+interface GoogleWeatherAlert {
+  severity?: string;
+  headline?: string;
+  description?: string;
+  instruction?: string;
+  effectiveTime?: string;
+}
+
+interface GoogleWeatherAlertsResponse {
+  alerts?: GoogleWeatherAlert[];
+}
+
+// Normalized response types
+interface NormalizedDailyForecast {
+  date: string;
+  tempMax: number;
+  tempMin: number;
+  precipitationSum: number;
+  precipitationProbability: number;
+  condition: string;
+  weatherCode: number;
+  description: string;
+  sunrise?: string;
+  sunset?: string;
+}
+
+interface NormalizedForecastResponse {
+  daily: NormalizedDailyForecast[];
+}
+
+interface NormalizedCurrentConditions {
+  temperature: number;
+  humidity: number;
+  condition: string;
+  weatherCode: number;
+  precipitation: number;
+  windSpeed: number;
+  description: string;
+  updatedAt: string;
+}
+
+interface NormalizedAlert {
+  level: string;
+  title: string;
+  message: string;
+  recommendation: string;
+  affectedDays: (string | undefined)[];
+}
+
+interface NormalizedAlertsResponse {
+  alerts: NormalizedAlert[];
+}
 
 // In-memory cache with TTL
 interface CacheEntry {
@@ -25,21 +115,58 @@ const CACHE_TTL = {
   alerts: 5 * 60 * 1000,         // 5 minutes - alerts need to be fresh
 };
 
+// Fetch timeout configuration
+const FETCH_TIMEOUT_MS = 10000; // 10 seconds
+
 // CORS headers for browser requests
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getAllowedOrigin = (): string => {
+  return process.env.SITE_URL || "https://your-domain.convex.site";
+};
+
+const getCorsHeaders = () => ({
+  "Access-Control-Allow-Origin": getAllowedOrigin(),
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json",
-};
+});
 
 /**
- * Helper to make Google Weather API calls
+ * Validate geographic coordinates
+ */
+function validateCoordinates(lat: unknown, lng: unknown): { lat: number; lng: number } {
+  // Check if values exist
+  if (lat === null || lat === undefined || lng === null || lng === undefined) {
+    throw new Error("Missing coordinates: lat and lng are required");
+  }
+
+  // Convert to numbers
+  const latNum = typeof lat === 'number' ? lat : Number(lat);
+  const lngNum = typeof lng === 'number' ? lng : Number(lng);
+
+  // Check if conversion was successful
+  if (isNaN(latNum) || isNaN(lngNum)) {
+    throw new Error("Invalid coordinates: lat and lng must be valid numbers");
+  }
+
+  // Validate ranges
+  if (latNum < -90 || latNum > 90) {
+    throw new Error(`Invalid latitude: ${latNum} (must be between -90 and 90)`);
+  }
+
+  if (lngNum < -180 || lngNum > 180) {
+    throw new Error(`Invalid longitude: ${lngNum} (must be between -180 and 180)`);
+  }
+
+  return { lat: latNum, lng: lngNum };
+}
+
+/**
+ * Helper to make Google Weather API calls with timeout protection
  */
 async function fetchWeatherAPI(
   endpoint: string,
   params: Record<string, string>
-): Promise<any> {
+): Promise<GoogleWeatherDailyResponse | GoogleWeatherCurrentResponse | GoogleWeatherAlertsResponse> {
   const apiKey = process.env.GOOGLE_WEATHER_API_KEY;
   if (!apiKey) {
     throw new Error("GOOGLE_WEATHER_API_KEY not configured in Convex dashboard");
@@ -49,13 +176,32 @@ async function fetchWeatherAPI(
   url.searchParams.set("key", apiKey);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Weather API error (${response.status}): ${errorText}`);
-  }
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  return response.json();
+  try {
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Weather API error (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Weather API request timed out after ${FETCH_TIMEOUT_MS}ms`);
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -85,6 +231,8 @@ function setCache(key: string, data: unknown, ttl: number): void {
  * Returns daily weather forecast for a location
  */
 export const getDailyForecast = httpAction(async (_ctx, request) => {
+  const corsHeaders = getCorsHeaders();
+
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -94,15 +242,11 @@ export const getDailyForecast = httpAction(async (_ctx, request) => {
     const body = await request.json();
     const { lat, lng, days = 7 } = body;
 
-    if (!lat || !lng) {
-      return new Response(
-        JSON.stringify({ error: "Missing required parameters: lat, lng" }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // Validate coordinates
+    const coords = validateCoordinates(lat, lng);
 
     // Check cache
-    const cacheKey = `forecast:${lat}:${lng}:${days}`;
+    const cacheKey = `forecast:${coords.lat}:${coords.lng}:${days}`;
     const cached = getCached(cacheKey);
     if (cached) {
       return new Response(
@@ -113,11 +257,11 @@ export const getDailyForecast = httpAction(async (_ctx, request) => {
 
     // Fetch from Google Weather API
     const data = await fetchWeatherAPI("forecast/days:lookup", {
-      "location.latitude": lat.toString(),
-      "location.longitude": lng.toString(),
+      "location.latitude": coords.lat.toString(),
+      "location.longitude": coords.lng.toString(),
       days: days.toString(),
       unitsSystem: "METRIC",
-    });
+    }) as GoogleWeatherDailyResponse;
 
     // Normalize response to our types
     const normalized = normalizeForecastResponse(data);
@@ -146,6 +290,8 @@ export const getDailyForecast = httpAction(async (_ctx, request) => {
  * Returns current weather conditions for a location
  */
 export const getCurrentConditions = httpAction(async (_ctx, request) => {
+  const corsHeaders = getCorsHeaders();
+
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -155,15 +301,11 @@ export const getCurrentConditions = httpAction(async (_ctx, request) => {
     const body = await request.json();
     const { lat, lng } = body;
 
-    if (!lat || !lng) {
-      return new Response(
-        JSON.stringify({ error: "Missing required parameters: lat, lng" }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // Validate coordinates
+    const coords = validateCoordinates(lat, lng);
 
     // Check cache
-    const cacheKey = `current:${lat}:${lng}`;
+    const cacheKey = `current:${coords.lat}:${coords.lng}`;
     const cached = getCached(cacheKey);
     if (cached) {
       return new Response(
@@ -174,10 +316,10 @@ export const getCurrentConditions = httpAction(async (_ctx, request) => {
 
     // Fetch from Google Weather API
     const data = await fetchWeatherAPI("currentConditions:lookup", {
-      "location.latitude": lat.toString(),
-      "location.longitude": lng.toString(),
+      "location.latitude": coords.lat.toString(),
+      "location.longitude": coords.lng.toString(),
       unitsSystem: "METRIC",
-    });
+    }) as GoogleWeatherCurrentResponse;
 
     // Normalize response to our types
     const normalized = normalizeCurrentResponse(data);
@@ -206,6 +348,8 @@ export const getCurrentConditions = httpAction(async (_ctx, request) => {
  * Returns weather alerts for a location
  */
 export const getWeatherAlerts = httpAction(async (_ctx, request) => {
+  const corsHeaders = getCorsHeaders();
+
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -215,15 +359,11 @@ export const getWeatherAlerts = httpAction(async (_ctx, request) => {
     const body = await request.json();
     const { lat, lng } = body;
 
-    if (!lat || !lng) {
-      return new Response(
-        JSON.stringify({ error: "Missing required parameters: lat, lng" }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // Validate coordinates
+    const coords = validateCoordinates(lat, lng);
 
     // Check cache
-    const cacheKey = `alerts:${lat}:${lng}`;
+    const cacheKey = `alerts:${coords.lat}:${coords.lng}`;
     const cached = getCached(cacheKey);
     if (cached) {
       return new Response(
@@ -234,9 +374,9 @@ export const getWeatherAlerts = httpAction(async (_ctx, request) => {
 
     // Fetch from Google Weather API
     const data = await fetchWeatherAPI("publicAlerts:lookup", {
-      "location.latitude": lat.toString(),
-      "location.longitude": lng.toString(),
-    });
+      "location.latitude": coords.lat.toString(),
+      "location.longitude": coords.lng.toString(),
+    }) as GoogleWeatherAlertsResponse;
 
     // Normalize response to our types
     const normalized = normalizeAlertsResponse(data);
@@ -263,13 +403,13 @@ export const getWeatherAlerts = httpAction(async (_ctx, request) => {
 /**
  * Normalize Google Weather API forecast response to our types
  */
-function normalizeForecastResponse(data: any): any {
+function normalizeForecastResponse(data: GoogleWeatherDailyResponse): NormalizedForecastResponse {
   if (!data?.dailyForecasts) {
     return { daily: [] };
   }
 
   return {
-    daily: data.dailyForecasts.map((day: any) => ({
+    daily: data.dailyForecasts.map((day: GoogleWeatherDailyForecast): NormalizedDailyForecast => ({
       date: day.date,
       tempMax: day.temperature?.high?.value || 0,
       tempMin: day.temperature?.low?.value || 0,
@@ -287,7 +427,7 @@ function normalizeForecastResponse(data: any): any {
 /**
  * Normalize Google Weather API current conditions response to our types
  */
-function normalizeCurrentResponse(data: any): any {
+function normalizeCurrentResponse(data: GoogleWeatherCurrentResponse): NormalizedCurrentConditions {
   if (!data?.current) {
     return createFallbackCurrent();
   }
@@ -308,13 +448,13 @@ function normalizeCurrentResponse(data: any): any {
 /**
  * Normalize Google Weather API alerts response to our types
  */
-function normalizeAlertsResponse(data: any): any {
+function normalizeAlertsResponse(data: GoogleWeatherAlertsResponse): NormalizedAlertsResponse {
   if (!data?.alerts) {
     return { alerts: [] };
   }
 
   return {
-    alerts: data.alerts.map((alert: any) => ({
+    alerts: data.alerts.map((alert: GoogleWeatherAlert): NormalizedAlert => ({
       level: mapAlertSeverity(alert.severity),
       title: alert.headline || 'Weather Alert',
       message: alert.description || '',
@@ -346,22 +486,24 @@ function mapWeatherCode(code: number): string {
 /**
  * Map Google alert severity to our risk levels
  */
-function mapAlertSeverity(severity: string): string {
+function mapAlertSeverity(severity?: string): string {
+  if (!severity) return 'moderate';
+
   const severityMap: Record<string, string> = {
     'MINOR': 'low',
     'MODERATE': 'moderate',
     'SEVERE': 'high',
     'EXTREME': 'severe',
   };
-  return severityMap[severity?.toUpperCase()] || 'moderate';
+  return severityMap[severity.toUpperCase()] || 'moderate';
 }
 
 /**
  * Create fallback forecast data when API fails
  */
-function createFallbackForecast(): any {
+function createFallbackForecast(): NormalizedForecastResponse {
   const now = new Date();
-  const daily = [];
+  const daily: NormalizedDailyForecast[] = [];
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(now);
@@ -387,7 +529,7 @@ function createFallbackForecast(): any {
 /**
  * Create fallback current conditions when API fails
  */
-function createFallbackCurrent(): any {
+function createFallbackCurrent(): NormalizedCurrentConditions {
   return {
     temperature: 28,
     humidity: 70,

@@ -8,7 +8,7 @@ Glassmorphic weather components following the project's design system.
 Maps weather conditions to Lucide icons with appropriate colors.
 
 ```tsx
-import { WeatherIcon } from '@/components/Weather';
+import { WeatherIcon } from '@/components/weather';
 
 <WeatherIcon condition="clear" size={24} />
 <WeatherIcon condition="heavy-rain" size={32} />
@@ -18,7 +18,7 @@ import { WeatherIcon } from '@/components/Weather';
 Compact inline badge for day headers showing weather at a glance.
 
 ```tsx
-import { WeatherBadge } from '@/components/Weather';
+import { WeatherBadge } from '@/components/weather';
 
 <WeatherBadge
   forecast={dailyForecast}
@@ -31,7 +31,7 @@ import { WeatherBadge } from '@/components/Weather';
 Detailed weather card for RightDetailPanel with current conditions or forecast.
 
 ```tsx
-import { WeatherCard } from '@/components/Weather';
+import { WeatherCard } from '@/components/weather';
 
 // Show current weather
 <WeatherCard current={currentWeather} isLoading={false} />
@@ -47,7 +47,7 @@ import { WeatherCard } from '@/components/Weather';
 Animated warning banner for monsoon/flash flood alerts.
 
 ```tsx
-import { WeatherAlertBanner } from '@/components/Weather';
+import { WeatherAlertBanner } from '@/components/weather';
 
 <WeatherAlertBanner
   alert={{
@@ -91,7 +91,7 @@ Alert severities:
 
 ```tsx
 import { useWeather } from '@/hooks/useWeather';
-import { WeatherBadge, WeatherCard, WeatherAlertBanner } from '@/components/Weather';
+import { WeatherBadge, WeatherCard, WeatherAlertBanner } from '@/components/weather';
 
 function DayView({ date }: { date: string }) {
   const { daily, flashFloodAlert } = useWeather();
