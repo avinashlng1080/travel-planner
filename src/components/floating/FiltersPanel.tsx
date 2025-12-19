@@ -1,9 +1,7 @@
 import { Filter } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { visibleCategoriesAtom, toggleCategoryAtom } from '../../atoms/uiAtoms';
-import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface Category {
   id: string;
@@ -24,16 +22,8 @@ const categories: Category[] = [
 ];
 
 export function FiltersPanel() {
-  const [panels] = useAtom(panelsAtom);
-  const closePanel = useSetAtom(closePanelAtom);
-  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
-  const updatePosition = useSetAtom(updatePositionAtom);
-  const bringToFront = useSetAtom(bringToFrontAtom);
   const [visibleCategories, setAllCategories] = useAtom(visibleCategoriesAtom);
   const toggleCategory = useSetAtom(toggleCategoryAtom);
-  const { width, height } = useResponsivePanel(300, 400);
-
-  const panelState = panels.filters;
 
   const handleShowAll = () => {
     setAllCategories(categories.map(cat => cat.id));
@@ -44,19 +34,11 @@ export function FiltersPanel() {
   };
 
   return (
-    <FloatingPanel
-      id="filters"
+    <ResponsivePanelWrapper
+      panelId="filters"
       title="Category Filters"
       icon={Filter}
-      isOpen={panelState.isOpen}
-      isMinimized={panelState.isMinimized}
-      position={panelState.position}
-      size={{ width, height }}
-      zIndex={panelState.zIndex}
-      onClose={() => closePanel('filters')}
-      onMinimize={() => toggleMinimize('filters')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'filters', position: pos })}
-      onFocus={() => bringToFront('filters')}
+      defaultSize={{ width: 300, height: 400 }}
     >
       <div className="p-4 h-full flex flex-col">
         {/* Quick Actions */}
@@ -110,6 +92,6 @@ export function FiltersPanel() {
           </p>
         </div>
       </div>
-    </FloatingPanel>
+    </ResponsivePanelWrapper>
   );
 }

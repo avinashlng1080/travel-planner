@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Share2, MessageSquare, Activity, Send, Trash2 } from 'lucide-react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
-import { FloatingPanel } from '../ui/FloatingPanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 import { GlassButton, GlassInput } from '../ui/GlassPanel';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { collaborationTabAtom } from '../../atoms/collaborationAtoms';
 import { InviteModal } from '../trips/InviteModal';
 import { MemberList } from '../trips/MemberList';
 import { ActivityFeed } from '../trips/ActivityFeed';
-import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface CollaborationPanelProps {
   tripId: Id<'trips'>;
@@ -28,15 +26,7 @@ const tabs = [
 ];
 
 export function CollaborationPanel({ tripId, tripName, userRole }: CollaborationPanelProps) {
-  const [panels] = useAtom(panelsAtom);
-  const closePanel = useSetAtom(closePanelAtom);
-  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
-  const updatePosition = useSetAtom(updatePositionAtom);
-  const bringToFront = useSetAtom(bringToFrontAtom);
   const [activeTab, setActiveTab] = useAtom(collaborationTabAtom);
-
-  const panel = panels.collaboration;
-  const { width, height } = useResponsivePanel(500, 600);
 
   // State for inline invite modal
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -70,22 +60,14 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
 
   return (
     <>
-      <FloatingPanel
-        id="collaboration"
+      <ResponsivePanelWrapper
+        panelId="collaboration"
         title="Collaboration"
         icon={Users}
-        isOpen={panel.isOpen}
-        isMinimized={panel.isMinimized}
-        position={panel.position}
-        size={{ width, height }}
-        zIndex={panel.zIndex}
-        onClose={() => closePanel('collaboration')}
-        onMinimize={() => toggleMinimize('collaboration')}
-        onPositionChange={(pos) => updatePosition({ panelId: 'collaboration', position: pos })}
-        onFocus={() => bringToFront('collaboration')}
+        defaultSize={{ width: 500, height: 600 }}
       >
         {/* Tab Navigation */}
-        <div role="tablist" aria-label="Collaboration options" className="flex border-b border-slate-200/50 bg-white">
+        <div role="tablist" aria-label="Collaboration options" className="flex overflow-x-auto scrollbar-hide border-b border-slate-200/50 bg-white">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -102,15 +84,15 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
                 aria-controls={`collab-panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-colors relative
+                  flex-1 md:flex-auto flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-sm font-medium transition-colors relative whitespace-nowrap
                   ${isActive
                     ? 'text-sunset-600'
                     : 'text-slate-600 hover:text-slate-900'
                   }
                 `}
               >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon className="w-5 h-5 md:w-4 md:h-4" />
+                <span>{tab.label}</span>
                 {isActive && (
                   <motion.div
                     layoutId="activeCollabTab"
@@ -172,7 +154,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
             )}
           </AnimatePresence>
         </div>
-      </FloatingPanel>
+      </ResponsivePanelWrapper>
 
       {/* Inline Invite Modal */}
       {showInviteModal && (

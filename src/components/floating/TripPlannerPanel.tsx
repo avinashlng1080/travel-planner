@@ -2,16 +2,15 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
 import { sortScheduleItems } from '../../utils/sortScheduleItems';
-import { FloatingPanel } from '../ui/FloatingPanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import { panelsAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
-import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 import { useWeather } from '../../hooks/useWeather';
 import { WeatherBadge } from '../Weather';
 import { api } from '../../../convex/_generated/api';
@@ -50,13 +49,8 @@ interface TripPlannerPanelProps {
 
 export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: TripPlannerPanelProps) {
   const [panels] = useAtom(panelsAtom);
-  const closePanel = useSetAtom(closePanelAtom);
-  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
-  const updatePosition = useSetAtom(updatePositionAtom);
-  const bringToFront = useSetAtom(bringToFrontAtom);
   const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
-  const { width, height } = useResponsivePanel(420, 580);
 
   // Get weather data (defaults to Kuala Lumpur)
   const { daily: weatherForecast } = useWeather();
@@ -320,19 +314,11 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   };
 
   return (
-    <FloatingPanel
-      id="tripPlanner"
+    <ResponsivePanelWrapper
+      panelId="tripPlanner"
       title="Trip Planner"
       icon={Map}
-      isOpen={panelState.isOpen}
-      isMinimized={panelState.isMinimized}
-      position={panelState.position}
-      size={{ width, height }}
-      zIndex={panelState.zIndex}
-      onClose={() => closePanel('tripPlanner')}
-      onMinimize={() => toggleMinimize('tripPlanner')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'tripPlanner', position: pos })}
-      onFocus={() => bringToFront('tripPlanner')}
+      defaultSize={{ width: 420, height: 580 }}
     >
       <div className="flex flex-col h-full">
         {/* Day Navigator */}
@@ -383,14 +369,14 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200/50">
+        <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200/50">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5
-                text-xs font-medium transition-all duration-200
+                flex-1 md:flex-auto flex items-center justify-center gap-1.5 px-3 py-3 min-h-[44px]
+                text-xs font-medium transition-all duration-200 whitespace-nowrap
                 ${
                   activeTab === tab.id
                     ? 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50/50'
@@ -481,6 +467,6 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
           {activeTab === 'alerts' && <SafetyPanel />}
         </div>
       </div>
-    </FloatingPanel>
+    </ResponsivePanelWrapper>
   );
 }
