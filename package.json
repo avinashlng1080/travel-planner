@@ -6,7 +6,8 @@
   "description": "AI-powered family travel planner for Malaysia with toddler-friendly recommendations",
   "scripts": {
     "dev": "vite",
-    "build": "npm run lint && npx convex deploy --cmd 'vite build'",
+    "build": "vite build",
+    "build:full": "npm run lint && npx convex deploy --cmd 'vite build'",
     "preview": "vite preview",
     "convex": "convex dev",
     "convex:deploy": "convex deploy",

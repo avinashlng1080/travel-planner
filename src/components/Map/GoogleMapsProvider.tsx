@@ -13,7 +13,7 @@ interface GoogleMapsProviderProps {
 }
 
 export function GoogleMapsProvider({ children }: GoogleMapsProviderProps) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY || import.meta.env.VITE_GOOGLE_MAPS;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 
   if (!apiKey) {
     console.error('[GoogleMapsProvider] Missing VITE_GOOGLE_MAPS_KEY environment variable');
