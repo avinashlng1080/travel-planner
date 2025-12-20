@@ -141,7 +141,7 @@ export function FAB() {
       <motion.button
         className="fixed md:hidden w-14 h-14 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-full shadow-2xl flex items-center justify-center text-white z-60"
         style={{
-          bottom: `calc(env(safe-area-inset-bottom, 0px) + 80px)`,
+          bottom: `calc(env(safe-area-inset-bottom, 0px) + 152px)`,
           right: `calc(env(safe-area-inset-right, 0px) + 16px)`,
           boxShadow: '0 8px 24px rgba(249, 115, 22, 0.4)',
         }}

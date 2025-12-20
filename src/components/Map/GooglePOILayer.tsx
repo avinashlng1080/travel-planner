@@ -60,8 +60,8 @@ function POIMarker({ poi }: POIMarkerProps) {
       >
         <div
           style={{
-            fontSize: '24px',
-            opacity: 0.6,
+            fontSize: '20px',
+            opacity: 0.35,
             filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
             cursor: 'pointer',
             transition: 'opacity 0.2s, transform 0.2s',

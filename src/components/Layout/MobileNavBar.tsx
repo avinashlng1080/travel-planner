@@ -14,11 +14,11 @@ export function MobileNavBar() {
 
   const navItems: NavItem[] = [
     { id: 'tripPlanner', icon: Map, label: 'Plan' },
-    { id: 'days', icon: Calendar, label: 'Days' },
+    { id: 'tripPlanner', icon: Calendar, label: 'Days' },
     { id: 'checklist', icon: CheckSquare, label: 'Tasks' },
-    { id: 'suggestions', icon: Lightbulb, label: 'Tips' },
+    { id: 'collaboration', icon: Lightbulb, label: 'Tips' },
     { id: 'filters', icon: Filter, label: 'Filters' },
-    { id: 'alerts', icon: AlertTriangle, label: 'Alerts' },
+    { id: 'weather', icon: AlertTriangle, label: 'Alerts' },
   ];
 
   const handleNavClick = (panelId: PanelId) => {

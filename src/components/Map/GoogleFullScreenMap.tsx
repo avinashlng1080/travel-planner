@@ -422,8 +422,32 @@ interface LocationMarkerProps {
 }
 
 function LocationMarker({ location, isSelected, planIndicator, onClick }: LocationMarkerProps) {
-  const size = isSelected ? 48 : 40;
+  const isHomeBase = location.category === 'home-base';
+  const isImportant = ['toddler-friendly', 'medical', 'attraction'].includes(location.category);
+
+  // Dramatically increased marker sizes
+  let size: number;
+  if (isHomeBase) {
+    size = isSelected ? 80 : 64;
+  } else if (isImportant) {
+    size = isSelected ? 64 : 52;
+  } else {
+    size = isSelected ? 56 : 44;
+  }
+
   const color = CATEGORY_COLORS[location.category] || '#64748b';
+
+  // Z-index hierarchy: home-base > selected > important > standard
+  let zIndex: number;
+  if (isHomeBase) {
+    zIndex = 1000;
+  } else if (isSelected) {
+    zIndex = 500;
+  } else if (isImportant) {
+    zIndex = 200;
+  } else {
+    zIndex = 100;
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -432,11 +456,27 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
     }
   };
 
+  // Dramatic multi-layer shadows
+  let shadowStyle: string;
+  if (isHomeBase) {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 0 20px rgba(255, 69, 0, 0.8)) drop-shadow(0 8px 16px rgba(0,0,0,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.4))'
+      : 'drop-shadow(0 0 12px rgba(255, 69, 0, 0.6)) drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.3))';
+  } else if (isImportant) {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.3))'
+      : 'drop-shadow(0 4px 8px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.2))';
+  } else {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))'
+      : 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))';
+  }
+
   return (
     <AdvancedMarker
       position={{ lat: location.lat, lng: location.lng }}
       onClick={onClick}
-      zIndex={isSelected ? 100 : 10}
+      zIndex={zIndex}
     >
       <div
         role="button"
@@ -448,15 +488,40 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
         style={{
           cursor: 'pointer',
           transform: 'translateY(-50%)',
-          filter: isSelected
-            ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))'
-            : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-          animation: isSelected ? 'pulse 1s ease-in-out infinite' : undefined,
+          filter: shadowStyle,
+          animation: isHomeBase
+            ? 'homeBasePulse 2s ease-in-out infinite'
+            : isSelected
+            ? 'pulse 1s ease-in-out infinite'
+            : undefined,
         }}
       >
         <svg width={size} height={size} viewBox="0 0 40 44">
           {getCategoryMarkerContent(location.category, color, planIndicator)}
         </svg>
+        {/* Always-visible label for home base */}
+        {isHomeBase && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              background: 'rgba(255, 69, 0, 0.95)',
+              color: 'white',
+              padding: '4px 12px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '600',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+              border: '2px solid #FFD700',
+              pointerEvents: 'none',
+            }}
+          >
+            🏠 Home Base
+          </div>
+        )}
       </div>
     </AdvancedMarker>
   );
