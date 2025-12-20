@@ -9,8 +9,8 @@ node_modules/
 dist/
 .vite/
 
-# Convex generated files
-convex/_generated/
+# Convex generated files should be committed (required for builds)
+# See: https://docs.convex.dev/production/hosting/vercel
 
 # Test artifacts
 playwright-report/
