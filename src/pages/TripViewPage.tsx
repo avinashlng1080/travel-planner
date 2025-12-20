@@ -1,14 +1,24 @@
 import { useQuery, useMutation } from 'convex/react';
-import { useAtom, useSetAtom, useAtomValue } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { MapPin, Navigation } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 
 import { api } from '../../convex/_generated/api';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
-import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel, SettingsPanel } from '../components/floating';
-import { homeBaseAtom } from '../components/Floating/SettingsPanel';
+import {
+  focusedActivityAtom,
+  addDestinationModalOpenAtom,
+  editDestinationModalOpenAtom,
+  editingDestinationIdAtom,
+  deleteDestinationDialogOpenAtom,
+  deletingDestinationIdAtom,
+  travelModeAtom,
+  commutesPanelOpenAtom,
+  activeCommuteDestinationAtom,
+  selectedDayIdAtom
+} from '../atoms/uiAtoms';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
@@ -18,13 +28,15 @@ import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { AddActivityModal } from '../components/trips/AddActivityModal';
-import { CommutesPanel } from '../components/trips/CommutesPanel';
-import { EditActivityModal } from '../components/trips/EditActivityModal';
 import { EditTripModal } from '../components/trips/EditTripModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
-import { FAB } from '../components/ui/FAB';
+import { EditActivityModal } from '../components/trips/EditActivityModal';
+import AddDestinationModal from '../components/trips/AddDestinationModal';
+import EditDestinationModal from '../components/trips/EditDestinationModal';
+import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
 import { WeatherIndicator } from '../components/weather';
-import { useCommutes } from '../hooks/useCommutes';
+
+
 
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
@@ -53,9 +65,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Floating panel state
   const openPanel = useSetAtom(openPanelAtom);
 
-  // Get configured home base
-  const homeBase = useAtomValue(homeBaseAtom);
-
   // Commutes panel state
   const [travelMode, setTravelMode] = useAtom(travelModeAtom);
   const [commutesPanelOpen, setCommutesPanelOpen] = useAtom(commutesPanelOpenAtom);
@@ -65,8 +74,17 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Map sync state
   const setFocusedActivity = useSetAtom(focusedActivityAtom);
 
+  // Commute destination modal state
+  const [addDestinationModalOpen, setAddDestinationModalOpen] = useAtom(addDestinationModalOpenAtom);
+  const [editDestinationModalOpen, setEditDestinationModalOpen] = useAtom(editDestinationModalOpenAtom);
+  const [editingDestinationId, setEditingDestinationId] = useAtom(editingDestinationIdAtom);
+  const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
+  const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
+  const deleteDestination = useMutation(api.commuteDestinations.deleteDestination);
 
   // Fetch trip details with members and plans
   const tripData = useQuery(api.trips.getTripWithDetails, { tripId });
@@ -90,157 +108,18 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     ? tripLocations?.find((loc) => loc._id === selectedActivity.locationId)
     : null;
 
-  // Transform tripLocations to Location format for map (MUST be before early returns)
-  const mapLocations: Location[] = useMemo(() =>
-    tripLocations?.map((loc) => ({
-      id: loc._id,
-      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
-      lat: loc.customLat || loc.baseLocation?.lat || 0,
-      lng: loc.customLng || loc.baseLocation?.lng || 0,
-      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
-      description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
-      toddlerRating: loc.baseLocation?.toddlerRating || 3,
-      isIndoor: loc.baseLocation?.isIndoor || false,
-      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
-      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
-      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
-      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
-      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
-      warnings: loc.baseLocation?.warnings || [],
-      tips: loc.baseLocation?.tips || [],
-      whatToBring: loc.baseLocation?.whatToBring || [],
-      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
-      bookingRequired: loc.baseLocation?.bookingRequired || false,
-      openingHours: loc.baseLocation?.openingHours || 'Check locally',
-      planIds: [],
-      address: loc.baseLocation?.address,
-      entranceFee: loc.baseLocation?.entranceFee,
-      dressCode: loc.baseLocation?.dressCode,
-    })) || [], [tripLocations]);
+  // Fetch commute destinations for the trip
+  const commuteDestinations = useQuery(api.commuteDestinations.getDestinations, { tripId });
 
-  // Get all categories for filtering (MUST be before early returns)
-  const visibleCategories = useMemo(() =>
-    Array.from(new Set(mapLocations.map((loc) => loc.category))),
-    [mapLocations]
-  );
+  // Get the destination being edited
+  const editingDestination = editingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === editingDestinationId)
+    : null;
 
-  // Compute commute destinations from scheduled items for the selected day (MUST be before early returns)
-  const commuteDestinations = useMemo(() => {
-    if (!scheduleItems || !tripLocations) {return [];}
-
-    // Filter by selected day if there is one
-    const dayItems = selectedDayId
-      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
-      : scheduleItems;
-
-    // Sort by order/time
-    const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) {return a.order - b.order;}
-      return a.startTime.localeCompare(b.startTime);
-    });
-
-    // Map to destination format
-    return sortedItems
-      .filter((item) => item.locationId)
-      .map((item) => {
-        const loc = tripLocations.find((l) => l._id === item.locationId);
-        if (!loc) {return null;}
-
-        return {
-          id: item._id,
-          name: loc.customName || loc.baseLocation?.name || item.title,
-          lat: loc.customLat || loc.baseLocation?.lat || 0,
-          lng: loc.customLng || loc.baseLocation?.lng || 0,
-          category: loc.customCategory || loc.baseLocation?.category,
-        };
-      })
-      .filter((d): d is NonNullable<typeof d> => d !== null && d.lat !== 0);
-  }, [scheduleItems, tripLocations, selectedDayId]);
-
-  // Get origin point (first location or home base) (MUST be before early returns)
-  const commuteOrigin = useMemo(() => {
-    // Use first scheduled location as origin, or trip's first location
-    if (commuteDestinations.length > 0) {
-      const firstDest = commuteDestinations[0];
-      return {
-        lat: firstDest.lat,
-        lng: firstDest.lng,
-        name: firstDest.name,
-      };
-    }
-    // Fallback to first trip location
-    if (mapLocations.length > 0) {
-      const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
-      if (homeBase) {
-        return { lat: homeBase.lat, lng: homeBase.lng, name: homeBase.name };
-      }
-      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng, name: mapLocations[0].name };
-    }
-    return null;
-  }, [commuteDestinations, mapLocations]);
-
-  // Destinations for commute (excluding origin) (MUST be before early returns)
-  const commuteDestinationsWithoutOrigin = useMemo(() => {
-    if (commuteDestinations.length <= 1) {return [];}
-    return commuteDestinations.slice(1);
-  }, [commuteDestinations]);
-
-  // Build route for current plan - starting from configurable home base (MUST be before early returns)
-  const planRoute = useMemo(() => {
-    if (!scheduleItems || !tripLocations) {return [];}
-
-    // Filter by selected day if there is one
-    const dayItems = selectedDayId
-      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
-      : scheduleItems;
-
-    // Sort by order/time
-    const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) {return a.order - b.order;}
-      return a.startTime.localeCompare(b.startTime);
-    });
-
-    // Use configured home base from settings
-    const homePoint = {
-      lat: homeBase.lat,
-      lng: homeBase.lng,
-    };
-
-    // Start from home base
-    const routePoints: { lat: number; lng: number }[] = [homePoint];
-
-    // Add all scheduled locations (filter out nap times and items without locations)
-    sortedItems
-      .filter((item) => item.locationId && !item.title.toLowerCase().includes('nap'))
-      .forEach((item) => {
-        const location = tripLocations.find((l) => l._id === item.locationId);
-        if (location) {
-          routePoints.push({
-            lat: location.customLat || location.baseLocation?.lat || 0,
-            lng: location.customLng || location.baseLocation?.lng || 0,
-          });
-        }
-      });
-
-    // Return to home base at the end (only if we have intermediate points)
-    if (routePoints.length > 1) {
-      routePoints.push(homePoint);
-    }
-
-    return routePoints;
-  }, [scheduleItems, tripLocations, selectedDayId, homeBase]);
-
-  // Fetch commute data with Google Directions API (MUST be before early returns)
-  const { commutes, isLoading: isCommutesLoading } = useCommutes({
-    origin: commuteOrigin,
-    destinations: commuteDestinationsWithoutOrigin.map((d, index) => ({
-      ...d,
-      label: String.fromCharCode(65 + index), // A, B, C, etc.
-    })),
-    travelMode,
-    enabled: commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0,
-  });
+  // Get the destination being deleted
+  const deletingDestination = deletingDestinationId && commuteDestinations
+    ? commuteDestinations.find((dest) => dest._id === deletingDestinationId)
+    : null;
 
   // Trigger onboarding when trip data loads for the first time
   useEffect(() => {
@@ -312,6 +191,57 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const currentMember = members.find((m) => m.status === 'accepted');
   const userRole = currentMember?.role || 'viewer';
 
+  // Transform tripLocations to Location format for map
+  const mapLocations: Location[] =
+    tripLocations?.map((loc) => ({
+      id: loc._id,
+      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
+      lat: loc.customLat || loc.baseLocation?.lat || 0,
+      lng: loc.customLng || loc.baseLocation?.lng || 0,
+      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
+      description: loc.customDescription || loc.baseLocation?.description || '',
+      city: loc.baseLocation?.city || 'Malaysia',
+      toddlerRating: loc.baseLocation?.toddlerRating || 3,
+      isIndoor: loc.baseLocation?.isIndoor || false,
+      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
+      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
+      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
+      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
+      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
+      warnings: loc.baseLocation?.warnings || [],
+      tips: loc.baseLocation?.tips || [],
+      whatToBring: loc.baseLocation?.whatToBring || [],
+      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
+      bookingRequired: loc.baseLocation?.bookingRequired || false,
+      openingHours: loc.baseLocation?.openingHours || 'Check locally',
+      planIds: [],
+      address: loc.baseLocation?.address,
+      entranceFee: loc.baseLocation?.entranceFee,
+      dressCode: loc.baseLocation?.dressCode,
+    })) || [];
+
+  // Get all categories for filtering
+  const visibleCategories = Array.from(
+    new Set(mapLocations.map((loc) => loc.category))
+  );
+
+  // Handler for deleting a destination
+  const handleDeleteDestination = async () => {
+    if (!deletingDestinationId) {return;}
+
+    setIsDeleting(true);
+    try {
+      await deleteDestination({ destinationId: deletingDestinationId as Id<'commuteDestinations'> });
+      // Close dialog and reset state
+      setDeleteDestinationDialogOpen(false);
+      setDeletingDestinationId(null);
+    } catch (error) {
+      console.error('Failed to delete destination:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
       {/* Full Screen Map Background */}
@@ -320,7 +250,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         selectedLocation={selectedLocation}
         visibleCategories={visibleCategories}
         activePlan={activePlan}
-        planRoute={planRoute}
+        planRoute={[]}
         tripId={tripId}
         selectedPlanId={selectedPlanId}
         commutes={commutes}
@@ -372,7 +302,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         }}
       />
       <WeatherFloatingPanel />
-      <SettingsPanel />
 
       {/* Weather Indicator - floating badge on map */}
       <WeatherIndicator />
@@ -437,9 +366,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* Mobile Navigation Bar */}
       <MobileNavBar />
-
-      {/* Floating Action Button - mobile only */}
-      <FAB />
 
       {/* Onboarding Overlay - renders when onboarding is active */}
       <OnboardingOverlay />
@@ -526,6 +452,47 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           }}
         />
       )}
+
+      {/* Add Destination Modal */}
+      <AddDestinationModal
+        isOpen={addDestinationModalOpen}
+        onClose={() => { setAddDestinationModalOpen(false); }}
+        tripId={tripId}
+        onSuccess={() => {
+          // Destinations will refresh automatically via Convex reactivity
+          setAddDestinationModalOpen(false);
+        }}
+      />
+
+      {/* Edit Destination Modal */}
+      {editingDestination && (
+        <EditDestinationModal
+          isOpen={editDestinationModalOpen}
+          onClose={() => {
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+          tripId={tripId}
+          destination={editingDestination}
+          onSuccess={() => {
+            // Destinations will refresh automatically via Convex reactivity
+            setEditDestinationModalOpen(false);
+            setEditingDestinationId(null);
+          }}
+        />
+      )}
+
+      {/* Delete Destination Dialog */}
+      <DeleteDestinationDialog
+        isOpen={deleteDestinationDialogOpen}
+        onClose={() => {
+          setDeleteDestinationDialogOpen(false);
+          setDeletingDestinationId(null);
+        }}
+        destinationName={deletingDestination?.name || 'this destination'}
+        onConfirm={handleDeleteDestination}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

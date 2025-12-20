@@ -183,6 +183,13 @@ export const clearNewlyAddedPinsAtom = atom(
   }
 );
 
+// Commute Destination Modal State
+export const addDestinationModalOpenAtom = atom<boolean>(false);
+export const editDestinationModalOpenAtom = atom<boolean>(false);
+export const editingDestinationIdAtom = atom<string | null>(null);
+export const deleteDestinationDialogOpenAtom = atom<boolean>(false);
+export const deletingDestinationIdAtom = atom<string | null>(null);
+
 // Commutes panel state
 export const travelModeAtom = atomWithStorage<TravelMode>('malaysia-trip-ui-travelMode', 'DRIVING');
 export const commutesPanelOpenAtom = atom<boolean>(false);
