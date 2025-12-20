@@ -77,7 +77,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
