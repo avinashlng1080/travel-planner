@@ -33,8 +33,8 @@ export function GoogleDayRouteLayer({ tripId, planId, activePlan }: GoogleDayRou
     return null;
   }
 
-  // Plan A: solid green, Plan B: dashed blue
-  const routeColor = activePlan === 'A' ? '#10B981' : '#3B82F6';
+  // Plan A: solid red, Plan B: dashed sky blue
+  const routeColor = activePlan === 'A' ? '#FF1744' : '#00B0FF';
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
 
   return (

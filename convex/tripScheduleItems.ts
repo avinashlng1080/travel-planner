@@ -318,18 +318,10 @@ export const createScheduleItem = mutation({
       }
     }
 
-    // Get existing items for this plan/date to determine order
-    const existingItems = await ctx.db
-      .query("tripScheduleItems")
-      .withIndex("by_plan_and_date", (q) =>
-        q.eq("planId", args.planId).eq("dayDate", args.dayDate)
-      )
-      .collect();
-
-    const maxOrder =
-      existingItems.length > 0
-        ? Math.max(...existingItems.map((i) => i.order))
-        : -1;
+    // Calculate order based on start time for automatic chronological sorting
+    // This ensures new items appear in time order by default
+    // Drag-and-drop reordering still works by updating the order field
+    const order = timeToMinutes(args.startTime);
 
     // Create the schedule item
     const itemId = await ctx.db.insert("tripScheduleItems", {
@@ -345,7 +337,7 @@ export const createScheduleItem = mutation({
       createdBy: userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      order: maxOrder + 1,
+      order,
     });
 
     // Log activity
@@ -416,7 +408,11 @@ export const updateScheduleItem = mutation({
 
     if (args.locationId !== undefined) updates.locationId = args.locationId;
     if (args.title !== undefined) updates.title = args.title;
-    if (args.startTime !== undefined) updates.startTime = args.startTime;
+    if (args.startTime !== undefined) {
+      updates.startTime = args.startTime;
+      // Recalculate order based on new start time for automatic chronological sorting
+      updates.order = timeToMinutes(args.startTime);
+    }
     if (args.endTime !== undefined) updates.endTime = args.endTime;
     if (args.notes !== undefined) updates.notes = args.notes;
     if (args.isFlexible !== undefined) updates.isFlexible = args.isFlexible;
@@ -613,24 +609,14 @@ export const moveItemBetweenPlans = mutation({
     // Determine target date (use provided or keep original)
     const targetDate = args.targetDayDate ?? item.dayDate;
 
-    // Get existing items in target plan/date to determine new order
-    const targetItems = await ctx.db
-      .query("tripScheduleItems")
-      .withIndex("by_plan_and_date", (q) =>
-        q.eq("planId", args.targetPlanId).eq("dayDate", targetDate)
-      )
-      .collect();
-
-    const maxOrder =
-      targetItems.length > 0
-        ? Math.max(...targetItems.map((i) => i.order))
-        : -1;
+    // Calculate order based on start time for automatic chronological sorting
+    const order = timeToMinutes(item.startTime);
 
     // Update the item
     await ctx.db.patch(args.itemId, {
       planId: args.targetPlanId,
       dayDate: targetDate,
-      order: maxOrder + 1,
+      order,
       updatedAt: Date.now(),
       updatedBy: userId,
     });
@@ -747,23 +733,13 @@ export const createAIItinerary = mutation({
 
     // 4. For each day
     for (const day of args.days) {
-      // Get existing items for this plan/date to determine starting order
-      const existingItems = await ctx.db
-        .query("tripScheduleItems")
-        .withIndex("by_plan_and_date", (q) =>
-          q.eq("planId", args.planId).eq("dayDate", day.date)
-        )
-        .collect();
-
-      let order =
-        existingItems.length > 0
-          ? Math.max(...existingItems.map((item) => item.order)) + 1
-          : 0;
-
       // For each activity
       for (const activity of day.activities) {
         // Try to find matching tripLocation by name
         const locationId = findMatchingLocation(activity.locationName);
+
+        // Calculate order based on start time for automatic chronological sorting
+        const order = timeToMinutes(activity.startTime);
 
         // Create schedule item with aiGenerated: true (stored in notes)
         const itemId = await ctx.db.insert("tripScheduleItems", {
@@ -781,12 +757,11 @@ export const createAIItinerary = mutation({
           createdBy: userId,
           createdAt: Date.now(),
           updatedAt: Date.now(),
-          order: order,
+          order,
         });
 
         createdItemIds.push(itemId);
         totalItemsCreated++;
-        order++;
       }
     }
 

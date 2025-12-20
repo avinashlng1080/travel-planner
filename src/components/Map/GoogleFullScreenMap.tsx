@@ -16,6 +16,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Map, AdvancedMarker, useMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
+import { useAtomValue } from 'jotai';
+import { homeBaseAtom } from '../Floating/SettingsPanel';
 import type { Location } from '../../data/tripData';
 import type { DynamicPin } from '../../atoms/uiAtoms';
 import type { POIMapBounds } from '../../types/poi';
@@ -422,7 +424,10 @@ interface LocationMarkerProps {
 }
 
 function LocationMarker({ location, isSelected, planIndicator, onClick }: LocationMarkerProps) {
-  const isHomeBase = location.category === 'home-base';
+  const homeBase = useAtomValue(homeBaseAtom);
+
+  // Check if this location is the home base by comparing coordinates (more reliable than category)
+  const isHomeBase = location.lat === homeBase.lat && location.lng === homeBase.lng;
   const isImportant = ['toddler-friendly', 'medical', 'attraction'].includes(location.category);
 
   // Dramatically increased marker sizes
@@ -648,7 +653,7 @@ export function GoogleFullScreenMap({
     visibleCategories.includes(loc.category)
   );
 
-  const routeColor = activePlan === 'A' ? '#10B981' : '#6366F1';
+  const routeColor = activePlan === 'A' ? '#FF1744' : '#00B0FF';
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
 
   // Track map bounds for POI loading

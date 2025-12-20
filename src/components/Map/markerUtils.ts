@@ -82,16 +82,26 @@ export function createCategoryMarkerSVG(
   }
 
   const markers: Record<string, string> = {
-    // House silhouette for home base with golden glow ring and continuous pulse
+    // ULTRA-PROMINENT home base - MASSIVE and BRIGHT (no animations for Google Maps compatibility)
     'home-base': `
-      <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}animation: homeBasePulse 2s ease-in-out infinite;">
+      <svg width="${size * 1.8}" height="${size * 1.8}" viewBox="0 0 60 66" style="${shadow}">
         ${planRing}
-        <circle cx="20" cy="22" r="28" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.4"/>
-        <circle cx="20" cy="22" r="26" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
-        <path d="M20 2 L38 18 L38 42 L2 42 L2 18 Z" fill="${color}" stroke="white" stroke-width="4"/>
-        <rect x="15" y="26" width="10" height="16" fill="white" opacity="0.3"/>
-        <polygon points="20,2 2,18 38,18" fill="${color}" stroke="white" stroke-width="4"/>
-        <rect x="24" y="20" width="6" height="6" fill="white" opacity="0.4"/>
+        <!-- Multiple bright glow rings - static but very visible -->
+        <circle cx="30" cy="33" r="42" fill="none" stroke="#FFD700" stroke-width="4" opacity="0.6"/>
+        <circle cx="30" cy="33" r="38" fill="none" stroke="#FF4500" stroke-width="3" opacity="0.5"/>
+        <circle cx="30" cy="33" r="34" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.7"/>
+        <!-- Solid bright white background -->
+        <circle cx="30" cy="33" r="30" fill="#FFFFFF" opacity="1"/>
+        <!-- Bright border circle -->
+        <circle cx="30" cy="33" r="30" fill="none" stroke="#FFD700" stroke-width="3"/>
+        <!-- HUGE house icon with bold strokes -->
+        <path d="M30 8 L52 26 L52 58 L8 58 L8 26 Z" fill="${color}" stroke="#FFFFFF" stroke-width="5"/>
+        <rect x="22" y="38" width="16" height="20" fill="#FFD700" opacity="0.7" stroke="#FFFFFF" stroke-width="2"/>
+        <polygon points="30,8 8,26 52,26" fill="${color}" stroke="#FFFFFF" stroke-width="5"/>
+        <rect x="36" y="30" width="10" height="10" fill="#FFD700" opacity="0.8" stroke="#FFFFFF" stroke-width="2"/>
+        <!-- Big star/sparkle on top -->
+        <circle cx="30" cy="10" r="4" fill="#FFD700"/>
+        <circle cx="30" cy="10" r="2" fill="#FFFFFF"/>
       </svg>
     `,
 

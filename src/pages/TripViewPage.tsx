@@ -15,7 +15,7 @@ import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { CommutesPanel } from '../components/trips/CommutesPanel';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel, SettingsPanel } from '../components/floating';
 import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
@@ -180,6 +180,57 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     return commuteDestinations.slice(1);
   }, [commuteDestinations]);
 
+  // Build route for current plan - starting from home base (MUST be before early returns)
+  const planRoute = useMemo(() => {
+    if (!scheduleItems || !tripLocations) return [];
+
+    // Filter by selected day if there is one
+    const dayItems = selectedDayId
+      ? scheduleItems.filter((item) => item.dayDate === selectedDayId)
+      : scheduleItems;
+
+    // Sort by order/time
+    const sortedItems = [...dayItems].sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    // Find home base
+    const homeBase = tripLocations.find((loc) =>
+      (loc.customCategory || loc.baseLocation?.category) === 'home-base'
+    );
+
+    if (!homeBase) return [];
+
+    const homePoint = {
+      lat: homeBase.customLat || homeBase.baseLocation?.lat || 0,
+      lng: homeBase.customLng || homeBase.baseLocation?.lng || 0,
+    };
+
+    // Start from home base
+    const routePoints: Array<{ lat: number; lng: number }> = [homePoint];
+
+    // Add all scheduled locations (filter out nap times and items without locations)
+    sortedItems
+      .filter((item) => item.locationId && !item.title.toLowerCase().includes('nap'))
+      .forEach((item) => {
+        const location = tripLocations.find((l) => l._id === item.locationId);
+        if (location) {
+          routePoints.push({
+            lat: location.customLat || location.baseLocation?.lat || 0,
+            lng: location.customLng || location.baseLocation?.lng || 0,
+          });
+        }
+      });
+
+    // Return to home base at the end (only if we have intermediate points)
+    if (routePoints.length > 1) {
+      routePoints.push(homePoint);
+    }
+
+    return routePoints;
+  }, [scheduleItems, tripLocations, selectedDayId]);
+
   // Fetch commute data with Google Directions API (MUST be before early returns)
   const { commutes, isLoading: isCommutesLoading } = useCommutes({
     origin: commuteOrigin,
@@ -269,7 +320,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         selectedLocation={selectedLocation}
         visibleCategories={visibleCategories}
         activePlan={activePlan}
-        planRoute={[]}
+        planRoute={planRoute}
         tripId={tripId}
         selectedPlanId={selectedPlanId}
         commutes={commutes}
@@ -321,6 +372,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         }}
       />
       <WeatherFloatingPanel />
+      <SettingsPanel />
 
       {/* Weather Indicator - floating badge on map */}
       <WeatherIndicator />
