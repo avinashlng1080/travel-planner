@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Calendar, Clock } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
 import { GlassButton } from './GlassPanel';
+
 import type { DayPlan, ScheduleItem } from '../../data/tripData';
 
 interface AddToPlanModalProps {
@@ -42,7 +44,7 @@ export function AddToPlanModal({
 
   // Suggest next available time based on existing items
   useMemo(() => {
-    if (!selectedDay) return;
+    if (!selectedDay) {return;}
 
     const items: ScheduleItem[] = planType === 'A' ? selectedDay.planA : selectedDay.planB;
     if (items.length === 0) {
@@ -147,7 +149,7 @@ export function AddToPlanModal({
                   </label>
                   <select
                     value={selectedDayId}
-                    onChange={(e) => setSelectedDayId(e.target.value)}
+                    onChange={(e) => { setSelectedDayId(e.target.value); }}
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                   >
                     {days.map((day) => (
@@ -168,7 +170,7 @@ export function AddToPlanModal({
                     <input
                       type="time"
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
+                      onChange={(e) => { setStartTime(e.target.value); }}
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                     />
                   </div>
@@ -180,7 +182,7 @@ export function AddToPlanModal({
                     <input
                       type="time"
                       value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
+                      onChange={(e) => { setEndTime(e.target.value); }}
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                     />
                   </div>
@@ -193,7 +195,7 @@ export function AddToPlanModal({
                   </label>
                   <textarea
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(e) => { setNotes(e.target.value); }}
                     placeholder="Any special notes for this activity..."
                     rows={2}
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"

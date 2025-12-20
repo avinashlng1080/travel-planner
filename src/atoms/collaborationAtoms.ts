@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 // Active tab in collaboration panel

@@ -1,6 +1,7 @@
-import { useRef, useEffect } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useRef, useEffect } from 'react';
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface MobileModalProps {
@@ -26,7 +27,7 @@ export function MobileModal({ title, icon: Icon, isOpen, onClose, children }: Mo
 
   // Focus management - store previous focus and focus modal on open
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {return;}
 
     // Store previous focus
     previousFocusRef.current = document.activeElement as HTMLElement;
@@ -47,7 +48,7 @@ export function MobileModal({ title, icon: Icon, isOpen, onClose, children }: Mo
 
   // Focus trap - prevent tabbing outside modal
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {return;}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Close on Escape
@@ -57,12 +58,12 @@ export function MobileModal({ title, icon: Icon, isOpen, onClose, children }: Mo
       }
 
       // Tab key handling for focus trap
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab') {return;}
 
       const focusableElements = modalRef.current?.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-      if (!focusableElements?.length) return;
+      if (!focusableElements?.length) {return;}
 
       const firstElement = focusableElements[0] as HTMLElement;
       const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
@@ -83,7 +84,7 @@ export function MobileModal({ title, icon: Icon, isOpen, onClose, children }: Mo
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isOpen, onClose]);
 
   // Prevent body scroll when modal is open

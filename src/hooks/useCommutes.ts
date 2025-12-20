@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 export type TravelMode = 'DRIVING' | 'TRANSIT' | 'BICYCLING' | 'WALKING';
 
@@ -86,7 +86,7 @@ export function useCommutes({
 
   // Initialize DirectionsService
   useEffect(() => {
-    if (!routesLib) return;
+    if (!routesLib) {return;}
     directionsServiceRef.current = new routesLib.DirectionsService();
   }, [routesLib]);
 
@@ -134,7 +134,7 @@ export function useCommutes({
             travelMode: google.maps.TravelMode[travelMode],
           },
           (result, status) => {
-            if (!mountedRef.current) return;
+            if (!mountedRef.current) {return;}
 
             pendingRequestsRef.current.delete(cacheKey);
 
@@ -144,11 +144,11 @@ export function useCommutes({
 
               const commuteResult: CommuteResult = {
                 destinationId: dest.id,
-                duration: leg.duration?.value || 0,
-                durationText: leg.duration?.text || '',
-                distance: leg.distance?.value || 0,
-                distanceText: leg.distance?.text || '',
-                path: route.overview_path || [],
+                duration: leg.duration?.value ?? 0,
+                durationText: leg.duration?.text ?? '',
+                distance: leg.distance?.value ?? 0,
+                distanceText: leg.distance?.text ?? '',
+                path: route.overview_path ?? [],
                 travelMode,
               };
 

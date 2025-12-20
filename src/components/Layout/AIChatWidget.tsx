@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Minus, Minimize2, Square, Send, Trash2, Sparkles, MapPin } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+
 // GlassButton not currently used - can be re-imported if needed
+import { type Id } from '../../../convex/_generated/dataModel';
 import { useAITripPlanner } from '../../hooks/useAITripPlanner';
-import { UndoToast, useToasts } from '../ui/UndoToast';
 import { usePasteDetection } from '../../hooks/usePasteDetection';
 import { ImportSuggestionBanner } from '../trips/ImportSuggestionBanner';
-import { Id } from '../../../convex/_generated/dataModel';
+import { UndoToast, useToasts } from '../ui/UndoToast';
 
 interface ChatMessage {
   id: string;
@@ -173,7 +174,7 @@ export function AIChatWidget({
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
   useEffect(() => {
@@ -214,7 +215,7 @@ export function AIChatWidget({
 
   const toggleMaximize = () => {
     setIsMaximized(!isMaximized);
-    if (isMinimized) setIsMinimized(false);
+    if (isMinimized) {setIsMinimized(false);}
   };
 
   // Trip mode: send message and process response with tools
@@ -330,7 +331,7 @@ export function AIChatWidget({
         className={`fixed z-50 w-16 h-16 bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sunset-500/40 ${
           isMobile ? 'right-4 bottom-20' : 'right-6 bottom-6'
         }`}
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true); }}
         whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.95 }}
         animate={{
@@ -413,7 +414,7 @@ export function AIChatWidget({
           </motion.button>
           <motion.button
             onClick={() => {
-              if (isMaximized) setIsMaximized(false);
+              if (isMaximized) {setIsMaximized(false);}
               setIsMinimized(!isMinimized);
             }}
             className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
@@ -498,7 +499,7 @@ export function AIChatWidget({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1, duration: 0.3 }}
                       className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 bg-gradient-to-r from-white to-slate-50 hover:from-sunset-50 hover:to-ocean-50 rounded-xl transition-all border border-slate-200 hover:border-sunset-300 shadow-sm hover:shadow-md group"
-                      onClick={() => handleSendMessage(question)}
+                      onClick={() => { handleSendMessage(question); }}
                       whileHover={{ scale: 1.02, x: 4 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -542,7 +543,7 @@ export function AIChatWidget({
                 <textarea
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => { setInput(e.target.value); }}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
                   placeholder="Ask about your trip..."

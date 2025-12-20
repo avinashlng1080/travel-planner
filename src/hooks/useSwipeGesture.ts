@@ -1,4 +1,4 @@
-import { useRef, useEffect, RefObject } from 'react';
+import { useRef, useEffect, type RefObject } from 'react';
 
 export interface SwipeGestureOptions {
   onSwipeDown?: () => void;
@@ -48,7 +48,7 @@ export function useSwipeGesture(options: SwipeGestureOptions): void {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!touchStartRef.current) return;
+      if (!touchStartRef.current) {return;}
 
       const touch = e.changedTouches[0];
       const distX = touch.pageX - touchStartRef.current.x;

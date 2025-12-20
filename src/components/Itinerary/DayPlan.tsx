@@ -1,11 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Calendar, AlertCircle, Droplets } from 'lucide-react';
-import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
+import { useState, useEffect, useMemo } from 'react';
+
+
 import { DraggableItem } from './DraggableItem';
 import { useWeather } from '../../hooks/useWeather';
 import { WeatherIcon } from '../Weather';
+
+import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
@@ -94,7 +97,7 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
   // Find weather forecast for this specific day
   const dayWeather = useMemo(() => {
-    if (!weatherForecast.length) return null;
+    if (!weatherForecast.length) {return null;}
     return weatherForecast.find((f) => f.date === dayPlan.date) || null;
   }, [weatherForecast, dayPlan.date]);
 
@@ -135,7 +138,7 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
             role="tab"
             aria-selected={selectedPlan === 'A'}
             aria-controls={`plan-content-${dayPlan.date}`}
-            onClick={() => setSelectedPlan('A')}
+            onClick={() => { setSelectedPlan('A'); }}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'A'
                 ? 'bg-green-600 text-white shadow-lg shadow-green-900/50'
@@ -149,7 +152,7 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
             role="tab"
             aria-selected={selectedPlan === 'B'}
             aria-controls={`plan-content-${dayPlan.date}`}
-            onClick={() => setSelectedPlan('B')}
+            onClick={() => { setSelectedPlan('B'); }}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'B'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'

@@ -1,13 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { api } from '../../convex/_generated/api';
-import { TripCard } from '../components/trips/TripCard';
 import { CreateTripCard } from '../components/trips/CreateTripCard';
 import { CreateTripModal } from '../components/trips/CreateTripModal';
 import { InviteModal } from '../components/trips/InviteModal';
+import { TripCard } from '../components/trips/TripCard';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 type FilterTab = 'all' | 'my-trips' | 'shared';
@@ -36,7 +38,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleSignOut = async () => {
@@ -46,8 +48,8 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
   // Filter trips based on active tab
   const filteredTrips = (trips || []).filter((trip) => {
-    if (activeFilter === 'my-trips') return trip.userRole === 'owner';
-    if (activeFilter === 'shared') return trip.userRole !== 'owner';
+    if (activeFilter === 'my-trips') {return trip.userRole === 'owner';}
+    if (activeFilter === 'shared') {return trip.userRole !== 'owner';}
     return true;
   });
 
@@ -74,7 +76,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
     const confirmed = window.confirm(
       'Are you sure you want to delete this trip? This action cannot be undone.'
     );
-    if (!confirmed) return;
+    if (!confirmed) {return;}
 
     try {
       await deleteTrip({ tripId });
@@ -134,7 +136,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
               <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => { setShowUserMenu(!showUserMenu); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
                   aria-label="User menu"
                 >
@@ -203,19 +205,19 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
             label="All Trips"
             count={trips?.length || 0}
             isActive={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
+            onClick={() => { setActiveFilter('all'); }}
           />
           <FilterTab
             label="My Trips"
             count={trips?.filter((t) => t.userRole === 'owner').length || 0}
             isActive={activeFilter === 'my-trips'}
-            onClick={() => setActiveFilter('my-trips')}
+            onClick={() => { setActiveFilter('my-trips'); }}
           />
           <FilterTab
             label="Shared With Me"
             count={trips?.filter((t) => t.userRole !== 'owner').length || 0}
             isActive={activeFilter === 'shared'}
-            onClick={() => setActiveFilter('shared')}
+            onClick={() => { setActiveFilter('shared'); }}
           />
         </div>
 
@@ -269,15 +271,15 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
       {/* Create Trip Modal */}
       <CreateTripModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        onClose={() => { setShowCreateModal(false); }}
         onSuccess={handleTripCreated}
       />
 
       {/* Invite Modal */}
       {inviteModalTripId && (
         <InviteModal
-          isOpen={true}
-          onClose={() => setInviteModalTripId(null)}
+          isOpen
+          onClose={() => { setInviteModalTripId(null); }}
           tripId={inviteModalTripId}
           tripName={trips?.find(t => t._id === inviteModalTripId)?.name || 'Trip'}
         />

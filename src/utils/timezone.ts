@@ -228,8 +228,8 @@ export function detectTimezoneFromDestination(destination: string): string | nul
  */
 export function parseGMTOffset(gmtString: string): string | null {
   // Normalize format
-  const match = gmtString.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/i);
-  if (!match) return null;
+  const match = /GMT([+-])(\d{1,2})(?::(\d{2}))?/i.exec(gmtString);
+  if (!match) {return null;}
 
   const sign = match[1];
   const hours = match[2];
@@ -251,7 +251,7 @@ export function extractTimezoneFromText(text: string): {
   gmtOffset: string | null;
 } {
   // Look for GMT+X pattern
-  const gmtMatch = text.match(/GMT([+-]\d{1,2}(?::\d{2})?)/i);
+  const gmtMatch = /GMT([+-]\d{1,2}(?::\d{2})?)/i.exec(text);
   if (gmtMatch) {
     const gmtOffset = `GMT${gmtMatch[1]}`;
     const timezone = parseGMTOffset(gmtOffset);
@@ -276,8 +276,8 @@ export function getGMTOffset(timezone: string): string {
     const tzPart = parts.find(p => p.type === 'timeZoneName');
     if (tzPart) {
       // Extract offset from "GMT+8" format
-      const match = tzPart.value.match(/GMT([+-]\d+)/);
-      if (match) return match[1];
+      const match = /GMT([+-]\d+)/.exec(tzPart.value);
+      if (match) {return match[1];}
     }
   } catch {
     // Fallback
@@ -346,8 +346,8 @@ export function convertTimeBetweenTimezones(
   let newHours = hours + diff;
 
   // Wrap around
-  if (newHours < 0) newHours += 24;
-  if (newHours >= 24) newHours -= 24;
+  if (newHours < 0) {newHours += 24;}
+  if (newHours >= 24) {newHours -= 24;}
 
   return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
@@ -355,7 +355,7 @@ export function convertTimeBetweenTimezones(
 /**
  * Get common timezone options for a dropdown.
  */
-export function getTimezoneOptions(): Array<{ value: string; label: string; offset: string }> {
+export function getTimezoneOptions(): { value: string; label: string; offset: string }[] {
   return [
     { value: 'Asia/Kuala_Lumpur', label: 'Malaysia (MYT)', offset: 'GMT+8' },
     { value: 'Asia/Singapore', label: 'Singapore (SGT)', offset: 'GMT+8' },

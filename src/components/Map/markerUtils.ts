@@ -201,7 +201,7 @@ export function createCategoryMarkerSVG(
     `,
   };
 
-  return markers[category] || markers['attraction'];
+  return markers[category] || markers.attraction;
 }
 
 /**

@@ -10,10 +10,12 @@
  * - Opacity 0.6 (subtle, non-intrusive)
  */
 
-import { useState, useCallback } from 'react';
 import { AdvancedMarker, InfoWindow, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
 import { useQuery } from 'convex/react';
+import { useState, useCallback } from 'react';
+
 import { api } from '../../../convex/_generated/api';
+
 import type { POI, POIMapBounds } from '../../types/poi';
 
 // Emoji icons for each POI category

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -10,11 +10,13 @@ import {
   XCircle,
   CheckCircle,
 } from 'lucide-react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { GlassButton, GlassBadge } from '@/components/ui/GlassPanel';
+import { useState, useEffect, useRef } from 'react';
+
 import { Avatar } from '@/components/ui/Avatar';
+import { GlassButton, GlassBadge } from '@/components/ui/GlassPanel';
+
+import { api } from '../../../convex/_generated/api';
+import { type Id } from '../../../convex/_generated/dataModel';
 
 interface CommentPanelProps {
   tripId: Id<'trips'>;
@@ -87,10 +89,10 @@ function CommentItem({
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (minutes < 1) {return 'just now';}
+    if (minutes < 60) {return `${minutes}m ago`;}
+    if (hours < 24) {return `${hours}h ago`;}
+    if (days < 7) {return `${days}d ago`;}
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -143,12 +145,12 @@ function CommentItem({
             <div className="space-y-2">
               <textarea
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
+                onChange={(e) => { setEditContent(e.target.value); }}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 resize-none min-h-[80px]"
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') handleCancelEdit();
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSaveEdit();
+                  if (e.key === 'Escape') {handleCancelEdit();}
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {handleSaveEdit();}
                 }}
               />
               <div className="flex items-center gap-2">
@@ -178,7 +180,7 @@ function CommentItem({
         {!isEditing && (canEdit || canDelete || canResolve) && (
           <div className="relative flex-shrink-0">
             <button
-              onClick={() => setShowActions(!showActions)}
+              onClick={() => { setShowActions(!showActions); }}
               className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
               aria-label="Comment actions"
             >
@@ -191,7 +193,7 @@ function CommentItem({
                   {/* Backdrop */}
                   <div
                     className="fixed inset-0 z-40"
-                    onClick={() => setShowActions(false)}
+                    onClick={() => { setShowActions(false); }}
                   />
 
                   {/* Dropdown Menu */}
@@ -324,7 +326,7 @@ export function CommentPanel({
   }, [isOpen, canComment]);
 
   const handleSubmit = async () => {
-    if (!newComment.trim() || isSubmitting) return;
+    if (!newComment.trim() || isSubmitting) {return;}
 
     setIsSubmitting(true);
     try {
@@ -470,7 +472,7 @@ export function CommentPanel({
                     <textarea
                       ref={textareaRef}
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
+                      onChange={(e) => { setNewComment(e.target.value); }}
                       placeholder="Add a comment..."
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 resize-none min-h-[100px] transition-all"
                       onKeyDown={(e) => {

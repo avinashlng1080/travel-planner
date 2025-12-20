@@ -11,6 +11,7 @@
  */
 
 import { CloudRain } from 'lucide-react';
+
 import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 import { WeatherPanel } from '../weather/WeatherPanel';
 

@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
-import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
-import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
 import { useWeather } from '../../hooks/useWeather';
+import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
 import { WeatherCard } from '../Weather';
+
 import type { Location, DayPlan } from '../../data/tripData';
 
 interface RightDetailPanelProps {
@@ -29,12 +31,12 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
 
   // Get today's forecast
   const todayForecast = useMemo(() => {
-    if (!weatherForecast.length) return null;
+    if (!weatherForecast.length) {return null;}
     const today = new Date().toISOString().split('T')[0];
     return weatherForecast.find((f) => f.date === today) || weatherForecast[0];
   }, [weatherForecast]);
 
-  if (!location) return null;
+  if (!location) {return null;}
 
   // Check if this is an AI-suggested dynamic pin
   const isAISuggested = location.id.startsWith('dynamic-');
@@ -287,7 +289,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
         planType={selectedPlanType}
         days={days}
         currentDayId={selectedDayId}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); }}
         onAdd={(details) => {
           onAddToPlan(selectedPlanType, details);
           setModalOpen(false);

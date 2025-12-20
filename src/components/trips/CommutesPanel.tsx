@@ -1,18 +1,19 @@
-import { useMemo, useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Bus, Bike, PersonStanding, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo, useRef, useEffect, useState } from 'react';
+
+import { type TravelMode, type Destination, type CommuteResult } from '../../hooks/useCommutes';
 import { GlassPanel } from '../ui/GlassPanel';
-import { TravelMode, Destination, CommuteResult } from '../../hooks/useCommutes';
 
 interface CommutesPanelProps {
   origin: { lat: number; lng: number; name?: string } | null;
-  destinations: Array<{
+  destinations: {
     id: string;
     name: string;
     lat: number;
     lng: number;
     category?: string;
-  }>;
+  }[];
   travelMode: TravelMode;
   onTravelModeChange: (mode: TravelMode) => void;
   onActiveDestinationChange?: (destId: string | null) => void;
@@ -125,7 +126,7 @@ export function CommutesPanel({
           {TRAVEL_MODES.map(({ mode, icon: Icon, label }) => (
             <button
               key={mode}
-              onClick={() => onTravelModeChange(mode)}
+              onClick={() => { onTravelModeChange(mode); }}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
                 travelMode === mode
                   ? 'bg-white text-slate-900 shadow-sm'
@@ -181,7 +182,7 @@ export function CommutesPanel({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  onClick={() => setActiveDestinationId(dest.id)}
+                  onClick={() => { setActiveDestinationId(dest.id); }}
                   className={`flex-shrink-0 w-40 p-3 rounded-xl text-left transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
                     isActive
                       ? 'bg-ocean-50 border-2 border-ocean-400 shadow-lg shadow-ocean-500/20'

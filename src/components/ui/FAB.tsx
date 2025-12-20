@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Map, CheckSquare, Filter, Users, Cloud } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Menu, X, Map, CheckSquare, Filter, Users, Cloud } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
+
 import type { LucideIcon } from 'lucide-react';
 
 interface MenuItem {
@@ -35,7 +37,7 @@ export function FAB() {
 
   // Keyboard navigation for FAB menu
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded) {return;}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -44,7 +46,7 @@ export function FAB() {
       }
 
       const items = menuRef.current?.querySelectorAll('button[role="menuitem"]');
-      if (!items || items.length === 0) return;
+      if (!items || items.length === 0) {return;}
 
       const currentIndex = Array.from(items).indexOf(document.activeElement as HTMLButtonElement);
 
@@ -66,7 +68,7 @@ export function FAB() {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isExpanded]);
 
   const handleMenuItemClick = (panelId: PanelId) => {
@@ -89,7 +91,7 @@ export function FAB() {
             {/* Backdrop */}
             <div
               className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
-              onClick={() => setIsExpanded(false)}
+              onClick={() => { setIsExpanded(false); }}
               aria-hidden="true"
             />
 
@@ -116,7 +118,7 @@ export function FAB() {
                 <motion.button
                   key={item.id}
                   role="menuitem"
-                  onClick={() => handleMenuItemClick(item.id)}
+                  onClick={() => { handleMenuItemClick(item.id); }}
                   className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-slate-200/50 hover:bg-slate-50 active:scale-95 transition-all min-h-[88px] min-w-[88px] focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
                   aria-label={`Open ${item.label} panel`}
                   initial={{ opacity: 0, y: 20, scale: 0.8 }}
@@ -146,7 +148,7 @@ export function FAB() {
           boxShadow: '0 8px 24px rgba(249, 115, 22, 0.4)',
         }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => { setIsExpanded(!isExpanded); }}
         aria-label={isExpanded ? 'Close menu' : 'Open menu'}
         aria-expanded={isExpanded}
         aria-controls="fab-menu"

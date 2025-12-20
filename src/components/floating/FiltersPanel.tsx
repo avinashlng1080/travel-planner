@@ -1,7 +1,8 @@
-import { Filter } from 'lucide-react';
-import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 import { useAtom, useSetAtom } from 'jotai';
+import { Filter } from 'lucide-react';
+
 import { visibleCategoriesAtom, toggleCategoryAtom } from '../../atoms/uiAtoms';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 
 interface Category {
   id: string;
@@ -70,7 +71,7 @@ export function FiltersPanel() {
                 <input
                   type="checkbox"
                   checked={isVisible}
-                  onChange={() => toggleCategory(cat.id)}
+                  onChange={() => { toggleCategory(cat.id); }}
                   className="w-5 h-5 rounded border-slate-300 bg-white text-sunset-500 focus:ring-sunset-500/50 focus:ring-2 cursor-pointer transition-all"
                 />
                 <span

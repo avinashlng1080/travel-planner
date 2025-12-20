@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { MapPin, X, Home, Camera, ShoppingBag, UtensilsCrossed, Trees, Church, Baby, Plus } from 'lucide-react';
 import { useMutation } from 'convex/react';
+import { MapPin, X, Home, Camera, ShoppingBag, UtensilsCrossed, Trees, Church, Baby, Plus } from 'lucide-react';
+import { useState } from 'react';
+
 import { api } from '../../../convex/_generated/api';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface AddLocationDialogProps {
@@ -33,7 +35,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {return;}
 
     setIsSubmitting(true);
     try {
@@ -93,7 +95,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
               id="location-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); }}
               placeholder="e.g., Batu Caves, KLCC Park"
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:border-transparent"
               required
@@ -113,7 +115,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setCategory(option.value)}
+                    onClick={() => { setCategory(option.value); }}
                     className={`
                       flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all
                       ${isSelected
@@ -138,7 +140,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
             <textarea
               id="location-description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); }}
               placeholder="Brief description of this location..."
               rows={2}
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:border-transparent resize-none"
@@ -153,7 +155,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
             <textarea
               id="location-notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => { setNotes(e.target.value); }}
               placeholder="Personal notes, tips, or reminders..."
               rows={3}
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:border-transparent resize-none"

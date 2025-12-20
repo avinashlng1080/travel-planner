@@ -14,20 +14,15 @@
  * - Dynamic AI-suggested pins
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { Map, AdvancedMarker, useMap, MapCameraChangedEvent, MapMouseEvent } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, useMap, type MapCameraChangedEvent, type MapMouseEvent } from '@vis.gl/react-google-maps';
 import { useAtomValue } from 'jotai';
-import { homeBaseAtom } from '../Floating/SettingsPanel';
-import type { Location } from '../../data/tripData';
-import type { DynamicPin } from '../../atoms/uiAtoms';
-import type { POIMapBounds } from '../../types/poi';
-import type { Id } from '../../../convex/_generated/dataModel';
-import { GoogleRoutingLayer } from './GoogleRoutingLayer';
+import { useEffect, useState, useCallback, useRef } from 'react';
+
+import { AddLocationDialog } from './AddLocationDialog';
+import { CommutesRoutingLayer } from './CommutesRoutingLayer';
 import { GoogleDayRouteLayer } from './GoogleDayRouteLayer';
 import { GooglePOILayer } from './GooglePOILayer';
-import { CommutesRoutingLayer } from './CommutesRoutingLayer';
-import { AddLocationDialog } from './AddLocationDialog';
-import type { CommuteResult } from '../../hooks/useCommutes';
+import { GoogleRoutingLayer } from './GoogleRoutingLayer';
 import {
   CATEGORY_COLORS,
   PLAN_A_COLOR,
@@ -35,6 +30,14 @@ import {
   MARKER_ANIMATION_STYLES,
   type PlanIndicator,
 } from './markerUtils';
+import { homeBaseAtom } from '../Floating/SettingsPanel';
+
+import type { Id } from '../../../convex/_generated/dataModel';
+import type { DynamicPin } from '../../atoms/uiAtoms';
+import type { Location } from '../../data/tripData';
+import type { CommuteResult } from '../../hooks/useCommutes';
+import type { POIMapBounds } from '../../types/poi';
+
 
 // Map controller for auto-focusing on selected location
 interface MapControllerProps {
@@ -56,7 +59,7 @@ function MapController({ selectedLocation }: MapControllerProps) {
 
 // Map bounds controller for fitting route waypoints
 interface MapBoundsControllerProps {
-  planRoute: Array<{ lat: number; lng: number }>;
+  planRoute: { lat: number; lng: number }[];
   selectedLocation: Location | null;
 }
 
@@ -100,7 +103,7 @@ function DynamicPinBoundsController({
   const map = useMap();
 
   useEffect(() => {
-    if (!newlyAddedPins || newlyAddedPins.length === 0 || !map) return;
+    if (!newlyAddedPins || newlyAddedPins.length === 0 || !map) {return;}
 
     // For a single pin, pan to it at zoom 14
     if (newlyAddedPins.length === 1) {
@@ -119,7 +122,7 @@ function DynamicPinBoundsController({
       onPinsFocused();
     }, 600);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [newlyAddedPins, map, onFirstPinSelect, onPinsFocused]);
 
   return null;
@@ -135,7 +138,7 @@ function MapBoundsTracker({ onBoundsChange }: MapBoundsTrackerProps) {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map) {return;}
 
     const updateBounds = () => {
       const bounds = map.getBounds();
@@ -156,7 +159,7 @@ function MapBoundsTracker({ onBoundsChange }: MapBoundsTrackerProps) {
         updateBounds();
         initializedRef.current = true;
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [map, onBoundsChange]);
 
@@ -441,7 +444,7 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
     size = isSelected ? 56 : 44;
   }
 
-  const color = CATEGORY_COLORS[location.category] || '#64748b';
+  const color = CATEGORY_COLORS[location.category] ?? '#64748b';
 
   // Z-index hierarchy: home-base > selected > important > standard
   let zIndex: number;
@@ -616,7 +619,7 @@ interface GoogleFullScreenMapProps {
   selectedLocation: Location | null;
   visibleCategories: string[];
   activePlan: 'A' | 'B';
-  planRoute: Array<{ lat: number; lng: number }>;
+  planRoute: { lat: number; lng: number }[];
   dynamicPins?: DynamicPin[];
   newlyAddedPins?: DynamicPin[] | null;
   planALocationIds?: string[];
@@ -674,7 +677,7 @@ export function GoogleFullScreenMap({
 
   const handleMapClick = useCallback((event: MapMouseEvent) => {
     // Only add locations if we have a tripId
-    if (!tripId) return;
+    if (!tripId) {return;}
 
     // Get click coordinates
     const lat = event.detail.latLng?.lat;
@@ -717,8 +720,8 @@ export function GoogleFullScreenMap({
         mapId={mapId}
         gestureHandling="greedy"
         disableDefaultUI={false}
-        zoomControl={true}
-        mapTypeControl={true}
+        zoomControl
+        mapTypeControl
         mapTypeControlOptions={{
           position: google.maps.ControlPosition?.TOP_RIGHT,
           style: google.maps.MapTypeControlStyle?.DROPDOWN_MENU,
@@ -763,12 +766,12 @@ export function GoogleFullScreenMap({
         {commutes && (
           <CommutesRoutingLayer
             commutes={commutes}
-            activeDestinationId={activeCommuteDestinationId || null}
+            activeDestinationId={activeCommuteDestinationId ?? null}
           />
         )}
 
         {/* POI Layer */}
-        <GooglePOILayer bounds={mapBounds} visible={true} />
+        <GooglePOILayer bounds={mapBounds} visible />
 
         {/* Location Markers */}
         {filteredLocations.map(location => {
@@ -791,7 +794,7 @@ export function GoogleFullScreenMap({
               location={location}
               isSelected={isSelected}
               planIndicator={planIndicator}
-              onClick={() => onLocationSelect(location)}
+              onClick={() => { onLocationSelect(location); }}
             />
           );
         })}
@@ -812,7 +815,7 @@ export function GoogleFullScreenMap({
           tripId={tripId}
           lat={addLocationCoords.lat}
           lng={addLocationCoords.lng}
-          onClose={() => setAddLocationCoords(null)}
+          onClose={() => { setAddLocationCoords(null); }}
           onSuccess={() => {
             // Dialog will close automatically, location will appear on next query refresh
           }}

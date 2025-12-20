@@ -1,6 +1,7 @@
-import { Settings as SettingsIcon, Home, MapPin, Info } from 'lucide-react';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
+import { Settings as SettingsIcon, Home, MapPin, Info } from 'lucide-react';
+
 import { HOME_BASE, LOCATIONS, type Location } from '../../data/tripData';
 import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 
@@ -58,7 +59,7 @@ function SettingsPanelContent() {
 
             {/* Location Selection */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-slate-700">Select a different home base:</label>
+              <p className="text-sm font-medium text-slate-700">Select a different home base:</p>
               <div className="grid gap-2 max-h-96 overflow-y-auto">
                 {possibleHomeBases.map((location) => {
                   const isSelected = location.id === homeBase.id;
@@ -66,7 +67,7 @@ function SettingsPanelContent() {
                   return (
                     <button
                       key={location.id}
-                      onClick={() => setHomeBase(location)}
+                      onClick={() => { setHomeBase(location); }}
                       className={`
                         w-full text-left p-4 rounded-xl border-2 transition-all duration-200
                         ${isSelected

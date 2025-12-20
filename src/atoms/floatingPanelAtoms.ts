@@ -160,7 +160,7 @@ export const panelsAtom = atom(
 
 export const nextZIndexAtom = atom(
   (get) => get(nextZIndexStorageAtom),
-  (_get, set, update: number) => set(nextZIndexStorageAtom, update)
+  (_get, set, update: number) => { set(nextZIndexStorageAtom, update); }
 );
 
 // Helper atoms for common operations
@@ -260,7 +260,7 @@ export const bringToFrontAtom = atom(
 
 // Mobile-specific state atoms
 export const isMobileViewAtom = atom<boolean>((get) => {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') {return false;}
   return window.innerWidth < 768; // Tailwind md breakpoint
 });
 

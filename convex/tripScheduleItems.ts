@@ -45,7 +45,7 @@ async function checkTripAccess(
     )
     .unique();
 
-  if (!member || member.status !== "accepted") {
+  if (member?.status !== "accepted") {
     throw new ConvexError("Access denied: You are not a member of this trip");
   }
 
@@ -94,7 +94,7 @@ export const getScheduleItems = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -184,7 +184,7 @@ export const getScheduleItemsByDate = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user has access to trip
     await checkTripAccess(ctx, args.tripId, userId);
@@ -210,7 +210,7 @@ export const getScheduleItemsByDate = query({
       const planA = planMap.get(a.planId);
       const planB = planMap.get(b.planId);
 
-      if (!planA || !planB) return 0;
+      if (!planA || !planB) {return 0;}
 
       if (planA.order !== planB.order) {
         return planA.order - planB.order;
@@ -290,7 +290,7 @@ export const createScheduleItem = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -370,7 +370,7 @@ export const updateScheduleItem = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);
@@ -406,16 +406,16 @@ export const updateScheduleItem = mutation({
       updatedBy: userId,
     };
 
-    if (args.locationId !== undefined) updates.locationId = args.locationId;
-    if (args.title !== undefined) updates.title = args.title;
+    if (args.locationId !== undefined) {updates.locationId = args.locationId;}
+    if (args.title !== undefined) {updates.title = args.title;}
     if (args.startTime !== undefined) {
       updates.startTime = args.startTime;
       // Recalculate order based on new start time for automatic chronological sorting
       updates.order = timeToMinutes(args.startTime);
     }
-    if (args.endTime !== undefined) updates.endTime = args.endTime;
-    if (args.notes !== undefined) updates.notes = args.notes;
-    if (args.isFlexible !== undefined) updates.isFlexible = args.isFlexible;
+    if (args.endTime !== undefined) {updates.endTime = args.endTime;}
+    if (args.notes !== undefined) {updates.notes = args.notes;}
+    if (args.isFlexible !== undefined) {updates.isFlexible = args.isFlexible;}
 
     // Update the item
     await ctx.db.patch(args.itemId, updates);
@@ -444,7 +444,7 @@ export const deleteScheduleItem = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);
@@ -503,7 +503,7 @@ export const reorderScheduleItems = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);
@@ -573,7 +573,7 @@ export const moveItemBetweenPlans = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the schedule item
     const item = await ctx.db.get(args.itemId);
@@ -676,7 +676,7 @@ export const createAIItinerary = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // 1. Get auth user - already done above
 
@@ -793,7 +793,7 @@ export const deleteMultipleScheduleItems = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Verify all items exist and user has permission
     const items = await Promise.all(
@@ -873,7 +873,7 @@ export const recalculateOrdersFromTime = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the plan to access tripId
     const plan = await ctx.db.get(args.planId);

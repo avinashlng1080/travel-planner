@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
 import { useConvexAuth } from 'convex/react';
+import { useState, useEffect } from 'react';
+
+import { GoogleMapsProvider } from './components/Map/GoogleMapsProvider';
+import { LoadingScreen } from './components/ui/LoadingScreen';
+import { DashboardPage } from './pages/DashboardPage';
+import { JoinTripPage } from './pages/JoinTripPage';
 import { LandingPage } from './pages/LandingPage';
 import { TripPlannerApp } from './pages/TripPlannerApp';
-import { DashboardPage } from './pages/DashboardPage';
 import { TripViewPage } from './pages/TripViewPage';
-import { JoinTripPage } from './pages/JoinTripPage';
-import { LoadingScreen } from './components/ui/LoadingScreen';
-import { GoogleMapsProvider } from './components/Map/GoogleMapsProvider';
+
 import type { Id } from '../convex/_generated/dataModel';
 
 type AppView = 'dashboard' | 'trip' | 'legacy-planner' | 'join';
@@ -20,7 +22,7 @@ function App() {
   // Parse URL for join tokens
   useEffect(() => {
     const path = window.location.pathname;
-    const joinMatch = path.match(/^\/join\/([a-f0-9]+)$/);
+    const joinMatch = /^\/join\/([a-f0-9]+)$/.exec(path);
     if (joinMatch) {
       setJoinToken(joinMatch[1]);
       setCurrentView('join');
@@ -67,7 +69,7 @@ function App() {
           }}
         />
       ) : currentView === 'legacy-planner' ? (
-        <TripPlannerApp onBack={() => setCurrentView('dashboard')} />
+        <TripPlannerApp onBack={() => { setCurrentView('dashboard'); }} />
       ) : (
         <DashboardPage
           onOpenTrip={(tripId) => {

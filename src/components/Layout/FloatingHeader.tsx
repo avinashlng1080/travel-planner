@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useSetAtom } from 'jotai';
+import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 
@@ -36,7 +37,7 @@ export function FloatingHeader({
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleSignOut = async () => {
@@ -97,7 +98,7 @@ export function FloatingHeader({
                   ? 'bg-ocean-600 text-white shadow-lg shadow-ocean-600/30'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
-              onClick={() => onPlanChange('A')}
+              onClick={() => { onPlanChange('A'); }}
             >
               Plan A
             </button>
@@ -107,7 +108,7 @@ export function FloatingHeader({
                   ? 'bg-sunset-500 text-white shadow-lg shadow-sunset-500/30'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
-              onClick={() => onPlanChange('B')}
+              onClick={() => { onPlanChange('B'); }}
             >
               Plan B
             </button>
@@ -117,7 +118,7 @@ export function FloatingHeader({
         {/* Right: User and Settings */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => openPanel('settings')}
+            onClick={() => { openPanel('settings'); }}
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
             aria-label="Open settings"
           >
@@ -126,7 +127,7 @@ export function FloatingHeader({
 
           <div className="relative" ref={menuRef}>
             <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              onClick={() => { setShowUserMenu(!showUserMenu); }}
               className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
             >
               <div className="w-6 h-6 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-full flex items-center justify-center">
@@ -142,7 +143,7 @@ export function FloatingHeader({
                   <p className="text-xs text-slate-500">Signed in</p>
                 </div>
                 <button
-                  onClick={handleSignOut}
+                  onClick={() => { void handleSignOut(); }}
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />

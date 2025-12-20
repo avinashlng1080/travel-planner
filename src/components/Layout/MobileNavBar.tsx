@@ -1,5 +1,6 @@
-import { Map, CheckSquare, Filter, Calendar, Lightbulb, AlertTriangle } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Map, CheckSquare, Filter, Calendar, Lightbulb, AlertTriangle } from 'lucide-react';
+
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavItem {
@@ -34,12 +35,13 @@ export function MobileNavBar() {
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = panels[item.id]?.isOpen && !panels[item.id]?.isMinimized;
+          const panelState = panels[item.id];
+          const isActive = panelState.isOpen && !panelState.isMinimized;
 
           return (
             <button
               key={item.id}
-              onClick={() => handleNavClick(item.id)}
+              onClick={() => { handleNavClick(item.id); }}
               className={`
                 flex flex-col items-center justify-center
                 min-w-[48px] min-h-[48px] px-1.5 py-1.5

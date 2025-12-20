@@ -1,5 +1,7 @@
 import { useAtom, useSetAtom } from 'jotai';
-import type { LucideIcon } from 'lucide-react';
+
+import { FloatingPanel } from './FloatingPanel';
+import { MobileModal } from './MobileModal';
 import {
   panelsAtom,
   activeMobileModalAtom,
@@ -10,8 +12,8 @@ import {
   type PanelId,
 } from '../../atoms/floatingPanelAtoms';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { MobileModal } from './MobileModal';
-import { FloatingPanel } from './FloatingPanel';
+
+import type { LucideIcon } from 'lucide-react';
 
 interface ResponsivePanelWrapperProps {
   panelId: PanelId;
@@ -46,18 +48,18 @@ export function ResponsivePanelWrapper({
   const panelState = panels[panelId];
 
   // Panel not open - don't render anything
-  if (!panelState.isOpen) return null;
+  if (!panelState.isOpen) {return null;}
 
   // Mobile: Render as full-screen modal (only if this is the active modal)
   if (isMobile) {
-    if (activeMobileModal !== panelId) return null;
+    if (activeMobileModal !== panelId) {return null;}
 
     return (
       <MobileModal
         title={title}
         icon={icon}
-        isOpen={true}
-        onClose={() => closePanel(panelId)}
+        isOpen
+        onClose={() => { closePanel(panelId); }}
       >
         {children}
       </MobileModal>
@@ -75,10 +77,10 @@ export function ResponsivePanelWrapper({
       position={panelState.position}
       size={defaultSize}
       zIndex={panelState.zIndex}
-      onClose={() => closePanel(panelId)}
-      onMinimize={() => toggleMinimize(panelId)}
-      onPositionChange={(pos) => updatePosition({ panelId, position: pos })}
-      onFocus={() => bringToFront(panelId)}
+      onClose={() => { closePanel(panelId); }}
+      onMinimize={() => { toggleMinimize(panelId); }}
+      onPositionChange={(pos) => { updatePosition({ panelId, position: pos }); }}
+      onFocus={() => { bringToFront(panelId); }}
     >
       {children}
     </FloatingPanel>

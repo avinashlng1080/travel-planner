@@ -5,8 +5,9 @@
  * Plan A: solid green line, Plan B: dashed blue line.
  */
 
-import { useDayRoute } from '../../hooks/useDayRoute';
 import { GoogleRoutingLayer } from './GoogleRoutingLayer';
+import { useDayRoute } from '../../hooks/useDayRoute';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface GoogleDayRouteLayerProps {
@@ -44,7 +45,7 @@ export function GoogleDayRouteLayer({ tripId, planId, activePlan }: GoogleDayRou
       dashArray={routeDashArray}
       weight={4}
       opacity={0.8}
-      enabled={true}
+      enabled
     />
   );
 }

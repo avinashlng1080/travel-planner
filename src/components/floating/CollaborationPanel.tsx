@@ -1,16 +1,18 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Share2, MessageSquare, Activity, Send, Trash2 } from 'lucide-react';
-import { useAtom } from 'jotai';
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAtom } from 'jotai';
+import { Users, Share2, MessageSquare, Activity, Send, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
 import { api } from '../../../convex/_generated/api';
-import type { Id } from '../../../convex/_generated/dataModel';
-import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
-import { GlassButton, GlassInput } from '../ui/GlassPanel';
 import { collaborationTabAtom } from '../../atoms/collaborationAtoms';
+import { ActivityFeed } from '../trips/ActivityFeed';
 import { InviteModal } from '../trips/InviteModal';
 import { MemberList } from '../trips/MemberList';
-import { ActivityFeed } from '../trips/ActivityFeed';
+import { GlassButton, GlassInput } from '../ui/GlassPanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
+
+import type { Id } from '../../../convex/_generated/dataModel';
 
 interface CollaborationPanelProps {
   tripId: Id<'trips'>;
@@ -73,7 +75,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
             const isActive = activeTab === tab.id;
 
             // Hide share tab for non-owners
-            if (tab.id === 'share' && userRole !== 'owner') return null;
+            if (tab.id === 'share' && userRole !== 'owner') {return null;}
 
             return (
               <button
@@ -82,7 +84,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
                 id={`collab-tab-${tab.id}`}
                 aria-selected={isActive}
                 aria-controls={`collab-panel-${tab.id}`}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); }}
                 className={`
                   flex-1 md:flex-auto flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] text-sm font-medium transition-colors relative whitespace-nowrap
                   ${isActive
@@ -118,7 +120,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
                 key="share"
                 tripId={tripId}
                 tripName={tripName}
-                onOpenModal={() => setShowInviteModal(true)}
+                onOpenModal={() => { setShowInviteModal(true); }}
               />
             )}
 
@@ -128,8 +130,8 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
                 tripId={tripId}
                 members={members}
                 userRole={userRole}
-                onChangeRole={handleChangeRole}
-                onRemoveMember={handleRemoveMember}
+                onChangeRole={(userId, newRole) => { void handleChangeRole(userId, newRole); }}
+                onRemoveMember={(userId) => { void handleRemoveMember(userId); }}
                 onInvite={() => {
                   setActiveTab('share');
                   setShowInviteModal(true);
@@ -160,7 +162,7 @@ export function CollaborationPanel({ tripId, tripName, userRole }: Collaboration
       {showInviteModal && (
         <InviteModal
           isOpen={showInviteModal}
-          onClose={() => setShowInviteModal(false)}
+          onClose={() => { setShowInviteModal(false); }}
           tripId={tripId}
           tripName={tripName}
         />
@@ -283,7 +285,7 @@ function CommentsTabContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!newComment.trim() || userRole === 'viewer') return;
+    if (!newComment.trim() || userRole === 'viewer') {return;}
 
     setIsSubmitting(true);
     try {
@@ -321,11 +323,11 @@ function CommentsTabContent({
           <GlassInput
             placeholder="Add a comment..."
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={(e) => { setNewComment(e.target.value); }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit();
+                void handleSubmit();
               }
             }}
             disabled={isSubmitting}
@@ -333,7 +335,7 @@ function CommentsTabContent({
           <GlassButton
             variant="primary"
             size="sm"
-            onClick={handleSubmit}
+            onClick={() => { void handleSubmit(); }}
             disabled={!newComment.trim() || isSubmitting}
             className="w-full"
           >
@@ -378,7 +380,7 @@ function CommentsTabContent({
                   </div>
                   {(userRole === 'owner' || comment.userId === currentUserId) && (
                     <button
-                      onClick={() => handleDelete(comment._id)}
+                      onClick={() => { void handleDelete(comment._id); }}
                       className="p-1 text-slate-400 hover:text-red-600 transition-colors"
                       aria-label="Delete comment"
                     >
@@ -406,7 +408,7 @@ function ActivityTabContent({ tripId }: { tripId: Id<'trips'> }) {
       transition={{ duration: 0.2 }}
       className="p-4"
     >
-      <ActivityFeed tripId={tripId} compact={true} />
+      <ActivityFeed tripId={tripId} compact />
     </motion.div>
   );
 }

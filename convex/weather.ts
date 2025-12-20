@@ -120,7 +120,7 @@ const FETCH_TIMEOUT_MS = 10000; // 10 seconds
 
 // CORS headers for browser requests
 const getAllowedOrigin = (): string => {
-  return process.env.SITE_URL || "https://your-domain.convex.site";
+  return process.env.SITE_URL ?? "https://your-domain.convex.site";
 };
 
 const getCorsHeaders = () => ({
@@ -174,11 +174,11 @@ async function fetchWeatherAPI(
 
   const url = new URL(`https://weather.googleapis.com/v1/${endpoint}`);
   url.searchParams.set("key", apiKey);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  Object.entries(params).forEach(([k, v]) => { url.searchParams.set(k, v); });
 
   // Create AbortController for timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => { controller.abort(); }, FETCH_TIMEOUT_MS);
 
   try {
     const response = await fetch(url.toString(), {
@@ -209,7 +209,7 @@ async function fetchWeatherAPI(
  */
 function getCached(key: string): unknown | null {
   const entry = cache.get(key);
-  if (!entry) return null;
+  if (!entry) {return null;}
 
   if (Date.now() > entry.expiresAt) {
     cache.delete(key);
@@ -411,13 +411,13 @@ function normalizeForecastResponse(data: GoogleWeatherDailyResponse): Normalized
   return {
     daily: data.dailyForecasts.map((day: GoogleWeatherDailyForecast): NormalizedDailyForecast => ({
       date: day.date,
-      tempMax: day.temperature?.high?.value || 0,
-      tempMin: day.temperature?.low?.value || 0,
-      precipitationSum: day.totalPrecipitation?.value || 0,
-      precipitationProbability: day.precipitationProbability || 0,
+      tempMax: day.temperature?.high?.value ?? 0,
+      tempMin: day.temperature?.low?.value ?? 0,
+      precipitationSum: day.totalPrecipitation?.value ?? 0,
+      precipitationProbability: day.precipitationProbability ?? 0,
       condition: mapWeatherCode(day.weatherCode),
       weatherCode: day.weatherCode,
-      description: day.description || '',
+      description: day.description ?? '',
       sunrise: day.sunrise,
       sunset: day.sunset,
     })),
@@ -434,13 +434,13 @@ function normalizeCurrentResponse(data: GoogleWeatherCurrentResponse): Normalize
 
   const current = data.current;
   return {
-    temperature: current.temperature?.value || 0,
-    humidity: current.humidity || 0,
+    temperature: current.temperature?.value ?? 0,
+    humidity: current.humidity ?? 0,
     condition: mapWeatherCode(current.weatherCode),
     weatherCode: current.weatherCode,
-    precipitation: current.precipitation?.value || 0,
-    windSpeed: current.windSpeed?.value || 0,
-    description: current.description || '',
+    precipitation: current.precipitation?.value ?? 0,
+    windSpeed: current.windSpeed?.value ?? 0,
+    description: current.description ?? '',
     updatedAt: new Date().toISOString(),
   };
 }
@@ -456,9 +456,9 @@ function normalizeAlertsResponse(data: GoogleWeatherAlertsResponse): NormalizedA
   return {
     alerts: data.alerts.map((alert: GoogleWeatherAlert): NormalizedAlert => ({
       level: mapAlertSeverity(alert.severity),
-      title: alert.headline || 'Weather Alert',
-      message: alert.description || '',
-      recommendation: alert.instruction || '',
+      title: alert.headline ?? 'Weather Alert',
+      message: alert.description ?? '',
+      recommendation: alert.instruction ?? '',
       affectedDays: [alert.effectiveTime],
     })),
   };
@@ -469,16 +469,16 @@ function normalizeAlertsResponse(data: GoogleWeatherAlertsResponse): NormalizedA
  */
 function mapWeatherCode(code: number): string {
   // Google Weather API codes (simplified mapping)
-  if (code >= 200 && code < 300) return 'storm';
-  if (code >= 300 && code < 400) return 'drizzle';
+  if (code >= 200 && code < 300) {return 'storm';}
+  if (code >= 300 && code < 400) {return 'drizzle';}
   if (code >= 500 && code < 600) {
     return code >= 502 ? 'heavy-rain' : 'rain';
   }
-  if (code >= 600 && code < 700) return 'snow';
-  if (code >= 700 && code < 800) return 'fog';
-  if (code === 800) return 'clear';
-  if (code === 801 || code === 802) return 'partly-cloudy';
-  if (code >= 803) return 'cloudy';
+  if (code >= 600 && code < 700) {return 'snow';}
+  if (code >= 700 && code < 800) {return 'fog';}
+  if (code === 800) {return 'clear';}
+  if (code === 801 || code === 802) {return 'partly-cloudy';}
+  if (code >= 803) {return 'cloudy';}
 
   return 'partly-cloudy';
 }
@@ -487,7 +487,7 @@ function mapWeatherCode(code: number): string {
  * Map Google alert severity to our risk levels
  */
 function mapAlertSeverity(severity?: string): string {
-  if (!severity) return 'moderate';
+  if (!severity) {return 'moderate';}
 
   const severityMap: Record<string, string> = {
     'MINOR': 'low',

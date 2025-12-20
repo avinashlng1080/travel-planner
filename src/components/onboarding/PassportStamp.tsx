@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Plane, Home, Compass, Sparkles, Route, Check } from 'lucide-react';
+
 import type { PassportStamp as StampType } from '@/atoms/onboardingAtoms';
 
 interface PassportStampProps {

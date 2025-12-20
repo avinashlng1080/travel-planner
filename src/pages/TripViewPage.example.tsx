@@ -5,8 +5,10 @@
  */
 
 import { useState } from 'react';
+
 import { DashboardPage } from './DashboardPage';
 import { TripViewPage } from './TripViewPage';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 type View = 'dashboard' | 'trip-view';

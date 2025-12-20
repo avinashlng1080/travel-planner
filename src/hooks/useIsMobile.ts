@@ -7,9 +7,9 @@ import { useState, useEffect } from 'react';
  * @param breakpoint - Optional custom breakpoint in pixels (default: 768)
  * @returns boolean indicating if viewport is mobile
  */
-export function useIsMobile(breakpoint: number = 768): boolean {
+export function useIsMobile(breakpoint = 768): boolean {
   const [isMobile, setIsMobile] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') {return false;}
     return window.innerWidth < breakpoint;
   });
 
@@ -25,7 +25,7 @@ export function useIsMobile(breakpoint: number = 768): boolean {
     window.addEventListener('resize', handleResize);
 
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, [breakpoint]);
 
   return isMobile;

@@ -6,7 +6,7 @@
  */
 
 import { APIProvider } from '@vis.gl/react-google-maps';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 interface GoogleMapsProviderProps {
   children: ReactNode;

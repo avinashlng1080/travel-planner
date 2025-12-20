@@ -82,7 +82,7 @@ export const initializeDefaults = mutation({
     for (const [type, items] of Object.entries(DEFAULT_CHECKLISTS)) {
       const existing = await ctx.db
         .query("checklists")
-        .withIndex("by_type", (q) => q.eq("type", type as any))
+        .withIndex("by_type", (q) => q.eq("type", type as "visa" | "health" | "documents" | "packing"))
         .first();
 
       if (!existing) {
@@ -118,7 +118,7 @@ export const toggleItem = mutation({
       checklist = await ctx.db.get(checklistId);
     }
 
-    if (!checklist) return;
+    if (!checklist) {return;}
 
     const updatedItems = checklist.items.map((item) =>
       item.id === args.itemId ? { ...item, checked: !item.checked } : item
@@ -138,7 +138,7 @@ export const addItem = mutation({
     text: v.string(),
   },
   handler: async (ctx, args) => {
-    let checklist = await ctx.db
+    const checklist = await ctx.db
       .query("checklists")
       .withIndex("by_type", (q) => q.eq("type", args.type))
       .first();
@@ -148,7 +148,7 @@ export const addItem = mutation({
         type: args.type,
         items: [
           ...DEFAULT_CHECKLISTS[args.type],
-          { id: `custom-${Date.now()}`, text: args.text, checked: false },
+          { id: `custom-${String(Date.now())}`, text: args.text, checked: false },
         ],
         updatedAt: Date.now(),
       });
@@ -156,7 +156,7 @@ export const addItem = mutation({
       await ctx.db.patch(checklist._id, {
         items: [
           ...checklist.items,
-          { id: `custom-${Date.now()}`, text: args.text, checked: false },
+          { id: `custom-${String(Date.now())}`, text: args.text, checked: false },
         ],
         updatedAt: Date.now(),
       });

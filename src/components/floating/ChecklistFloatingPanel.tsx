@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { CheckSquare } from 'lucide-react';
-import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
-import { ChecklistPanel } from '../checklist/ChecklistPanel';
-import {
+import { CheckSquare ,
   FileText,
   Heart,
   Briefcase,
   Package,
 } from 'lucide-react';
+import { useState } from 'react';
+
+import { ChecklistPanel } from '../checklist/ChecklistPanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
+
 
 interface ChecklistItem {
   id: string;

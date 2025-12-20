@@ -1,29 +1,31 @@
-import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { MapPin, Navigation } from 'lucide-react';
-import { FloatingHeader } from '../components/Layout/FloatingHeader';
-import { NavigationDock } from '../components/Layout/NavigationDock';
-import { MobileNavBar } from '../components/Layout/MobileNavBar';
-import { FAB } from '../components/ui/FAB';
+import { useState, useEffect, useMemo } from 'react';
+
+import { api } from '../../convex/_generated/api';
+import { openPanelAtom } from '../atoms/floatingPanelAtoms';
+import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
+import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel, SettingsPanel } from '../components/floating';
+import { homeBaseAtom } from '../components/Floating/SettingsPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
-import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
-import { EditTripModal } from '../components/trips/EditTripModal';
-import { AddActivityModal } from '../components/trips/AddActivityModal';
-import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
-import { EditActivityModal } from '../components/trips/EditActivityModal';
-import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
-import { CommutesPanel } from '../components/trips/CommutesPanel';
+import { FloatingHeader } from '../components/Layout/FloatingHeader';
+import { MobileNavBar } from '../components/Layout/MobileNavBar';
+import { NavigationDock } from '../components/Layout/NavigationDock';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel, SettingsPanel } from '../components/floating';
+import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
+import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
+import { AddActivityModal } from '../components/trips/AddActivityModal';
+import { CommutesPanel } from '../components/trips/CommutesPanel';
+import { EditActivityModal } from '../components/trips/EditActivityModal';
+import { EditTripModal } from '../components/trips/EditTripModal';
+import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
+import { FAB } from '../components/ui/FAB';
 import { WeatherIndicator } from '../components/weather';
-import { useAtom, useSetAtom, useAtomValue } from 'jotai';
-import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
-import { openPanelAtom } from '../atoms/floatingPanelAtoms';
-import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
-import { homeBaseAtom } from '../components/Floating/SettingsPanel';
 import { useCommutes } from '../hooks/useCommutes';
-import { api } from '../../convex/_generated/api';
+
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
 
@@ -125,7 +127,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Compute commute destinations from scheduled items for the selected day (MUST be before early returns)
   const commuteDestinations = useMemo(() => {
-    if (!scheduleItems || !tripLocations) return [];
+    if (!scheduleItems || !tripLocations) {return [];}
 
     // Filter by selected day if there is one
     const dayItems = selectedDayId
@@ -134,7 +136,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
     // Sort by order/time
     const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order;
+      if (a.order !== b.order) {return a.order - b.order;}
       return a.startTime.localeCompare(b.startTime);
     });
 
@@ -143,7 +145,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       .filter((item) => item.locationId)
       .map((item) => {
         const loc = tripLocations.find((l) => l._id === item.locationId);
-        if (!loc) return null;
+        if (!loc) {return null;}
 
         return {
           id: item._id,
@@ -180,13 +182,13 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Destinations for commute (excluding origin) (MUST be before early returns)
   const commuteDestinationsWithoutOrigin = useMemo(() => {
-    if (commuteDestinations.length <= 1) return [];
+    if (commuteDestinations.length <= 1) {return [];}
     return commuteDestinations.slice(1);
   }, [commuteDestinations]);
 
   // Build route for current plan - starting from configurable home base (MUST be before early returns)
   const planRoute = useMemo(() => {
-    if (!scheduleItems || !tripLocations) return [];
+    if (!scheduleItems || !tripLocations) {return [];}
 
     // Filter by selected day if there is one
     const dayItems = selectedDayId
@@ -195,7 +197,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
     // Sort by order/time
     const sortedItems = [...dayItems].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order;
+      if (a.order !== b.order) {return a.order - b.order;}
       return a.startTime.localeCompare(b.startTime);
     });
 
@@ -206,7 +208,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     };
 
     // Start from home base
-    const routePoints: Array<{ lat: number; lng: number }> = [homePoint];
+    const routePoints: { lat: number; lng: number }[] = [homePoint];
 
     // Add all scheduled locations (filter out nap times and items without locations)
     sortedItems
@@ -247,7 +249,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       const timer = setTimeout(() => {
         startOnboarding();
       }, 500);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [tripData, onboardingStatus, startOnboarding]);
 
@@ -258,7 +260,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         openPanel('tripPlanner');
         setHasOpenedPanel(true);
       }, 800); // Open after onboarding animation
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [tripData, hasOpenedPanel, openPanel]);
 
@@ -323,7 +325,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         selectedPlanId={selectedPlanId}
         commutes={commutes}
         activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
-        onLocationSelect={(location) => setSelectedLocation(location)}
+        onLocationSelect={(location) => { setSelectedLocation(location); }}
       />
 
       {/* Floating Header */}
@@ -338,7 +340,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* Navigation Dock */}
       <NavigationDock
-        onImportClick={() => setIsImportModalOpen(true)}
+        onImportClick={() => { setIsImportModalOpen(true); }}
       />
 
       {/* Floating Panels */}
@@ -381,7 +383,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           location={selectedLocation}
           days={[]}
           selectedDayId={null}
-          onClose={() => setSelectedLocation(null)}
+          onClose={() => { setSelectedLocation(null); }}
           onAddToPlan={(plan, details) => {
             console.log(`Add ${selectedLocation.name} to Plan ${plan}`, details);
             // TODO: Persist to database/state
@@ -402,7 +404,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Commutes Panel Toggle Button */}
       {commuteDestinationsWithoutOrigin.length > 0 && (
         <button
-          onClick={() => setCommutesPanelOpen(!commutesPanelOpen)}
+          onClick={() => { setCommutesPanelOpen(!commutesPanelOpen); }}
           className={`fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
             commutesPanelOpen
               ? 'bg-ocean-600 text-white hover:bg-ocean-700'
@@ -445,7 +447,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Edit Trip Modal */}
       <EditTripModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => { setIsEditModalOpen(false); }}
         trip={trip}
         onSuccess={() => {
           // Trip data will refresh automatically via Convex reactivity
@@ -456,7 +458,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {selectedPlanId && (
         <AddActivityModal
           isOpen={isAddActivityModalOpen}
-          onClose={() => setIsAddActivityModalOpen(false)}
+          onClose={() => { setIsAddActivityModalOpen(false); }}
           tripId={tripId}
           planId={selectedPlanId}
           onSuccess={() => {
@@ -486,7 +488,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Activity Detail Panel */}
       <ActivityDetailPanel
         isOpen={!!selectedActivityId}
-        onClose={() => setSelectedActivityId(null)}
+        onClose={() => { setSelectedActivityId(null); }}
         activity={selectedActivity || null}
         location={
           activityLocation
@@ -514,7 +516,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {selectedPlanId && selectedActivity && (
         <EditActivityModal
           isOpen={isEditActivityModalOpen}
-          onClose={() => setIsEditActivityModalOpen(false)}
+          onClose={() => { setIsEditActivityModalOpen(false); }}
           activity={selectedActivity}
           tripId={tripId}
           planId={selectedPlanId}

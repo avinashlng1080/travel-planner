@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Clock } from 'lucide-react';
-import { useMutation } from 'convex/react';
+import { useState, useEffect, useRef } from 'react';
+
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
+import { type Id } from '../../../convex/_generated/dataModel';
 import { GlassPanel, GlassInput } from '../ui/GlassPanel';
 
 export interface EditActivityModalProps {
@@ -84,7 +85,7 @@ export function EditActivityModal({
       const timer = setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen]);
 
@@ -97,7 +98,7 @@ export function EditActivityModal({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen]);
 
   const handleClose = () => {
@@ -266,7 +267,7 @@ export function EditActivityModal({
                     type="text"
                     placeholder="Visit Petronas Towers"
                     value={formData.title}
-                    onChange={(e) => handleChange('title', e.target.value)}
+                    onChange={(e) => { handleChange('title', e.target.value); }}
                     className={`w-full bg-white backdrop-blur-lg border rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${errors.title ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200'}`}
                     disabled={isSubmitting}
                     aria-invalid={errors.title ? 'true' : 'false'}
@@ -288,7 +289,7 @@ export function EditActivityModal({
                     id="dayDate"
                     type="date"
                     value={formData.dayDate}
-                    disabled={true}
+                    disabled
                     className="opacity-70 cursor-not-allowed"
                     aria-describedby="dayDate-help"
                   />
@@ -309,7 +310,7 @@ export function EditActivityModal({
                         id="startTime"
                         type="time"
                         value={formData.startTime}
-                        onChange={(e) => handleChange('startTime', e.target.value)}
+                        onChange={(e) => { handleChange('startTime', e.target.value); }}
                         className={errors.startTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                         disabled={isSubmitting}
                         aria-invalid={errors.startTime || errors.timeRange ? 'true' : 'false'}
@@ -334,7 +335,7 @@ export function EditActivityModal({
                         id="endTime"
                         type="time"
                         value={formData.endTime}
-                        onChange={(e) => handleChange('endTime', e.target.value)}
+                        onChange={(e) => { handleChange('endTime', e.target.value); }}
                         className={errors.endTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                         disabled={isSubmitting}
                         aria-invalid={errors.endTime || errors.timeRange ? 'true' : 'false'}
@@ -367,7 +368,7 @@ export function EditActivityModal({
                     rows={3}
                     placeholder="Add any notes or details about this activity..."
                     value={formData.notes}
-                    onChange={(e) => handleChange('notes', e.target.value)}
+                    onChange={(e) => { handleChange('notes', e.target.value); }}
                     disabled={isSubmitting}
                     className="w-full bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 resize-none disabled:opacity-50"
                   />
@@ -382,7 +383,7 @@ export function EditActivityModal({
                     id="isFlexible"
                     type="checkbox"
                     checked={formData.isFlexible}
-                    onChange={(e) => handleChange('isFlexible', e.target.checked)}
+                    onChange={(e) => { handleChange('isFlexible', e.target.checked); }}
                     disabled={isSubmitting}
                     className="mt-1 w-4 h-4 text-sunset-500 border-slate-300 rounded focus:ring-sunset-500 focus:ring-offset-0 disabled:opacity-50"
                   />

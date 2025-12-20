@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Map as GoogleMapComponent, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Clock,
@@ -11,7 +10,10 @@ import {
   FileText,
   Tag,
 } from 'lucide-react';
+import { useState } from 'react';
+
 import { GlassPanel, GlassButton, GlassBadge } from '../ui/GlassPanel';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface ActivityDetailPanelProps {
@@ -70,7 +72,7 @@ export function ActivityDetailPanel({
     );
   }
 
-  if (!activity) return null;
+  if (!activity) {return null;}
 
   const canEdit = userRole === 'owner' || userRole === 'editor';
 
@@ -231,7 +233,7 @@ export function ActivityDetailPanel({
                           defaultZoom={14}
                           mapId={mapId}
                           gestureHandling="none"
-                          disableDefaultUI={true}
+                          disableDefaultUI
                           zoomControl={false}
                           mapTypeControl={false}
                           fullscreenControl={false}
@@ -302,7 +304,7 @@ export function ActivityDetailPanel({
                     <GlassButton
                       variant="danger"
                       className="px-4"
-                      onClick={() => setShowDeleteConfirm(true)}
+                      onClick={() => { setShowDeleteConfirm(true); }}
                       aria-label="Delete activity"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -325,7 +327,7 @@ export function ActivityDetailPanel({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
-              onClick={() => setShowDeleteConfirm(false)}
+              onClick={() => { setShowDeleteConfirm(false); }}
             />
 
             {/* Confirmation Dialog */}
@@ -356,7 +358,7 @@ export function ActivityDetailPanel({
                     <GlassButton
                       variant="default"
                       className="flex-1"
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={() => { setShowDeleteConfirm(false); }}
                     >
                       Cancel
                     </GlassButton>

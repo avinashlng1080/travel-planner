@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { useAtom } from 'jotai';
-import { selectedDayIdAtom } from '../atoms/uiAtoms';
+import { useMemo } from 'react';
+
 import { useGoogleRouting } from './useGoogleRouting';
-import { sortScheduleItemsForRoute } from '../utils/sortScheduleItems';
 import { api } from '../../convex/_generated/api';
+import { selectedDayIdAtom } from '../atoms/uiAtoms';
+import { sortScheduleItemsForRoute } from '../utils/sortScheduleItems';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface RoutePoint {
