@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Map, AdvancedMarker, useMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, useMap, MapCameraChangedEvent, MapMouseEvent } from '@vis.gl/react-google-maps';
 import { useAtomValue } from 'jotai';
 import { homeBaseAtom } from '../Floating/SettingsPanel';
 import type { Location } from '../../data/tripData';
@@ -26,6 +26,7 @@ import { GoogleRoutingLayer } from './GoogleRoutingLayer';
 import { GoogleDayRouteLayer } from './GoogleDayRouteLayer';
 import { GooglePOILayer } from './GooglePOILayer';
 import { CommutesRoutingLayer } from './CommutesRoutingLayer';
+import { AddLocationDialog } from './AddLocationDialog';
 import type { CommuteResult } from '../../hooks/useCommutes';
 import {
   CATEGORY_COLORS,
@@ -664,9 +665,25 @@ export function GoogleFullScreenMap({
     west: 99.0,
   });
 
+  // Track add location dialog state
+  const [addLocationCoords, setAddLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
+
   const handleBoundsChange = useCallback((bounds: POIMapBounds) => {
     setMapBounds(bounds);
   }, []);
+
+  const handleMapClick = useCallback((event: MapMouseEvent) => {
+    // Only add locations if we have a tripId
+    if (!tripId) return;
+
+    // Get click coordinates
+    const lat = event.detail.latLng?.lat;
+    const lng = event.detail.latLng?.lng;
+
+    if (lat !== undefined && lng !== undefined) {
+      setAddLocationCoords({ lat, lng });
+    }
+  }, [tripId]);
 
   const handleCameraChanged = useCallback((ev: MapCameraChangedEvent) => {
     const bounds = ev.map.getBounds();
@@ -710,6 +727,7 @@ export function GoogleFullScreenMap({
         streetViewControl={false}
         style={{ width: '100%', height: '100%' }}
         onCameraChanged={handleCameraChanged}
+        onClick={handleMapClick}
       >
         {/* Map Controllers */}
         <MapController selectedLocation={selectedLocation} />
@@ -787,6 +805,19 @@ export function GoogleFullScreenMap({
           />
         ))}
       </Map>
+
+      {/* Add Location Dialog */}
+      {addLocationCoords && tripId && (
+        <AddLocationDialog
+          tripId={tripId}
+          lat={addLocationCoords.lat}
+          lng={addLocationCoords.lng}
+          onClose={() => setAddLocationCoords(null)}
+          onSuccess={() => {
+            // Dialog will close automatically, location will appear on next query refresh
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -17,10 +17,11 @@ import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel, SettingsPanel } from '../components/floating';
 import { WeatherIndicator } from '../components/weather';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
 import { travelModeAtom, commutesPanelOpenAtom, activeCommuteDestinationAtom, selectedDayIdAtom, focusedActivityAtom } from '../atoms/uiAtoms';
+import { homeBaseAtom } from '../components/Floating/SettingsPanel';
 import { useCommutes } from '../hooks/useCommutes';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -49,6 +50,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Floating panel state
   const openPanel = useSetAtom(openPanelAtom);
+
+  // Get configured home base
+  const homeBase = useAtomValue(homeBaseAtom);
 
   // Commutes panel state
   const [travelMode, setTravelMode] = useAtom(travelModeAtom);
@@ -180,7 +184,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     return commuteDestinations.slice(1);
   }, [commuteDestinations]);
 
-  // Build route for current plan - starting from home base (MUST be before early returns)
+  // Build route for current plan - starting from configurable home base (MUST be before early returns)
   const planRoute = useMemo(() => {
     if (!scheduleItems || !tripLocations) return [];
 
@@ -195,16 +199,10 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       return a.startTime.localeCompare(b.startTime);
     });
 
-    // Find home base
-    const homeBase = tripLocations.find((loc) =>
-      (loc.customCategory || loc.baseLocation?.category) === 'home-base'
-    );
-
-    if (!homeBase) return [];
-
+    // Use configured home base from settings
     const homePoint = {
-      lat: homeBase.customLat || homeBase.baseLocation?.lat || 0,
-      lng: homeBase.customLng || homeBase.baseLocation?.lng || 0,
+      lat: homeBase.lat,
+      lng: homeBase.lng,
     };
 
     // Start from home base
@@ -229,7 +227,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     }
 
     return routePoints;
-  }, [scheduleItems, tripLocations, selectedDayId]);
+  }, [scheduleItems, tripLocations, selectedDayId, homeBase]);
 
   // Fetch commute data with Google Directions API (MUST be before early returns)
   const { commutes, isLoading: isCommutesLoading } = useCommutes({
