@@ -25,7 +25,7 @@ async function checkTripAccess(
     )
     .unique();
 
-  if (!member || member.status !== "accepted") {
+  if (member?.status !== "accepted") {
     throw new ConvexError("Access denied: You are not a member of this trip");
   }
 
@@ -73,7 +73,7 @@ export const getDestinations = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user has access to trip
     await checkTripAccess(ctx, args.tripId, userId);
@@ -113,7 +113,7 @@ export const addDestination = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(
@@ -202,7 +202,7 @@ export const updateDestination = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the destination
     const destination = await ctx.db.get(args.destinationId);
@@ -237,12 +237,12 @@ export const updateDestination = mutation({
 
     // Build update object with only provided fields
     const updates: any = {};
-    if (args.name !== undefined) updates.name = args.name.trim();
-    if (args.address !== undefined) updates.address = args.address;
-    if (args.lat !== undefined) updates.lat = args.lat;
-    if (args.lng !== undefined) updates.lng = args.lng;
-    if (args.category !== undefined) updates.category = args.category;
-    if (args.travelMode !== undefined) updates.travelMode = args.travelMode;
+    if (args.name !== undefined) {updates.name = args.name.trim();}
+    if (args.address !== undefined) {updates.address = args.address;}
+    if (args.lat !== undefined) {updates.lat = args.lat;}
+    if (args.lng !== undefined) {updates.lng = args.lng;}
+    if (args.category !== undefined) {updates.category = args.category;}
+    if (args.travelMode !== undefined) {updates.travelMode = args.travelMode;}
 
     // Update the destination
     await ctx.db.patch(args.destinationId, updates);
@@ -275,7 +275,7 @@ export const deleteDestination = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the destination
     const destination = await ctx.db.get(args.destinationId);
@@ -353,7 +353,7 @@ export const reorderDestinations = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(

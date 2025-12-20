@@ -229,7 +229,7 @@ async function geocodeLocation(name: string, address?: string): Promise<{ lat: n
     );
 
     if (response.ok) {
-      const data = (await response.json()) as Array<{ lat: string; lon: string }>;
+      const data = (await response.json()) as { lat: string; lon: string }[];
       if (data.length > 0) {
         return {
           lat: parseFloat(data[0].lat),

@@ -28,13 +28,15 @@ import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
 import { AddActivityModal } from '../components/trips/AddActivityModal';
+import AddDestinationModal from '../components/trips/AddDestinationModal';
+import CommutesPanel from '../components/trips/CommutesPanel';
+import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
+import { EditActivityModal } from '../components/trips/EditActivityModal';
+import EditDestinationModal from '../components/trips/EditDestinationModal';
 import { EditTripModal } from '../components/trips/EditTripModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
-import { EditActivityModal } from '../components/trips/EditActivityModal';
-import AddDestinationModal from '../components/trips/AddDestinationModal';
-import EditDestinationModal from '../components/trips/EditDestinationModal';
-import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
 import { WeatherIndicator } from '../components/weather';
+import { useCommutes, type CommuteDestination } from '../hooks/useCommutes';
 
 
 
@@ -225,6 +227,51 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     new Set(mapLocations.map((loc) => loc.category))
   );
 
+  // Derive commute origin from trip data (use first location with 'home-base' category or first location)
+  const commuteOrigin = useMemo(() => {
+    const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
+    if (homeBase) {
+      return { lat: homeBase.lat, lng: homeBase.lng };
+    }
+    // Fallback to first location or trip coordinates if available
+    if (mapLocations.length > 0) {
+      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng };
+    }
+    // Default fallback (Kuala Lumpur city center)
+    return { lat: 3.1390, lng: 101.6869 };
+  }, [mapLocations]);
+
+  // Filter out origin location from commute destinations to avoid showing "0 mins" commute to self
+  const commuteDestinationsWithoutOrigin = useMemo(() => {
+    if (!commuteDestinations) {return [];}
+    // Remove any destination that's the same as origin (within small tolerance)
+    return commuteDestinations.filter((dest) => {
+      const latDiff = Math.abs(dest.lat - commuteOrigin.lat);
+      const lngDiff = Math.abs(dest.lng - commuteOrigin.lng);
+      return latDiff > 0.0001 || lngDiff > 0.0001; // ~10 meters tolerance
+    });
+  }, [commuteDestinations, commuteOrigin]);
+
+  // Transform Convex destinations to CommuteDestination format for useCommutes hook
+  const commuteDestinationsForHook: CommuteDestination[] = useMemo(() => {
+    return commuteDestinationsWithoutOrigin.map((dest) => ({
+      id: dest._id,
+      name: dest.name,
+      lat: dest.lat,
+      lng: dest.lng,
+      address: dest.address,
+      category: dest.category,
+    }));
+  }, [commuteDestinationsWithoutOrigin]);
+
+  // Calculate commute times for map display
+  const { results: commuteResults } = useCommutes({
+    origin: commuteOrigin,
+    destinations: commuteDestinationsForHook,
+    travelMode,
+    enabled: commutesPanelOpen && commuteDestinationsForHook.length > 0,
+  });
+
   // Handler for deleting a destination
   const handleDeleteDestination = async () => {
     if (!deletingDestinationId) {return;}
@@ -253,7 +300,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         planRoute={[]}
         tripId={tripId}
         selectedPlanId={selectedPlanId}
-        commutes={commutes}
+        commutes={commuteResults}
         activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
         onLocationSelect={(location) => { setSelectedLocation(location); }}
       />
@@ -353,13 +400,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0 && (
         <div className="fixed bottom-32 sm:bottom-16 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[600px] max-w-full z-30">
           <CommutesPanel
+            tripId={tripId}
             origin={commuteOrigin}
-            destinations={commuteDestinationsWithoutOrigin}
             travelMode={travelMode}
             onTravelModeChange={setTravelMode}
             onActiveDestinationChange={setActiveCommuteDestination}
-            commutes={commutes}
-            isLoading={isCommutesLoading}
           />
         </div>
       )}

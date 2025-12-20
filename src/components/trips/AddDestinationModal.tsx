@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Car, Train, Bike, PersonStanding } from 'lucide-react';
-import { useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { GlassPanel } from '../ui/GlassPanel';
+import { useState, useEffect, useRef } from 'react';
+
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
+
+import { api } from '../../../convex/_generated/api';
+import { type Id } from '../../../convex/_generated/dataModel';
+import { GlassPanel } from '../ui/GlassPanel';
 
 export interface AddDestinationModalProps {
   isOpen: boolean;
@@ -31,11 +33,11 @@ interface FormErrors {
   location?: string;
 }
 
-const TRAVEL_MODES: Array<{
+const TRAVEL_MODES: {
   mode: TravelMode;
   icon: typeof Car;
   label: string;
-}> = [
+}[] = [
   { mode: 'DRIVING', icon: Car, label: 'Drive' },
   { mode: 'TRANSIT', icon: Train, label: 'Transit' },
   { mode: 'BICYCLING', icon: Bike, label: 'Bike' },
@@ -97,7 +99,7 @@ export default function AddDestinationModal({
       const timer = setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen]);
 
@@ -110,7 +112,7 @@ export default function AddDestinationModal({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen]);
 
   // Click outside predictions handler
@@ -125,7 +127,7 @@ export default function AddDestinationModal({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   // Search for places as user types
@@ -196,7 +198,7 @@ export default function AddDestinationModal({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showPredictions || predictions.length === 0) return;
+    if (!showPredictions || predictions.length === 0) {return;}
 
     switch (e.key) {
       case 'ArrowDown':
@@ -370,7 +372,7 @@ export default function AddDestinationModal({
                     }
                     placeholder="Search for a place..."
                     value={searchQuery}
-                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onChange={(e) => { handleSearchChange(e.target.value); }}
                     onKeyDown={handleKeyDown}
                     onFocus={() => {
                       if (predictions.length > 0) {
@@ -470,7 +472,7 @@ export default function AddDestinationModal({
                       <button
                         key={mode}
                         type="button"
-                        onClick={() => handleTravelModeChange(mode)}
+                        onClick={() => { handleTravelModeChange(mode); }}
                         disabled={isSubmitting}
                         className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 min-h-[76px] ${
                           formData.travelMode === mode
@@ -495,7 +497,7 @@ export default function AddDestinationModal({
                   <select
                     id="category"
                     value={formData.category}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    onChange={(e) => { handleCategoryChange(e.target.value); }}
                     disabled={isSubmitting}
                     className="w-full bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%225%22%20viewBox%3D%220%200%2010%205%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M0%200l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_5px] bg-[position:calc(100%-12px)_center] bg-no-repeat pr-10"
                   >
