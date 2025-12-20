@@ -4,7 +4,7 @@ interface ClaudeMessage {
 }
 
 interface ClaudeAPIResponse {
-  content: Array<{ type: string; text: string }>;
+  content: { type: string; text: string }[];
   id: string;
   model: string;
   role: string;
@@ -50,12 +50,12 @@ export async function sendToClaudeAPI(
 
     if (!response.ok) {
       const errorData = (await response.json()) as ClaudeAPIError;
-      throw new Error(`Claude API error: ${errorData.error?.message || response.statusText}`);
+      throw new Error(`Claude API error: ${errorData.error.message || response.statusText}`);
     }
 
     const data = (await response.json()) as ClaudeAPIResponse;
 
-    if (!data.content || data.content.length === 0) {
+    if (data.content.length === 0) {
       throw new Error('No response content from Claude API');
     }
 

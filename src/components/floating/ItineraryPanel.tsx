@@ -1,10 +1,11 @@
-import { MapPin } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
-import { DayPlan } from '../Itinerary/DayPlan';
 import { useAtom, useSetAtom } from 'jotai';
+import { MapPin } from 'lucide-react';
+
 import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
+import { DayPlan } from '../Itinerary/DayPlan';
+import { FloatingPanel } from '../ui/FloatingPanel';
 
 export function ItineraryPanel() {
   const [panels] = useAtom(panelsAtom);
@@ -35,10 +36,10 @@ export function ItineraryPanel() {
       position={panelState.position}
       size={{ width: 450, height: 600 }}
       zIndex={panelState.zIndex}
-      onClose={() => closePanel('itinerary')}
-      onMinimize={() => toggleMinimize('itinerary')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'itinerary', position: pos })}
-      onFocus={() => bringToFront('itinerary')}
+      onClose={() => { closePanel('itinerary'); }}
+      onMinimize={() => { toggleMinimize('itinerary'); }}
+      onPositionChange={(pos) => { updatePosition({ panelId: 'itinerary', position: pos }); }}
+      onFocus={() => { bringToFront('itinerary'); }}
     >
       <div className="p-6">
         {selectedDayPlan ? (

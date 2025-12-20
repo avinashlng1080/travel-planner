@@ -7,6 +7,7 @@
 
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
+
 import type { WeatherLocation, WeatherState } from '../types/weather';
 
 /**

@@ -14,7 +14,7 @@ async function checkTripAccess(ctx: any, tripId: any, userId: any) {
     )
     .first();
 
-  if (!membership || membership.status !== "accepted") {
+  if (membership?.status !== "accepted") {
     throw new Error("You don't have access to this trip");
   }
 
@@ -29,7 +29,7 @@ function getActionDescription(
   metadata?: any,
   userName?: string
 ): string {
-  const name = userName || "Someone";
+  const name = userName ?? "Someone";
 
   switch (action) {
     case "created_trip":
@@ -94,8 +94,8 @@ export const getActivityFeed = query({
     await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
-    const limit = args.limit || 50;
-    const cursor = args.cursor || 0;
+    const limit = args.limit ?? 50;
+    const cursor = args.cursor ?? 0;
 
     // Get activities for this trip
     const allActivities = await ctx.db
@@ -115,7 +115,7 @@ export const getActivityFeed = query({
           .withIndex("by_userId", (q) => q.eq("userId", activity.userId))
           .first();
 
-        const userName = profile?.name || "Unknown User";
+        const userName = profile?.name ?? "Unknown User";
         const description = getActionDescription(
           activity.action,
           activity.metadata,
@@ -170,7 +170,7 @@ export const getRecentActivity = query({
     await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
-    const limit = args.limit || 20;
+    const limit = args.limit ?? 20;
 
     // Get recent activities for this trip
     const activities = await ctx.db
@@ -187,7 +187,7 @@ export const getRecentActivity = query({
           .withIndex("by_userId", (q) => q.eq("userId", activity.userId))
           .first();
 
-        const userName = profile?.name || "Unknown User";
+        const userName = profile?.name ?? "Unknown User";
         const description = getActionDescription(
           activity.action,
           activity.metadata,
@@ -273,7 +273,7 @@ export const getActivitiesByAction = query({
     await checkTripAccess(ctx, args.tripId, userId);
 
     // Default limit
-    const limit = args.limit || 50;
+    const limit = args.limit ?? 50;
 
     // Get all activities for this trip
     const allActivities = await ctx.db
@@ -295,7 +295,7 @@ export const getActivitiesByAction = query({
           .withIndex("by_userId", (q) => q.eq("userId", activity.userId))
           .first();
 
-        const userName = profile?.name || "Unknown User";
+        const userName = profile?.name ?? "Unknown User";
         const description = getActionDescription(
           activity.action,
           activity.metadata,

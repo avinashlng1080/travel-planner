@@ -1,4 +1,3 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -7,16 +6,20 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragOverEvent,
-  DragEndEvent,
-  UniqueIdentifier,
+  type DragStartEvent,
+  type DragOverEvent,
+  type DragEndEvent,
+  type UniqueIdentifier,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+
+
 import { PlanColumn } from './PlanColumn';
 import { ScheduleItem } from './ScheduleItem';
+
+import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface PlanBuilderProps {
   dayPlan: DayPlanType;
@@ -49,11 +52,11 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
   // Find which container an item is in
   const findContainer = useCallback(
     (id: UniqueIdentifier): 'A' | 'B' | null => {
-      if (planAItems.some((item) => item.id === id)) return 'A';
-      if (planBItems.some((item) => item.id === id)) return 'B';
+      if (planAItems.some((item) => item.id === id)) {return 'A';}
+      if (planBItems.some((item) => item.id === id)) {return 'B';}
       // Check if it's a droppable container ID
-      if (id === 'droppable-A') return 'A';
-      if (id === 'droppable-B') return 'B';
+      if (id === 'droppable-A') {return 'A';}
+      if (id === 'droppable-B') {return 'B';}
       return null;
     },
     [planAItems, planBItems]
@@ -61,7 +64,7 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
 
   // Get active item for overlay
   const activeItem = useMemo(() => {
-    if (!activeId) return null;
+    if (!activeId) {return null;}
     return [...planAItems, ...planBItems].find((item) => item.id === activeId);
   }, [activeId, planAItems, planBItems]);
 
@@ -81,14 +84,14 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
   // Handle drag over (for cross-container)
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    if (!over) return;
+    if (!over) {return;}
 
     const activeContainer = findContainer(active.id);
     let overContainer = findContainer(over.id);
 
     // If over a droppable zone, get its container
-    if (over.id === 'droppable-A') overContainer = 'A';
-    if (over.id === 'droppable-B') overContainer = 'B';
+    if (over.id === 'droppable-A') {overContainer = 'A';}
+    if (over.id === 'droppable-B') {overContainer = 'B';}
 
     if (!activeContainer || !overContainer || activeContainer === overContainer) {
       return;
@@ -101,11 +104,11 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
     const activeIndex = activeItems.findIndex((item) => item.id === active.id);
     const overIndex = overItems.findIndex((item) => item.id === over.id);
 
+    if (activeIndex < 0) {return;}
     const movedItem = activeItems[activeIndex];
-    if (!movedItem) return;
 
     // Determine insert position
-    let newIndex = overIndex >= 0 ? overIndex : overItems.length;
+    const newIndex = overIndex >= 0 ? overIndex : overItems.length;
 
     // Update local state
     if (activeContainer === 'A') {
@@ -131,16 +134,16 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
     setActiveId(null);
     setActiveContainer(null);
 
-    if (!over) return;
+    if (!over) {return;}
 
     const activeContainer = findContainer(active.id);
     let overContainer = findContainer(over.id);
 
     // If over a droppable zone
-    if (over.id === 'droppable-A') overContainer = 'A';
-    if (over.id === 'droppable-B') overContainer = 'B';
+    if (over.id === 'droppable-A') {overContainer = 'A';}
+    if (over.id === 'droppable-B') {overContainer = 'B';}
 
-    if (!activeContainer || !overContainer) return;
+    if (!activeContainer || !overContainer) {return;}
 
     // Reordering within same container
     if (activeContainer === overContainer) {

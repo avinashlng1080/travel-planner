@@ -1,15 +1,18 @@
-import { useState, useCallback } from 'react';
 import { useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-import { Id } from '../../convex/_generated/dataModel';
+import { useState, useCallback } from 'react';
+
 import {
-  ParsedItinerary,
-  ParsedLocation,
-  ParsedActivity,
-  TripContext,
-  ParserStep,
-  ImportResult,
+  type ParsedItinerary,
+  type ParsedLocation,
+  type ParsedActivity,
+  type TripContext,
+  type ParserStep,
+  type ImportResult,
 } from '@/types/itinerary';
+
+import { api } from '../../convex/_generated/api';
+import { type Id } from '../../convex/_generated/dataModel';
+
 
 /**
  * Hook for managing the itinerary parsing flow.
@@ -105,7 +108,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
       }
 
       if (!data.success) {
-        setError(data.error || 'Failed to parse itinerary. Please try again.');
+        setError(data.error ?? 'Failed to parse itinerary. Please try again.');
         setStep('input');
         return;
       }
@@ -126,7 +129,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    */
   const updateLocation = useCallback((id: string, updates: Partial<ParsedLocation>) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       return {
         ...prev,
         locations: prev.locations.map((loc) =>
@@ -141,7 +144,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    */
   const deleteLocation = useCallback((id: string) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       return {
         ...prev,
         locations: prev.locations.filter((loc) => loc.id !== id),
@@ -160,7 +163,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
   const updateActivity = useCallback(
     (dayIndex: number, activityId: string, updates: Partial<ParsedActivity>) => {
       setParsedData((prev) => {
-        if (!prev) return prev;
+        if (!prev) {return prev;}
         const newDays = [...prev.days];
         if (newDays[dayIndex]) {
           newDays[dayIndex] = {
@@ -181,7 +184,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    */
   const deleteActivity = useCallback((dayIndex: number, activityId: string) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       const newDays = [...prev.days];
       if (newDays[dayIndex]) {
         newDays[dayIndex] = {
@@ -266,7 +269,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    * Undo the last import.
    */
   const undo = useCallback(async () => {
-    if (!importResult) return;
+    if (!importResult) {return;}
 
     try {
       // Delete schedule items first (they may reference locations)

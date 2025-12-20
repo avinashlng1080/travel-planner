@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState, RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 
 interface SpotlightTarget {
   /** Ref to the element to highlight */
@@ -36,7 +36,7 @@ export function SpotlightOverlay({
   children,
   capturePointer = true,
 }: SpotlightOverlayProps) {
-  const [cutouts, setCutouts] = useState<Array<{ x: number; y: number; width: number; height: number; shape: string }>>([]);
+  const [cutouts, setCutouts] = useState<{ x: number; y: number; width: number; height: number; shape: string }[]>([]);
 
   // Calculate cutout positions from refs
   useEffect(() => {

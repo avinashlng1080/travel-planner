@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
-import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
-import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
 import { useWeather } from '../../hooks/useWeather';
+import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
 import { WeatherCard } from '../Weather';
+
 import type { Location, DayPlan } from '../../data/tripData';
 
 interface RightDetailPanelProps {
@@ -29,12 +31,12 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
 
   // Get today's forecast
   const todayForecast = useMemo(() => {
-    if (!weatherForecast.length) return null;
+    if (!weatherForecast.length) {return null;}
     const today = new Date().toISOString().split('T')[0];
     return weatherForecast.find((f) => f.date === today) || weatherForecast[0];
   }, [weatherForecast]);
 
-  if (!location) return null;
+  if (!location) {return null;}
 
   // Check if this is an AI-suggested dynamic pin
   const isAISuggested = location.id.startsWith('dynamic-');
@@ -62,7 +64,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col"
+        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col safe-area-inset-top safe-area-inset-x safe-area-inset-bottom md:!pt-0"
       >
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl p-4 border-b border-slate-200/50 z-10">
@@ -287,7 +289,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
         planType={selectedPlanType}
         days={days}
         currentDayId={selectedDayId}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); }}
         onAdd={(details) => {
           onAddToPlan(selectedPlanType, details);
           setModalOpen(false);

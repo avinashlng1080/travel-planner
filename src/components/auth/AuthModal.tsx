@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAtom } from 'jotai';
 import { X } from 'lucide-react';
-import { GlassPanel } from '../ui/GlassPanel';
+
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
-import { useAtom } from 'jotai';
 import { authModalOpenAtom, authModeAtom } from '../../atoms/uiAtoms';
+import { GlassPanel } from '../ui/GlassPanel';
 
 export function AuthModal() {
   const [authModalOpen, setAuthModalOpen] = useAtom(authModalOpenAtom);

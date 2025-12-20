@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { Map, MousePointer, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Map, MousePointer, ArrowRight } from 'lucide-react';
+
 import { hasInteractedWithMarkerAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**

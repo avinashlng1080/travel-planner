@@ -83,7 +83,7 @@ const KNOWN_LOCATIONS: Record<string, { lat: number; lng: number; category: stri
 // Parse time string to 24-hour format
 function parseTime(timeStr: string): string {
   // Already 24-hour format like "16:30"
-  const time24Match = timeStr.match(/(\d{1,2}):(\d{2})/);
+  const time24Match = /(\d{1,2}):(\d{2})/.exec(timeStr);
   if (time24Match) {
     const hours = parseInt(time24Match[1]);
     const minutes = time24Match[2];
@@ -91,14 +91,14 @@ function parseTime(timeStr: string): string {
   }
 
   // 12-hour format like "3:00 PM"
-  const time12Match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  const time12Match = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(timeStr);
   if (time12Match) {
     let hours = parseInt(time12Match[1]);
     const minutes = time12Match[2];
     const period = time12Match[3].toUpperCase();
 
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
+    if (period === 'PM' && hours !== 12) {hours += 12;}
+    if (period === 'AM' && hours === 12) {hours = 0;}
 
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
   }
@@ -109,7 +109,7 @@ function parseTime(timeStr: string): string {
 // Parse date string to YYYY-MM-DD format
 function parseDate(dateStr: string, tripYear: number): string {
   // Format: "Sun, 21 Dec" or "Mon, 22 Dec"
-  const tripItMatch = dateStr.match(/\w+,?\s+(\d{1,2})\s+(\w+)/);
+  const tripItMatch = /\w+,?\s+(\d{1,2})\s+(\w+)/.exec(dateStr);
   if (tripItMatch) {
     const day = parseInt(tripItMatch[1]);
     const monthStr = tripItMatch[2].toLowerCase();
@@ -133,7 +133,7 @@ function parseDate(dateStr: string, tripYear: number): string {
     // If month is Jan and we're parsing a Dec-Jan trip, use next year
     const year = month < 6 ? tripYear + 1 : tripYear;
 
-    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    return `${String(year)}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
   return new Date().toISOString().split('T')[0];
@@ -176,7 +176,7 @@ function findKnownLocation(name: string): { lat: number; lng: number; category: 
   const nameLower = name.toLowerCase();
 
   // Direct match
-  if (KNOWN_LOCATIONS[nameLower]) {
+  if (nameLower in KNOWN_LOCATIONS) {
     return KNOWN_LOCATIONS[nameLower];
   }
 
@@ -193,7 +193,7 @@ function findKnownLocation(name: string): { lat: number; lng: number; category: 
 // Extract coordinates from address using regex (Malaysia addresses often contain coordinates)
 function extractCoordsFromAddress(address: string): { lat: number; lng: number } | null {
   // Try to match coordinates in address
-  const coordMatch = address.match(/([0-9]+\.[0-9]+),\s*([0-9]+\.[0-9]+)/);
+  const coordMatch = /([0-9]+\.[0-9]+),\s*([0-9]+\.[0-9]+)/.exec(address);
   if (coordMatch) {
     return { lat: parseFloat(coordMatch[1]), lng: parseFloat(coordMatch[2]) };
   }
@@ -212,7 +212,7 @@ async function geocodeLocation(name: string, address?: string): Promise<{ lat: n
     // Try to extract from address
     if (address) {
       const extracted = extractCoordsFromAddress(address);
-      if (extracted) return extracted;
+      if (extracted) {return extracted;}
     }
 
     // Use Nominatim for geocoding
@@ -229,7 +229,7 @@ async function geocodeLocation(name: string, address?: string): Promise<{ lat: n
     );
 
     if (response.ok) {
-      const data = await response.json();
+      const data = (await response.json()) as { lat: string; lon: string }[];
       if (data.length > 0) {
         return {
           lat: parseFloat(data[0].lat),
@@ -251,7 +251,7 @@ function extractTimezoneFromText(text: string): {
   gmtOffset: string | null;
 } {
   // Look for GMT+X pattern
-  const gmtMatch = text.match(/GMT([+-]\d{1,2}(?::\d{2})?)/i);
+  const gmtMatch = /GMT([+-]\d{1,2}(?::\d{2})?)/i.exec(text);
   if (gmtMatch) {
     const gmtOffset = `GMT${gmtMatch[1]}`;
     // Map GMT offset to IANA timezone
@@ -272,25 +272,25 @@ function extractTimezoneFromText(text: string): {
 
 // Parse TripIt format
 function parseTripItFormat(text: string, tripYear: number): {
-  activities: Array<{
+  activities: {
     date: string;
     name: string;
     address?: string;
     startTime: string;
     endTime: string;
     notes?: string;
-  }>;
+  }[];
   detectedTimezone: string | null;
   detectedGmtOffset: string | null;
 } {
-  const activities: Array<{
+  const activities: {
     date: string;
     name: string;
     address?: string;
     startTime: string;
     endTime: string;
     notes?: string;
-  }> = [];
+  }[] = [];
 
   // Split by date patterns
   const lines = text.split('\n');
@@ -303,10 +303,10 @@ function parseTripItFormat(text: string, tripYear: number): {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (!line) continue;
+    if (!line) {continue;}
 
     // Check if this is a date line: "Sun, 21 Dec 16:30 GMT+8 Activity Name"
-    const dateTimeMatch = line.match(/^(\w+,?\s+\d{1,2}\s+\w+)\s+(\d{1,2}:\d{2})\s*(?:GMT[+-]?\d+)?\s+(.+)/);
+    const dateTimeMatch = /^(\w+,?\s+\d{1,2}\s+\w+)\s+(\d{1,2}:\d{2})\s*(?:GMT[+-]?\d+)?\s+(.+)/.exec(line);
 
     if (dateTimeMatch) {
       // Save previous activity if exists
@@ -327,7 +327,7 @@ function parseTripItFormat(text: string, tripYear: number): {
 
       // Parse the rest - could be "Activity Name" or "Activity Name Until 19:00"
       const rest = dateTimeMatch[3];
-      const untilMatch = rest.match(/(.+?)\s+Until\s+(\d{1,2}:\d{2})/i);
+      const untilMatch = /(.+?)\s+Until\s+(\d{1,2}:\d{2})/i.exec(rest);
 
       if (untilMatch) {
         currentName = untilMatch[1].trim();
@@ -338,16 +338,16 @@ function parseTripItFormat(text: string, tripYear: number): {
 
       currentAddress = '';
       currentNotes = '';
-    } else if (line.match(/^Until\s+(\d{1,2}:\d{2})/i)) {
+    } else if (/^Until\s+(\d{1,2}:\d{2})/i.exec(line)) {
       // End time on its own line
-      const endMatch = line.match(/Until\s+(\d{1,2}:\d{2})/i);
+      const endMatch = /Until\s+(\d{1,2}:\d{2})/i.exec(line);
       if (endMatch) {
         currentEndTime = parseTime(endMatch[1]);
       }
-    } else if (line.match(/^\d+.*Malaysia/i) || line.match(/^Lot\s+/i) || line.match(/^Jalan\s+/i) || line.match(/^Level\s+/i)) {
+    } else if ((/^\d+.*Malaysia/i.exec(line)) || (/^Lot\s+/i.exec(line)) || (/^Jalan\s+/i.exec(line)) || (/^Level\s+/i.exec(line))) {
       // This looks like an address
       currentAddress = line;
-    } else if (currentName && !line.startsWith('URL:') && !line.match(/^\d{3}-/)) {
+    } else if (currentName && !line.startsWith('URL:') && !(/^\d{3}-/.exec(line))) {
       // Additional notes
       if (currentNotes) {
         currentNotes += ' ' + line;
@@ -387,7 +387,12 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      rawText: string;
+      tripContext?: {
+        startDate?: string;
+      };
+    };
     const { rawText, tripContext } = body;
 
     if (!rawText || typeof rawText !== 'string') {
@@ -492,7 +497,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
     }
 
     // Group activities by date
-    const dayMap = new Map<string, Array<{
+    const dayMap = new Map<string, {
       id: string;
       locationId: string;
       locationName: string;
@@ -501,7 +506,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
       notes?: string;
       isFlexible: boolean;
       originalText: string;
-    }>>();
+    }[]>();
 
     for (const activity of activities) {
       if (!dayMap.has(activity.date)) {
@@ -523,7 +528,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
     // Convert to days array
     const days = Array.from(dayMap.entries())
       .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b))
-      .map(([date, dayActivities]: [string, Array<{
+      .map(([date, dayActivities]: [string, {
         id: string;
         locationId: string;
         locationName: string;
@@ -532,7 +537,7 @@ export const parseItineraryLocal = httpAction(async (_ctx, request) => {
         notes?: string;
         isFlexible: boolean;
         originalText: string;
-      }>]) => ({
+      }[]]) => ({
         date,
         title: undefined,
         activities: dayActivities.sort((a, b) => a.startTime.localeCompare(b.startTime)),

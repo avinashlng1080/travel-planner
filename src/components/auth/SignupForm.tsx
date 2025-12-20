@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useState } from 'react';
+
 import { GlassButton, GlassInput } from '../ui/GlassPanel';
 
 interface SignupFormProps {
@@ -65,7 +66,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
       <div>
         <label htmlFor="signup-email" className="block text-sm font-medium text-slate-700 mb-1">
           Email
@@ -74,7 +75,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           id="signup-email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); }}
           placeholder="you@example.com"
           required
           autoComplete="email"
@@ -89,7 +90,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           id="signup-password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); }}
           placeholder="At least 8 characters"
           required
           autoComplete="new-password"
@@ -104,7 +105,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           id="confirm-password"
           type="password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e) => { setConfirmPassword(e.target.value); }}
           placeholder="Confirm your password"
           required
           autoComplete="new-password"
@@ -122,6 +123,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
         size="lg"
         className="w-full"
         disabled={isLoading}
+        type="submit"
       >
         {isLoading ? 'Creating account...' : 'Create Account'}
       </GlassButton>

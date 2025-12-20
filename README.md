@@ -1,6 +1,6 @@
-# 🌴 Malaysia Family Travel Planner
+# 🌴 Family Travel Planner
 
-An AI-powered travel planning application for families visiting Malaysia with toddlers. Features interactive maps, drag-and-drop itinerary planning, and intelligent recommendations via Claude AI.
+An AI-powered travel planning application for families with toddlers. Features interactive maps, drag-and-drop itinerary planning, weather forecasts, and intelligent recommendations via Claude AI.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/React-18.3-61dafb.svg)
@@ -9,14 +9,17 @@ An AI-powered travel planning application for families visiting Malaysia with to
 
 ## ✨ Features
 
-- 🗺️ **Interactive Map** - OpenStreetMap with category-colored markers
-- 🤖 **AI Assistant** - Claude-powered travel advice
-- 📅 **Plan A/B Per Day** - Main itinerary + rainy day alternatives
-- 👶 **Toddler-Focused** - Ratings, nap time blocking, safety warnings
-- 🔄 **Drag & Drop** - Reorder activities easily
-- 📍 **25+ Locations** - Pre-loaded with tips, warnings, and details
-- 🌐 **Offline Support** - Works without internet (Convex)
-- 👨‍👩‍👧 **Shareable** - Real-time sync with family members
+- 🗺️ **Interactive Google Maps** - Real-time routing with custom category markers
+- 🤖 **AI Assistant** - Claude-powered travel advice with web search
+- 📅 **Plan A/B Per Day** - Main itinerary + backup alternatives
+- 👶 **Toddler-Focused** - Safety ratings, nap time blocking, warnings
+- 🔄 **Drag & Drop** - Reorder activities with smooth animations
+- 🌤️ **Weather Integration** - Real-time forecasts and alerts
+- 🚗 **Commute Planning** - Distance calculations and route optimization
+- 📱 **Mobile Responsive** - FAB navigation, safe areas, touch-optimized
+- 🎯 **Onboarding Tutorial** - Interactive guide for first-time users
+- 🌐 **Real-time Collaboration** - Share trips with family members
+- ♿ **WCAG 2.1 AA Compliant** - Accessible touch targets and screen reader support
 
 ## 🚀 Quick Start
 
@@ -24,6 +27,7 @@ An AI-powered travel planning application for families visiting Malaysia with to
 
 - Node.js 18+
 - npm or pnpm
+- Google Maps API key (with Maps JavaScript API + Distance Matrix API enabled)
 - Anthropic API key (for AI features)
 
 ### Installation
@@ -37,12 +41,18 @@ cd travel-planner
 npm install
 
 # Copy environment file
-cp .env.example .env
+cp .env.example .env.local
 
-# Add your API keys to .env
-# - OpenRouteService API key (get free key at https://openrouteservice.org/)
-#   VITE_ORS_API_KEY=your-api-key-here
-# - Optional: PostHog for analytics
+# Add your API keys to .env.local
+# VITE_GOOGLE_MAPS_KEY=your-google-maps-api-key
+# VITE_GOOGLE_MAPS_ID=your-map-id (optional, for custom styling)
+# VITE_CONVEX_URL=https://your-project.convex.cloud
+# VITE_POSTHOG_KEY=phc_... (optional analytics)
+
+# Set ANTHROPIC_API_KEY in Convex dashboard after deployment
+
+# Start Convex backend (in separate terminal)
+npx convex dev
 
 # Start development server
 npm run dev
@@ -50,78 +60,187 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
+### Google Maps Setup
+
+1. Get API key from [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable the following APIs:
+   - Maps JavaScript API
+   - Distance Matrix API
+   - (Optional) Places API for location search
+3. Add API key to `.env.local` as `VITE_GOOGLE_MAPS_KEY`
+4. Free tier: $200/month credit (sufficient for personal use)
+
 ## 📁 Project Structure
 
 ```
 travel-planner/
 ├── src/
-│   ├── components/       # React components
-│   │   ├── Map/         # Map-related components
-│   │   ├── Location/    # Location detail components
-│   │   ├── Itinerary/   # Day planning components
-│   │   ├── Chat/        # AI chat components
-│   │   ├── Filters/     # Filter components
-│   │   ├── Safety/      # Safety info components
-│   │   └── Layout/      # Layout components
-│   ├── data/            # Trip data
-│   │   └── tripData.ts  # All locations, plans, safety info
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utilities and API
-│   ├── stores/          # Zustand state management
-│   ├── styles/          # Global styles
-│   └── types/           # TypeScript types
-├── convex/              # Convex backend (optional)
-├── PRD.md               # Product Requirements Document
-├── CLAUDE_CODE_INSTRUCTIONS.md  # Implementation guide
+│   ├── atoms/             # Jotai state management
+│   │   ├── uiAtoms.ts     # UI state (chat, categories, plans)
+│   │   ├── floatingPanelAtoms.ts  # Panel z-index/position
+│   │   └── onboardingAtoms.ts     # Tutorial state
+│   ├── components/        # 80+ React components
+│   │   ├── Map/          # Google Maps integration
+│   │   ├── Layout/       # Header, navigation, FAB
+│   │   ├── Itinerary/    # Day planning with drag-and-drop
+│   │   ├── Chat/         # AI chat interface
+│   │   ├── floating/     # 17 floating panel types
+│   │   ├── trips/        # Trip management, activities
+│   │   ├── auth/         # Login/signup forms
+│   │   ├── onboarding/   # Interactive tutorial
+│   │   ├── weather/      # Weather cards and alerts
+│   │   ├── Safety/       # Emergency info
+│   │   └── ui/           # Base components (FAB, Modal, etc.)
+│   ├── data/
+│   │   └── tripData.ts   # Sample location data
+│   ├── hooks/            # 14 custom React hooks
+│   │   ├── useGoogleRouting.ts   # Route calculations
+│   │   ├── useCommutes.ts        # Commute planning
+│   │   ├── useWeather.ts         # Weather integration
+│   │   └── useIsMobile.ts        # Responsive detection
+│   ├── pages/            # 7 page components
+│   │   ├── TripViewPage.tsx      # Main planning view
+│   │   ├── DashboardPage.tsx     # Trip list
+│   │   └── LandingPage.tsx       # Auth/onboarding
+│   ├── stores/           # Legacy Zustand stores
+│   ├── styles/           # Global styles and Tailwind
+│   ├── types/            # TypeScript interfaces
+│   ├── utils/            # Utility functions
+│   ├── App.tsx           # Main routing logic
+│   └── main.tsx          # React entry point
+├── convex/               # Backend functions
+│   ├── schema.ts         # Database schema (28 tables)
+│   ├── claude.ts         # Claude AI with tools
+│   ├── http.ts           # HTTP router for /chat
+│   ├── trips.ts          # Trip CRUD operations
+│   ├── weather.ts        # Weather API integration
+│   ├── commutes.ts       # Distance calculations
+│   └── auth.config.ts    # Authentication setup
+├── Configuration
+│   ├── vercel.json       # Vercel deployment config
+│   ├── tailwind.config.js # Custom color themes
+│   ├── playwright.config.ts # E2E testing
+│   ├── CLAUDE.md         # Development philosophy
+│   ├── PRD.md            # Product requirements
+│   └── .env.example      # Environment template
 └── package.json
 ```
 
-## 🗓️ Trip Details
-
-This app is pre-configured for a family trip:
-
-- **Dates:** December 21, 2025 - January 6, 2026
-- **Base:** M Vertica Residence, Cheras, Kuala Lumpur
-- **Travelers:** Parents + 19-month-old toddler
-
-### Itinerary Highlights
-
-| Date | Activity |
-|------|----------|
-| Dec 21 | Arrival, KLCC Park |
-| Dec 22 | Batu Caves (7am start!) |
-| Dec 23 | Genting Highlands |
-| Dec 24 | Christmas Eve - Shopping |
-| Dec 25 | Aquaria KLCC |
-| Dec 26-29 | Cameron Highlands |
-| Dec 31 | New Year's Eve at KLCC |
-| Jan 3 | Putrajaya |
-| Jan 4 | Sunway Pyramid |
-| Jan 6 | Departure |
-
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 18, TypeScript, Vite
-- **Styling:** Tailwind CSS, Framer Motion
-- **Maps:** React-Leaflet + OpenStreetMap
-- **Routing:** OpenRouteService API (real road routes)
-- **Drag & Drop:** @dnd-kit
-- **State:** Zustand
-- **AI:** Anthropic Claude API
-- **Backend:** Convex (optional)
+### Frontend
+- **Framework:** React 18.3, TypeScript 5.5, Vite 5.3
+- **Styling:** Tailwind CSS 3.4, Framer Motion 11.3
+- **Maps:** @vis.gl/react-google-maps 1.7
+- **Routing:** Google Maps Distance Matrix API
+- **Drag & Drop:** @dnd-kit (core + sortable)
+- **State:** Jotai 2.10 (atoms), Zustand (legacy)
+- **Analytics:** PostHog 1.306 (optional)
+
+### Backend
+- **Database:** Convex 1.31 (real-time, serverless)
+- **Auth:** @convex-dev/auth 0.0.90
+- **AI:** Anthropic Claude API (via Convex HTTP actions)
+
+### Development
+- **Testing:** Playwright 1.57
+- **Linting:** ESLint 9.39 (strict, zero-warnings)
+- **Type Checking:** TypeScript strict mode
+
+## 🎨 Key Patterns
+
+### State Management
+- **Jotai atoms** for UI state (primary approach)
+- **Convex queries/mutations** for persistent data
+- **Local React state** for component-level UI
+
+### Map Markers (Unique Silhouettes)
+| Category | Icon | Color |
+|----------|------|-------|
+| home-base | House | Pink (#EC4899) |
+| toddler-friendly | Heart | Light Pink (#F472B6) |
+| attraction | Camera | Green (#10B981) |
+| shopping | Shopping bag | Purple (#8B5CF6) |
+| restaurant | Plate | Amber (#F59E0B) |
+| nature | Tree | Lime (#22C55E) |
+| temple | Pagoda | Red (#EF4444) |
+| playground | Swing | Cyan (#06B6D4) |
+| medical | Cross | Dark Red (#DC2626) |
+| ai-suggested | Pin + sparkle | Violet (#A855F7) |
+
+### Glassmorphic Design
+```tsx
+bg-white/95 backdrop-blur-xl border border-slate-200/50
+```
+
+### Plan A/B System
+- **Plan A:** Primary itinerary (solid green route)
+- **Plan B:** Backup/rainy day alternative (dashed blue route)
+
+### Responsive Design
+- **Desktop:** Floating panels with drag positioning
+- **Mobile:** FAB navigation, safe area insets, bottom sheets
 
 ## 📖 Documentation
 
 - [PRD.md](./PRD.md) - Full product requirements
-- [CLAUDE_CODE_INSTRUCTIONS.md](./CLAUDE_CODE_INSTRUCTIONS.md) - Implementation guide
+- [CLAUDE.md](./CLAUDE.md) - Development philosophy and workflow
+- [.env.example](./.env.example) - Environment configuration template
+
+## 🔧 Available Scripts
+
+```bash
+npm run dev          # Start Vite dev server (http://localhost:3000)
+npm run build        # Production build to dist/
+npm run lint         # Run ESLint (zero-warnings enforced)
+npm run type-check   # TypeScript compilation check
+npx convex dev       # Start Convex backend locally
+npx convex deploy    # Deploy Convex to cloud
+npx playwright test  # Run E2E tests
+```
+
+## 🗄️ Database Schema
+
+Convex provides 28 tables including:
+- **Auth:** users, authSessions, authAccounts
+- **Trips:** trips, tripMembers, locations
+- **Planning:** dayPlans, tripScheduleItems, activities
+- **Weather:** weatherCache, weatherAlerts
+- **Collaboration:** comments, notifications
+
+## 🌐 Deployment
+
+### Vercel (Frontend)
+```bash
+# Connect to Vercel
+npx vercel
+
+# Deploy to production
+npx vercel --prod
+```
+
+### Convex (Backend)
+```bash
+# Deploy backend
+npx convex deploy
+
+# Set environment variables in Convex dashboard
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit changes with descriptive messages
+4. Push to branch (`git push origin feat/amazing-feature`)
 5. Open a Pull Request
+
+### Branch Naming Convention
+- `feat/` - New features
+- `fix/` - Bug fixes
+- `refactor/` - Code improvements
+- `docs/` - Documentation updates
 
 ## 📄 License
 
@@ -129,12 +248,11 @@ MIT License - feel free to use this for your own family trips!
 
 ## 🙏 Acknowledgments
 
-- [OpenStreetMap](https://www.openstreetmap.org/) for free map tiles
+- [Google Maps](https://developers.google.com/maps) for mapping and routing
 - [Anthropic](https://www.anthropic.com/) for Claude AI
-- [Leaflet](https://leafletjs.com/) for map library
-- Malaysia tourism blogs for location research
+- [Convex](https://www.convex.dev/) for real-time backend
+- Travel planning communities for location research
 
 ---
 
-**Safe travels! 🛫🇲🇾**
-# travel-planner
+**Safe travels! 🛫✨**

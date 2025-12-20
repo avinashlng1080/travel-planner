@@ -5,8 +5,9 @@
  * Supports solid and dashed lines for Plan A/B visualization.
  */
 
-import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
+import { useEffect, useRef } from 'react';
+
 import { useGoogleRouting } from '../../hooks/useGoogleRouting';
 
 interface RoutePoint {

@@ -34,9 +34,10 @@
  */
 
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
 import { useState, useCallback } from "react";
+
+import { api } from "../../convex/_generated/api";
+import { type Id } from "../../convex/_generated/dataModel";
 
 interface ToolResult {
   toolName: string;
@@ -78,9 +79,9 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
 
   // Process tool calls from Claude response
   const processToolCalls = useCallback(async (
-    content: Array<{ type: string; name?: string; input?: any }>
+    content: { type: string; name?: string; input?: any }[]
   ): Promise<ToolResult[]> => {
-    if (!tripId) return [];
+    if (!tripId) {return [];}
 
     setState(prev => ({ ...prev, isProcessingTools: true }));
     const results: ToolResult[] = [];
@@ -139,7 +140,7 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
         }
       } catch (error) {
         results.push({
-          toolName: tool.name || "unknown",
+          toolName: tool.name ?? "unknown",
           success: false,
           message: error instanceof Error ? error.message : "Unknown error",
         });
@@ -157,7 +158,7 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
 
   // Build trip context for Claude
   const getTripContext = useCallback(() => {
-    if (!tripData?.trip) return undefined;
+    if (!tripData?.trip) {return undefined;}
 
     return {
       name: tripData.trip.name,
@@ -170,10 +171,10 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
 
   // Build locations array for Claude
   const getTripLocations = useCallback(() => {
-    if (!locations) return [];
+    if (!locations) {return [];}
 
     return locations.map(loc => ({
-      name: loc.customName || "",
+      name: loc.customName ?? "",
       category: loc.customCategory,
       description: loc.customDescription,
       lat: loc.customLat,

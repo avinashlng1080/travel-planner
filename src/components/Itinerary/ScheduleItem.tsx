@@ -1,4 +1,5 @@
 import { Clock, Info, Star, Home, Umbrella, Car, Baby } from 'lucide-react';
+
 import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface ScheduleItemProps {
@@ -108,12 +109,10 @@ export function ScheduleItem({
               {duration}
             </span>
             {location && !item.isNapTime && (
-              <>
-                <span className="inline-flex items-center gap-1 text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+              <span className="inline-flex items-center gap-1 text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                   {location.isIndoor ? <Home className="w-2.5 h-2.5" /> : <Umbrella className="w-2.5 h-2.5" />}
                   {location.isIndoor ? 'Indoor' : 'Outdoor'}
                 </span>
-              </>
             )}
             {item.isFlexible && (
               <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">

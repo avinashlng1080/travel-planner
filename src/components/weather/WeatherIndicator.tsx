@@ -12,15 +12,17 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, CloudOff } from 'lucide-react';
 import { useAtomValue, useSetAtom } from 'jotai';
+import { RefreshCw, CloudOff } from 'lucide-react';
+
 import { AnimatedWeatherIcon } from './WeatherIcon';
-import { useWeather } from '../../hooks/useWeather';
+import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
 import {
   weatherIndicatorVisibleAtom,
   formatTemperatureAtom,
 } from '../../atoms/weatherAtoms';
-import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
+import { useWeather } from '../../hooks/useWeather';
+
 import type { FlashFloodRiskLevel } from '../../types/weather';
 
 const RISK_BORDER_COLORS: Record<FlashFloodRiskLevel, string> = {

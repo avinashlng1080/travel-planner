@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import { sendToClaudeAPI } from '../lib/claude';
 import { getSystemPrompt } from '../lib/prompts';
 
@@ -43,7 +44,7 @@ export function useAIChat() {
   }, [messages]);
 
   const sendMessage = async (content: string): Promise<void> => {
-    if (!content.trim()) return;
+    if (!content.trim()) {return;}
 
     setError(null);
     setLoading(true);

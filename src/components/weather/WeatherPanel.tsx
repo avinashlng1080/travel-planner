@@ -9,6 +9,7 @@
  */
 
 import { motion } from 'framer-motion';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   RefreshCw,
   MapPin,
@@ -18,17 +19,19 @@ import {
   Clock,
   ChevronRight,
 } from 'lucide-react';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { WeatherIcon } from './WeatherIcon';
+
 import { FlashFloodAlert, MalaysiaWeatherTips } from './FlashFloodAlert';
-import { useWeather } from '../../hooks/useWeather';
+import { WeatherIcon } from './WeatherIcon';
 import {
   formatTemperatureAtom,
   setWeatherLocationAtom,
 } from '../../atoms/weatherAtoms';
-import type { ProcessedDailyForecast, WeatherLocation } from '../../types/weather';
-import { RISK_LEVEL_STYLES } from '../../utils/weatherUtils';
+import { useWeather } from '../../hooks/useWeather';
 import { MALAYSIA_WEATHER_LOCATIONS } from '../../types/weather';
+import { RISK_LEVEL_STYLES } from '../../utils/weatherUtils';
+
+import type { ProcessedDailyForecast, WeatherLocation } from '../../types/weather';
+
 
 interface WeatherPanelProps {
   className?: string;
@@ -71,7 +74,7 @@ export function WeatherPanel({ className = '' }: WeatherPanelProps) {
                 const loc = MALAYSIA_WEATHER_LOCATIONS.find(
                   (l) => `${l.lat},${l.lng}` === e.target.value
                 );
-                if (loc) handleLocationChange(loc);
+                if (loc) {handleLocationChange(loc);}
               }}
               className="text-sm font-medium text-slate-700 bg-transparent border-none cursor-pointer hover:text-slate-900 focus:outline-none focus:ring-0"
             >

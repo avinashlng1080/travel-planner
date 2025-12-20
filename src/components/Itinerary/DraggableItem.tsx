@@ -1,8 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { GripVertical } from 'lucide-react';
+
 import { ScheduleItem } from './ScheduleItem';
+
 import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface DraggableItemProps {

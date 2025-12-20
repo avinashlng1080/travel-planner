@@ -1,6 +1,8 @@
 import { Droplets, Wind, Eye, Thermometer } from 'lucide-react';
+
 import { WeatherIcon } from './WeatherIcon';
 import { GlassCard } from '../ui/GlassPanel';
+
 import type { ProcessedCurrentWeather, ProcessedDailyForecast } from '../../types/weather';
 
 interface WeatherCardProps {
@@ -33,7 +35,7 @@ export function WeatherCard({ current, forecast, isLoading, className = '' }: We
 
   // Determine which data to display
   const data = current || forecast;
-  if (!data) return null;
+  if (!data) {return null;}
 
   const isCurrent = 'temperature' in data;
 

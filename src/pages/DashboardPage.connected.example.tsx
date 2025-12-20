@@ -10,14 +10,16 @@
  * 3. Update your routing to use this component
  */
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { api } from '../../convex/_generated/api';
-import { TripCard } from '../components/trips/TripCard';
 import { CreateTripCard } from '../components/trips/CreateTripCard';
+import { TripCard } from '../components/trips/TripCard';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 type FilterTab = 'all' | 'my-trips' | 'shared';
@@ -32,14 +34,9 @@ export function DashboardPage() {
   const tripsData = useQuery(api.trips.getMyTrips);
   const deleteTrip = useMutation(api.trips.deleteTrip);
 
-  // Get member counts for each trip
-  // Note: This could be optimized by creating a single query that returns trips with member counts
-  const getTripMembers = (tripId: Id<'trips'>) => {
-    const members = useQuery(api.tripMembers.getMembers, { tripId });
-    return members?.length ?? 1;
-  };
-
   // Transform trips data for TripCard
+  // Note: Member counts are hardcoded to 1 for now. To get real counts, create a single
+  // optimized query that returns trips with member counts in one call.
   const trips = tripsData?.map(trip => ({
     _id: trip._id,
     name: trip.name,
@@ -47,7 +44,7 @@ export function DashboardPage() {
     startDate: trip.startDate,
     endDate: trip.endDate,
     coverImageUrl: trip.coverImageUrl,
-    memberCount: getTripMembers(trip._id), // This will trigger multiple queries - not ideal
+    memberCount: 1, // TODO: Create optimized query to get real member counts
     role: trip.userRole,
   })) ?? [];
 
@@ -59,7 +56,7 @@ export function DashboardPage() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleSignOut = async () => {
@@ -69,8 +66,8 @@ export function DashboardPage() {
 
   // Filter trips based on active tab
   const filteredTrips = trips.filter((trip) => {
-    if (activeFilter === 'my-trips') return trip.role === 'owner';
-    if (activeFilter === 'shared') return trip.role !== 'owner';
+    if (activeFilter === 'my-trips') {return trip.role === 'owner';}
+    if (activeFilter === 'shared') {return trip.role !== 'owner';}
     return true;
   });
 
@@ -161,7 +158,7 @@ export function DashboardPage() {
 
               <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => { setShowUserMenu(!showUserMenu); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
                   aria-label="User menu"
                 >
@@ -230,19 +227,19 @@ export function DashboardPage() {
             label="All Trips"
             count={trips.length}
             isActive={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
+            onClick={() => { setActiveFilter('all'); }}
           />
           <FilterTab
             label="My Trips"
             count={trips.filter((t) => t.role === 'owner').length}
             isActive={activeFilter === 'my-trips'}
-            onClick={() => setActiveFilter('my-trips')}
+            onClick={() => { setActiveFilter('my-trips'); }}
           />
           <FilterTab
             label="Shared With Me"
             count={trips.filter((t) => t.role !== 'owner').length}
             isActive={activeFilter === 'shared'}
-            onClick={() => setActiveFilter('shared')}
+            onClick={() => { setActiveFilter('shared'); }}
           />
         </div>
 

@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 export interface PlacePrediction {
   placeId: string;
@@ -72,12 +72,12 @@ export function usePlacesAutocomplete(
 
   // Initialize AutocompleteService and PlacesService
   const autocompleteService = useMemo(() => {
-    if (!placesLibrary) return null;
+    if (!placesLibrary) {return null;}
     return new placesLibrary.AutocompleteService();
   }, [placesLibrary]);
 
   const placesService = useMemo(() => {
-    if (!placesLibrary) return null;
+    if (!placesLibrary) {return null;}
     // PlacesService requires a map or div element
     // We create a temporary div for this purpose
     const div = document.createElement('div');
@@ -86,7 +86,7 @@ export function usePlacesAutocomplete(
 
   // Create a new session token when the library loads
   useEffect(() => {
-    if (!placesLibrary) return;
+    if (!placesLibrary) {return;}
     sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
   }, [placesLibrary]);
 

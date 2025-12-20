@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useMutation, useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { api } from '../../convex/_generated/api';
+import { type Id } from '../../convex/_generated/dataModel';
 import { GlassPanel, GlassButton } from '../components/ui/GlassPanel';
-import { Id } from '../../convex/_generated/dataModel';
 
 interface JoinTripPageProps {
   token: string;
@@ -23,7 +24,7 @@ export function JoinTripPage({ token, onSuccess, onCancel }: JoinTripPageProps) 
 
   useEffect(() => {
     // Auto-join on mount
-    joinTrip();
+    void joinTrip();
   }, [token]);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function JoinTripPage({ token, onSuccess, onCancel }: JoinTripPageProps) 
       setTripId(result.tripId);
       setStatus('success');
       // Auto-redirect after 2 seconds
-      setTimeout(() => onSuccess(result.tripId), 2000);
+      setTimeout(() => { onSuccess(result.tripId); }, 2000);
     } catch (error: any) {
       setStatus('error');
 

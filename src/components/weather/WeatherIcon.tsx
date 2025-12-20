@@ -16,6 +16,7 @@ import {
   Snowflake,
   type LucideIcon,
 } from 'lucide-react';
+
 import type { WeatherCondition } from '../../types/weather';
 
 interface WeatherIconProps {

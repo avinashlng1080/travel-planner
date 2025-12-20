@@ -14,7 +14,7 @@ async function checkTripAccess(ctx: any, tripId: any, userId: any) {
     )
     .first();
 
-  if (!membership || membership.status !== "accepted") {
+  if (membership?.status !== "accepted") {
     throw new Error("You don't have access to this trip");
   }
 
@@ -56,7 +56,7 @@ export const getCommentsByTrip = query({
     await checkTripAccess(ctx, args.tripId, userId);
 
     // Get comments for this trip
-    let commentsQuery = ctx.db
+    const commentsQuery = ctx.db
       .query("tripComments")
       .withIndex("by_trip", (q) => q.eq("tripId", args.tripId));
 

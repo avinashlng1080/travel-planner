@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
+import { useEffect, useRef } from 'react';
+
 import type { CommuteResult } from '../../hooks/useCommutes';
 
 interface CommutesRoutingLayerProps {
@@ -30,7 +31,7 @@ export function CommutesRoutingLayer({
   const polylinesRef = useRef<Map<string, google.maps.Polyline>>(new Map());
 
   useEffect(() => {
-    if (!map) return;
+    if (!map) {return;}
 
     // Update or create polylines for each commute
     commutes.forEach((commute, destId) => {
@@ -138,7 +139,7 @@ export function CommuteOriginMarker({
   const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
 
   useEffect(() => {
-    if (!map || !origin) return;
+    if (!map || !origin) {return;}
 
     // Create origin marker with custom styling using safe DOM methods
     const markerContent = createOriginMarkerElement();

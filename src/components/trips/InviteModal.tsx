@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Link2, Pencil, MessageCircle, Eye, Check, Copy, Send, XCircle, RefreshCw, Trash2 } from 'lucide-react';
-import { useQuery, useMutation } from 'convex/react';
+import { useState } from 'react';
+
 import { api } from '../../../convex/_generated/api';
-import type { Id } from '../../../convex/_generated/dataModel';
 import { GlassPanel, GlassInput, GlassButton, GlassBadge } from '../ui/GlassPanel';
+
+import type { Id } from '../../../convex/_generated/dataModel';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -91,7 +93,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
       setSuccessMessage(`Invitation sent to ${email}`);
       setEmail('');
 
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => { setSuccessMessage(''); }, 3000);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to send invitation. Please try again.');
     } finally {
@@ -112,7 +114,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
         });
         setSuccessMessage(`Invitation resent to ${emailToResend}`);
       }
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => { setSuccessMessage(''); }, 3000);
     } catch (error) {
       setErrorMessage('Failed to resend invitation');
     } finally {
@@ -126,7 +128,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
       if (invite) {
         await removeMemberMutation({ tripId, userId: invite.userId });
         setSuccessMessage('Invitation cancelled');
-        setTimeout(() => setSuccessMessage(''), 3000);
+        setTimeout(() => { setSuccessMessage(''); }, 3000);
       }
     } catch (error) {
       setErrorMessage('Failed to cancel invitation');
@@ -154,7 +156,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
       const linkUrl = `${window.location.origin}/join/${result.token}`;
       setGeneratedLink(linkUrl);
       setSuccessMessage('Share link generated');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => { setSuccessMessage(''); }, 3000);
     } catch (error) {
       setErrorMessage('Failed to generate link');
     } finally {
@@ -166,7 +168,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLinkId(linkId);
-      setTimeout(() => setCopiedLinkId(null), 2000);
+      setTimeout(() => { setCopiedLinkId(null); }, 2000);
     } catch (error) {
       setErrorMessage('Failed to copy link');
     }
@@ -183,7 +185,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
       }
 
       setSuccessMessage('Share link revoked');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => { setSuccessMessage(''); }, 3000);
     } catch (error) {
       setErrorMessage('Failed to revoke link');
     }
@@ -196,9 +198,9 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
+    if (minutes < 1) {return 'just now';}
+    if (minutes < 60) {return `${minutes}m ago`;}
+    if (hours < 24) {return `${hours}h ago`;}
     return `${days}d ago`;
   };
 
@@ -208,8 +210,8 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (diff < 0) return 'Expired';
-    if (hours < 24) return `Expires in ${hours}h`;
+    if (diff < 0) {return 'Expired';}
+    if (hours < 24) {return `Expires in ${hours}h`;}
     return `Expires in ${days}d`;
   };
 
@@ -276,7 +278,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                   role="tab"
                   aria-selected={activeTab === 'email'}
                   aria-controls="email-panel"
-                  onClick={() => setActiveTab('email')}
+                  onClick={() => { setActiveTab('email'); }}
                   className={`
                     flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
                     ${activeTab === 'email'
@@ -300,7 +302,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                   role="tab"
                   aria-selected={activeTab === 'link'}
                   aria-controls="link-panel"
-                  onClick={() => setActiveTab('link')}
+                  onClick={() => { setActiveTab('link'); }}
                   className={`
                     flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
                     ${activeTab === 'link'
@@ -359,15 +361,15 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                           type="email"
                           placeholder="colleague@example.com"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={(e) => { setEmail(e.target.value); }}
                           onKeyDown={(e) => e.key === 'Enter' && handleSendInvite()}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-3">
+                        <p className="block text-sm font-medium text-slate-700 mb-3">
                           Role
-                        </label>
+                        </p>
                         <div className="space-y-2">
                           {(Object.keys(roleConfig) as Role[]).map((role) => {
                             const config = roleConfig[role];
@@ -388,7 +390,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                   name="role"
                                   value={role}
                                   checked={selectedRole === role}
-                                  onChange={() => setSelectedRole(role)}
+                                  onChange={() => { setSelectedRole(role); }}
                                   className="sr-only"
                                 />
                                 <div className={`
@@ -491,9 +493,9 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                     {/* Link Generation Section */}
                     <div className="space-y-4 mb-6">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-3">
+                        <p className="block text-sm font-medium text-slate-700 mb-3">
                           Role for link recipients
-                        </label>
+                        </p>
                         <div className="space-y-2">
                           {(Object.keys(roleConfig) as Role[]).map((role) => {
                             const config = roleConfig[role];
@@ -514,7 +516,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                                   name="linkRole"
                                   value={role}
                                   checked={linkRole === role}
-                                  onChange={() => setLinkRole(role)}
+                                  onChange={() => { setLinkRole(role); }}
                                   className="sr-only"
                                 />
                                 <div className={`
@@ -540,12 +542,13 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label htmlFor="link-expiration" className="block text-sm font-medium text-slate-700 mb-2">
                           Link Expiration
                         </label>
                         <select
+                          id="link-expiration"
                           value={expiration}
-                          onChange={(e) => setExpiration(e.target.value as typeof expiration)}
+                          onChange={(e) => { setExpiration(e.target.value as typeof expiration); }}
                           className="w-full bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200"
                         >
                           <option value="never">Never expires</option>
@@ -572,11 +575,12 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                           animate={{ opacity: 1, y: 0 }}
                           className="p-4 bg-sunset-50 rounded-lg border border-sunset-200"
                         >
-                          <label className="block text-xs font-medium text-slate-700 mb-2">
+                          <label htmlFor="generated-link" className="block text-xs font-medium text-slate-700 mb-2">
                             Share this link
                           </label>
                           <div className="flex gap-2">
                             <input
+                              id="generated-link"
                               type="text"
                               value={generatedLink}
                               readOnly
@@ -586,7 +590,7 @@ export function InviteModal({ isOpen, onClose, tripId, tripName }: InviteModalPr
                               variant="default"
                               onClick={() => {
                                 const link = inviteLinks.find(l => generatedLink.includes(l.token));
-                                if (link) handleCopyLink(generatedLink, link._id);
+                                if (link) {handleCopyLink(generatedLink, link._id);}
                               }}
                               className="flex-shrink-0"
                             >

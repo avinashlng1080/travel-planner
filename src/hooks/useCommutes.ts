@@ -212,7 +212,7 @@ export function useCommutes({
 
     // Debounce to avoid too many API calls
     const timeoutId = setTimeout(fetchCommutes, 300);
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [origin.lat, origin.lng, destinations, travelMode, enabled]);
 
   // Calculate total duration

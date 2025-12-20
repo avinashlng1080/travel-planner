@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, MapPin, Car, Bus, Bike, Footprints } from 'lucide-react';
-import { useMutation } from 'convex/react';
+import { useState, useEffect, useRef } from 'react';
+
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { GlassPanel, GlassInput } from '../ui/GlassPanel';
+import { type Id } from '../../../convex/_generated/dataModel';
 import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
+import { GlassPanel, GlassInput } from '../ui/GlassPanel';
 
 export interface EditDestinationModalProps {
   isOpen: boolean;
@@ -40,12 +41,12 @@ interface FormErrors {
 
 type TravelMode = 'DRIVING' | 'TRANSIT' | 'BICYCLING' | 'WALKING';
 
-const TRAVEL_MODES: Array<{
+const TRAVEL_MODES: {
   mode: TravelMode;
   icon: typeof Car;
   label: string;
   description: string;
-}> = [
+}[] = [
   {
     mode: 'DRIVING',
     icon: Car,
@@ -129,7 +130,7 @@ export default function EditDestinationModal({
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen]);
 
@@ -142,7 +143,7 @@ export default function EditDestinationModal({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen]);
 
   // Click outside predictions handler
@@ -157,7 +158,7 @@ export default function EditDestinationModal({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   // Reset selected index when predictions change
@@ -286,7 +287,7 @@ export default function EditDestinationModal({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showPredictions || predictions.length === 0) return;
+    if (!showPredictions || predictions.length === 0) {return;}
 
     switch (e.key) {
       case 'ArrowDown':
@@ -418,7 +419,7 @@ export default function EditDestinationModal({
                       }
                       placeholder="Search for a place..."
                       value={searchQuery}
-                      onChange={(e) => handleSearchChange(e.target.value)}
+                      onChange={(e) => { handleSearchChange(e.target.value); }}
                       onKeyDown={handleKeyDown}
                       onFocus={() => {
                         if (predictions.length > 0) {
@@ -517,7 +518,7 @@ export default function EditDestinationModal({
                         <button
                           key={mode}
                           type="button"
-                          onClick={() => handleTravelModeChange(mode)}
+                          onClick={() => { handleTravelModeChange(mode); }}
                           disabled={isSubmitting}
                           className={`
                             flex flex-col items-center justify-center
@@ -565,7 +566,7 @@ export default function EditDestinationModal({
                     type="text"
                     placeholder="e.g., Restaurant, Shopping, Attraction"
                     value={formData.category}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    onChange={(e) => { handleCategoryChange(e.target.value); }}
                     disabled={isSubmitting}
                   />
                   <p className="mt-1 text-xs text-slate-500">

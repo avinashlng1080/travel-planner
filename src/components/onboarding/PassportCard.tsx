@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAtom } from 'jotai';
+import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+
 import { stampsAtom, isPassportExpandedAtom, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { PassportStamp } from './PassportStamp';
 
 /**
@@ -40,7 +42,7 @@ export function PassportCard() {
         {/* Collapsed view - just badge */}
         {!isPassportExpanded && (
           <button
-            onClick={() => setPassportExpanded(true)}
+            onClick={() => { setPassportExpanded(true); }}
             className="flex items-center gap-2 px-4 py-2 min-h-[44px]"
             aria-label={`Passport: ${stamps.length} stamps earned. Click to expand.`}
           >
@@ -68,7 +70,7 @@ export function PassportCard() {
                   </h3>
                 </div>
                 <button
-                  onClick={() => setPassportExpanded(false)}
+                  onClick={() => { setPassportExpanded(false); }}
                   className="p-2 rounded-full hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Collapse passport"
                 >
@@ -116,7 +118,7 @@ export function PassportCard() {
       {isPassportExpanded && (
         <div
           className="fixed inset-0 -z-10"
-          onClick={() => setPassportExpanded(false)}
+          onClick={() => { setPassportExpanded(false); }}
         />
       )}
     </motion.div>

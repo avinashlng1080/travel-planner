@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, BookOpen, Sparkles, PartyPopper } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Check, BookOpen, Sparkles, PartyPopper } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { stampsAtom, completeOnboardingAtom, STEP_CONFIGS, FALLBACK_MESSAGES } from '@/atoms/onboardingAtoms';
+
 import { PassportStamp } from '../PassportStamp';
 
 /**
@@ -18,8 +20,8 @@ export function JourneyCompleteStep() {
 
   // Progress through celebration phases
   useEffect(() => {
-    const timer1 = setTimeout(() => setPhase('message'), 2000);
-    const timer2 = setTimeout(() => setShowConfetti(false), 3000);
+    const timer1 = setTimeout(() => { setPhase('message'); }, 2000);
+    const timer2 = setTimeout(() => { setShowConfetti(false); }, 3000);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);

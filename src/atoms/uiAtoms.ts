@@ -1,7 +1,9 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import type { Location } from '../data/tripData';
+
 import { markInteractionAtom } from './onboardingAtoms';
+
+import type { Location } from '../data/tripData';
 import type { TravelMode } from '../hooks/useCommutes';
 
 // Dynamic pin created by AI chat

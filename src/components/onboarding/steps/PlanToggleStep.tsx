@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
+
 import { hasToggledPlanAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**

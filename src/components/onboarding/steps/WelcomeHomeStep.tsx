@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
 import { useSetAtom } from 'jotai';
+import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
 import { advanceToNextStepAtom, skipOnboardingAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -35,7 +37,7 @@ export function WelcomeHomeStep() {
       }
     }, 25);
 
-    return () => clearInterval(typeInterval);
+    return () => { clearInterval(typeInterval); };
   }, []);
 
   return (

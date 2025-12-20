@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreVertical, Share2, Trash2, Calendar, Users, Crown, Edit, Eye, MessageSquare } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface TripCardProps {
@@ -26,12 +27,12 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current !== null && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   // Format date range nicely
@@ -89,7 +90,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
       whileHover={{ y: -4 }}
     >
       <button
-        onClick={() => onOpen(trip._id)}
+        onClick={() => { onOpen(trip._id); }}
         className="relative w-full h-full bg-white/95 backdrop-blur-xl border border-slate-200/50 hover:border-slate-300 rounded-2xl overflow-hidden transition-all duration-200 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50 text-left"
         aria-label={`Open trip: ${trip.name}`}
       >

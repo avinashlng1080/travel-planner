@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+
 import { GlassPanel } from '../ui/GlassPanel';
 
 export interface DeleteDestinationDialogProps {
@@ -26,7 +27,7 @@ export default function DeleteDestinationDialog({
       const timer = setTimeout(() => {
         cancelButtonRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen]);
 
@@ -39,7 +40,7 @@ export default function DeleteDestinationDialog({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen, isDeleting, onClose]);
 
   const handleConfirm = async () => {
