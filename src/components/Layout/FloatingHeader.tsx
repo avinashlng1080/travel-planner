@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useSetAtom } from 'jotai';
+import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 
 interface FloatingHeaderProps {
@@ -22,6 +24,7 @@ export function FloatingHeader({
 }: FloatingHeaderProps) {
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;
   const { signOut } = useAuthActions();
+  const openPanel = useSetAtom(openPanelAtom);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -113,7 +116,11 @@ export function FloatingHeader({
 
         {/* Right: User and Settings */}
         <div className="flex items-center gap-2">
-          <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]">
+          <button
+            onClick={() => openPanel('settings')}
+            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
+            aria-label="Open settings"
+          >
             <Settings className="w-5 h-5" />
           </button>
 

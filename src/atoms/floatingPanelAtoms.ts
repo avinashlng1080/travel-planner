@@ -9,7 +9,7 @@ interface PanelState {
 }
 
 // All available floating panels
-export type PanelId = 'tripPlanner' | 'days' | 'checklist' | 'filters' | 'suggestions' | 'alerts' | 'itinerary' | 'collaboration' | 'weather';
+export type PanelId = 'tripPlanner' | 'days' | 'checklist' | 'filters' | 'suggestions' | 'alerts' | 'itinerary' | 'collaboration' | 'weather' | 'settings';
 
 // Helper function to get viewport-aware default position
 const getDefaultPosition = (preferredX: number, preferredY: number): { x: number; y: number } => {
@@ -85,9 +85,15 @@ const DEFAULT_PANELS: Record<PanelId, PanelState> = {
     position: getDefaultPosition(70, 300),
     zIndex: 8,
   },
+  settings: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(400, 120),
+    zIndex: 9,
+  },
 };
 
-const INITIAL_Z_INDEX = 8;
+const INITIAL_Z_INDEX = 9;
 
 // Storage atom for persisting positions only
 const panelsStorageAtom = atomWithStorage<Record<PanelId, Partial<PanelState>>>(
