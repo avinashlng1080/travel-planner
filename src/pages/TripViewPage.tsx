@@ -152,55 +152,15 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     }
   }, [tripData, selectedPlanId]);
 
-  // Loading state
-  if (tripData === undefined) {
-    return (
-      <div className="h-screen overflow-hidden bg-white font-['DM_Sans'] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <MapPin className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-slate-600">Loading trip...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state - trip not found
-  if (!tripData) {
-    return (
-      <div className="h-screen overflow-hidden bg-white font-['DM_Sans'] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <MapPin className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">Trip Not Found</h2>
-          <p className="text-slate-600 mb-6">
-            This trip doesn't exist or you don't have access to it.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const { trip, members } = tripData;
-
-  // Calculate current day and total days for FloatingHeader
-  const currentDay = tripData ? Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
-  const totalDays = tripData ? Math.floor((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
-
-  // Get user's role from members (needed for ActivityDetailPanel)
-  const currentMember = members.find((m) => m.status === 'accepted');
-  const userRole = currentMember?.role || 'viewer';
-
-  // Transform tripLocations to Location format for map
-  const mapLocations: Location[] =
-    tripLocations?.map((loc) => ({
+  // Transform tripLocations to Location format for map (must be before early returns - hooks rule)
+  const mapLocations: Location[] = useMemo(() => {
+    if (!tripLocations) {return [];}
+    return tripLocations.map((loc) => ({
       id: loc._id,
       name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
       lat: loc.customLat || loc.baseLocation?.lat || 0,
       lng: loc.customLng || loc.baseLocation?.lng || 0,
-      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
+      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as Location['category'],
       description: loc.customDescription || loc.baseLocation?.description || '',
       city: loc.baseLocation?.city || 'Malaysia',
       toddlerRating: loc.baseLocation?.toddlerRating || 3,
@@ -220,12 +180,13 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       address: loc.baseLocation?.address,
       entranceFee: loc.baseLocation?.entranceFee,
       dressCode: loc.baseLocation?.dressCode,
-    })) || [];
+    }));
+  }, [tripLocations]);
 
   // Get all categories for filtering
-  const visibleCategories = Array.from(
-    new Set(mapLocations.map((loc) => loc.category))
-  );
+  const visibleCategories = useMemo(() => {
+    return Array.from(new Set(mapLocations.map((loc) => loc.category)));
+  }, [mapLocations]);
 
   // Derive commute origin from trip data (use first location with 'home-base' category or first location)
   const commuteOrigin = useMemo(() => {
@@ -271,6 +232,47 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     travelMode,
     enabled: commutesPanelOpen && commuteDestinationsForHook.length > 0,
   });
+
+  // Loading state
+  if (tripData === undefined) {
+    return (
+      <div className="h-screen overflow-hidden bg-white font-['DM_Sans'] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <MapPin className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-slate-600">Loading trip...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state - trip not found
+  if (!tripData) {
+    return (
+      <div className="h-screen overflow-hidden bg-white font-['DM_Sans'] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Trip Not Found</h2>
+          <p className="text-slate-600 mb-6">
+            This trip doesn't exist or you don't have access to it.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { trip, members } = tripData;
+
+  // Calculate current day and total days for FloatingHeader
+  const currentDay = Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const totalDays = Math.floor((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  // Get user's role from members (needed for ActivityDetailPanel)
+  const currentMember = members.find((m) => m.status === 'accepted');
+  const userRole = currentMember?.role || 'viewer';
 
   // Handler for deleting a destination
   const handleDeleteDestination = async () => {
