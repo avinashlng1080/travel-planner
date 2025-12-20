@@ -15,7 +15,7 @@ export function MobileNavBar() {
 
   const navItems: NavItem[] = [
     { id: 'tripPlanner', icon: Map, label: 'Plan' },
-    { id: 'tripPlanner', icon: Calendar, label: 'Days' },
+    { id: 'days', icon: Calendar, label: 'Days' },
     { id: 'checklist', icon: CheckSquare, label: 'Tasks' },
     { id: 'collaboration', icon: Lightbulb, label: 'Tips' },
     { id: 'filters', icon: Filter, label: 'Filters' },
