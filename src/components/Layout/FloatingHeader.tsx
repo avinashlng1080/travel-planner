@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft, Activity } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { GlassBadge } from '../ui/GlassPanel';
+import { UserContextPanel } from '../floating/UserContextPanel';
 
 interface FloatingHeaderProps {
   currentDay: number;
@@ -23,6 +24,7 @@ export function FloatingHeader({
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;
   const { signOut } = useAuthActions();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showContextPanel, setShowContextPanel] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -113,6 +115,14 @@ export function FloatingHeader({
 
         {/* Right: User and Settings */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowContextPanel(!showContextPanel)}
+            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
+            aria-label="User context"
+          >
+            <Activity className="w-5 h-5" />
+          </button>
+
           <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]">
             <Settings className="w-5 h-5" />
           </button>
@@ -146,6 +156,9 @@ export function FloatingHeader({
           </div>
         </div>
       </div>
+
+      {/* User Context Panel */}
+      <UserContextPanel isOpen={showContextPanel} onClose={() => setShowContextPanel(false)} />
     </header>
   );
 }
