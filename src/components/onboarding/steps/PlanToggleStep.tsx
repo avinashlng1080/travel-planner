@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
 import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
-import { hasToggledPlanAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import {
+  hasToggledPlanAtom,
+  advanceToNextStepAtom,
+  FALLBACK_MESSAGES,
+  STEP_CONFIGS,
+} from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -14,7 +19,7 @@ export function PlanToggleStep() {
   const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
-  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'plans') + 1;
+  const stepNumber = STEP_CONFIGS.findIndex((c) => c.step === 'plans') + 1;
 
   return (
     <>
@@ -42,12 +47,8 @@ export function PlanToggleStep() {
               <Route className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display font-bold text-slate-900 mb-1">
-                Plan A & Plan B
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {FALLBACK_MESSAGES.plans}
-              </p>
+              <h3 className="font-display font-bold text-slate-900 mb-1">Plan A & Plan B</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">{FALLBACK_MESSAGES.plans}</p>
             </div>
           </div>
 
@@ -101,7 +102,13 @@ export function PlanToggleStep() {
           transition={{ duration: 1, repeat: Infinity }}
           className="flex flex-col items-center"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-sunset-500 rotate-90">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="text-sunset-500 rotate-90"
+          >
             <path
               d="M5 12H19M19 12L12 5M19 12L12 19"
               stroke="currentColor"
@@ -111,9 +118,7 @@ export function PlanToggleStep() {
             />
           </svg>
           <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg mt-2">
-            <span className="text-sm font-medium text-slate-700">
-              Find the toggle here
-            </span>
+            <span className="text-sm font-medium text-slate-700">Find the toggle here</span>
           </div>
         </motion.div>
       </motion.div>

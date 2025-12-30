@@ -45,9 +45,10 @@ export function MobileNavBar() {
                 min-w-[48px] min-h-[48px] px-1.5 py-1.5
                 rounded-lg transition-all duration-200
                 focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 focus:ring-offset-white
-                ${isActive
-                  ? 'text-sunset-600 bg-sunset-50'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 active:scale-95'
+                ${
+                  isActive
+                    ? 'text-sunset-600 bg-sunset-50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 active:scale-95'
                 }
               `}
               aria-label={`${item.label}${isActive ? ' (active)' : ''}`}
@@ -55,9 +56,7 @@ export function MobileNavBar() {
               aria-current={isActive ? 'page' : undefined}
             >
               <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-              <span className="text-[9px] font-medium mt-0.5 leading-tight">
-                {item.label}
-              </span>
+              <span className="text-[9px] font-medium mt-0.5 leading-tight">{item.label}</span>
             </button>
           );
         })}

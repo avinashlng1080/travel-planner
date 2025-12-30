@@ -37,15 +37,12 @@ interface DayRouteResult {
 export function useDayRoute(
   tripId: Id<'trips'> | null,
   planId: Id<'tripPlans'> | null,
-  _activePlan: 'A' | 'B'  // Prefixed with _ to indicate intentionally unused (reserved for future use)
+  _activePlan: 'A' | 'B' // Prefixed with _ to indicate intentionally unused (reserved for future use)
 ): DayRouteResult {
   const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   // Fetch trip locations
-  const tripLocations = useQuery(
-    api.tripLocations.getLocations,
-    tripId ? { tripId } : 'skip'
-  );
+  const tripLocations = useQuery(api.tripLocations.getLocations, tripId ? { tripId } : 'skip');
 
   // Fetch schedule items for selected plan
   const scheduleItems = useQuery(
@@ -59,9 +56,7 @@ export function useDayRoute(
 
     if (selectedDayId && scheduleItems && tripLocations) {
       // Filter schedule items by selected day
-      const dayScheduleItems = scheduleItems.filter(
-        (item) => item.dayDate === selectedDayId
-      );
+      const dayScheduleItems = scheduleItems.filter((item) => item.dayDate === selectedDayId);
 
       // Sort by order (or start time if order is the same)
       const sortedItems = dayScheduleItems.sort((a, b) => {
@@ -88,13 +83,10 @@ export function useDayRoute(
   }, [selectedDayId, scheduleItems, tripLocations]);
 
   // Fetch real road route using existing useRouting hook
-  const {
-    coordinates,
-    distance,
-    duration,
-    isLoading,
-    error,
-  } = useRouting(waypoints, waypoints.length >= 2);
+  const { coordinates, distance, duration, isLoading, error } = useRouting(
+    waypoints,
+    waypoints.length >= 2
+  );
 
   return {
     route: coordinates,

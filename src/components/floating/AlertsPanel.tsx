@@ -2,7 +2,13 @@ import { AlertTriangle } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import {
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 export function AlertsPanel() {

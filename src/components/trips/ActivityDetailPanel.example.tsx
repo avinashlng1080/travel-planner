@@ -14,18 +14,23 @@ import type { Id } from '../../../convex/_generated/dataModel';
 
 // Example integration in TripViewPage.tsx:
 
-export function TripViewPageExample({ planId, userRole }: {
+export function TripViewPageExample({
+  planId,
+  userRole,
+}: {
   planId: Id<'tripPlans'>;
   userRole: 'owner' | 'editor' | 'commenter' | 'viewer';
 }) {
   // State for selected activity
-  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(null);
+  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(
+    null
+  );
 
   // Fetch all schedule items for the plan
   const scheduleItems = useQuery(api.tripScheduleItems.getScheduleItems, { planId });
 
   // Find the selected activity from the schedule items
-  const selectedActivity = scheduleItems?.find(item => item._id === selectedActivityId) || null;
+  const selectedActivity = scheduleItems?.find((item) => item._id === selectedActivityId) || null;
 
   // Location is already included in the schedule item response from Convex
   const location = selectedActivity?.location || undefined;
@@ -77,12 +82,16 @@ export function TripViewPageExample({ planId, userRole }: {
         isOpen={!!selectedActivityId}
         onClose={() => setSelectedActivityId(null)}
         activity={selectedActivity || null}
-        location={location ? {
-          name: location.name,
-          lat: location.lat,
-          lng: location.lng,
-          category: location.category,
-        } : undefined}
+        location={
+          location
+            ? {
+                name: location.name,
+                lat: location.lat,
+                lng: location.lng,
+                category: location.category,
+              }
+            : undefined
+        }
         userRole={userRole}
         onEdit={handleEdit}
         onDelete={handleDelete}

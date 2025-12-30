@@ -130,27 +130,44 @@ export default function SafetyPanel() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Hydration:</strong> Carry water bottle at all times. Tropical heat causes rapid dehydration.</span>
+                <span className="text-sm">
+                  <strong>Hydration:</strong> Carry water bottle at all times. Tropical heat causes
+                  rapid dehydration.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Sun Protection:</strong> Apply sunscreen (SPF 30+) every 2 hours. Use hat and lightweight long sleeves.</span>
+                <span className="text-sm">
+                  <strong>Sun Protection:</strong> Apply sunscreen (SPF 30+) every 2 hours. Use hat
+                  and lightweight long sleeves.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Mosquitoes:</strong> Use DEET 20%+ repellent. Dengue fever risk in Malaysia.</span>
+                <span className="text-sm">
+                  <strong>Mosquitoes:</strong> Use DEET 20%+ repellent. Dengue fever risk in
+                  Malaysia.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Food Safety:</strong> Bottled water only. Avoid ice unless from reputable hotels.</span>
+                <span className="text-sm">
+                  <strong>Food Safety:</strong> Bottled water only. Avoid ice unless from reputable
+                  hotels.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Crowds:</strong> Use baby carrier in crowded places. Keep ID on child.</span>
+                <span className="text-sm">
+                  <strong>Crowds:</strong> Use baby carrier in crowded places. Keep ID on child.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Nap Schedule:</strong> Prioritize naps. Overtired toddlers get sick easier.</span>
+                <span className="text-sm">
+                  <strong>Nap Schedule:</strong> Prioritize naps. Overtired toddlers get sick
+                  easier.
+                </span>
               </li>
             </ul>
           </div>

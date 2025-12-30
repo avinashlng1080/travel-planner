@@ -1,6 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreVertical, Share2, Trash2, Calendar, Users, Crown, Edit, Eye, MessageSquare } from 'lucide-react';
+import {
+  MoreVertical,
+  Share2,
+  Trash2,
+  Calendar,
+  Users,
+  Crown,
+  Edit,
+  Eye,
+  MessageSquare,
+} from 'lucide-react';
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface TripCardProps {
@@ -102,7 +112,9 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             />
           ) : (
-            <div className={`w-full h-full bg-gradient-to-br ${gradients[gradientIndex]} transition-transform duration-300 group-hover:scale-110`}>
+            <div
+              className={`w-full h-full bg-gradient-to-br ${gradients[gradientIndex]} transition-transform duration-300 group-hover:scale-110`}
+            >
               <div className="absolute inset-0 bg-black/10" />
             </div>
           )}
@@ -112,12 +124,17 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
 
           {/* Role Badge - Top Left */}
           <div className="absolute top-3 left-3">
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 backdrop-blur-sm border ${
-              roleBadge.color === 'sunset' ? 'border-sunset-200 text-sunset-700' :
-              roleBadge.color === 'blue' ? 'border-blue-200 text-blue-700' :
-              roleBadge.color === 'purple' ? 'border-purple-200 text-purple-700' :
-              'border-slate-200 text-slate-700'
-            }`}>
+            <div
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 backdrop-blur-sm border ${
+                roleBadge.color === 'sunset'
+                  ? 'border-sunset-200 text-sunset-700'
+                  : roleBadge.color === 'blue'
+                    ? 'border-blue-200 text-blue-700'
+                    : roleBadge.color === 'purple'
+                      ? 'border-purple-200 text-purple-700'
+                      : 'border-slate-200 text-slate-700'
+              }`}
+            >
               <RoleIcon className="w-3 h-3" />
               {roleBadge.label}
             </div>
@@ -154,9 +171,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
 
           {/* Description */}
           {trip.description && (
-            <p className="text-sm text-slate-600 line-clamp-2 mb-3">
-              {trip.description}
-            </p>
+            <p className="text-sm text-slate-600 line-clamp-2 mb-3">{trip.description}</p>
           )}
 
           {/* Date Range */}
@@ -213,7 +228,11 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`Are you sure you want to delete "${trip.name}"? This action cannot be undone.`)) {
+                        if (
+                          confirm(
+                            `Are you sure you want to delete "${trip.name}"? This action cannot be undone.`
+                          )
+                        ) {
                           onDelete(trip._id);
                         }
                         setShowMenu(false);

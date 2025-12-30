@@ -75,7 +75,9 @@ export function Avatar({ name, imageUrl, size = 'md', className = '' }: AvatarPr
           }}
         />
       ) : (
-        <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}>
+        <div
+          className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}
+        >
           {initials}
         </div>
       )}

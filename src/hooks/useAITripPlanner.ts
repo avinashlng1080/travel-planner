@@ -33,10 +33,10 @@
  * ```
  */
 
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
-import { useState, useCallback } from "react";
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { Id } from '../../convex/_generated/dataModel';
+import { useState, useCallback } from 'react';
 
 interface ToolResult {
   toolName: string;
@@ -51,7 +51,7 @@ interface AITripPlannerState {
   lastToolResults: ToolResult[];
 }
 
-export function useAITripPlanner(tripId?: Id<"trips">) {
+export function useAITripPlanner(tripId?: Id<'trips'>) {
   // State for tool processing
   const [state, setState] = useState<AITripPlannerState>({
     isProcessingTools: false,
@@ -65,95 +65,91 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
   const deleteItems = useMutation(api.tripScheduleItems.deleteMultipleScheduleItems);
 
   // Get trip data for context
-  const tripData = useQuery(
-    api.trips.getTripWithDetails,
-    tripId ? { tripId } : "skip"
-  );
+  const tripData = useQuery(api.trips.getTripWithDetails, tripId ? { tripId } : 'skip');
 
   // Get existing locations for context
-  const locations = useQuery(
-    api.tripLocations.getLocations,
-    tripId ? { tripId } : "skip"
-  );
+  const locations = useQuery(api.tripLocations.getLocations, tripId ? { tripId } : 'skip');
 
   // Process tool calls from Claude response
-  const processToolCalls = useCallback(async (
-    content: Array<{ type: string; name?: string; input?: any }>
-  ): Promise<ToolResult[]> => {
-    if (!tripId) return [];
+  const processToolCalls = useCallback(
+    async (content: Array<{ type: string; name?: string; input?: any }>): Promise<ToolResult[]> => {
+      if (!tripId) return [];
 
-    setState(prev => ({ ...prev, isProcessingTools: true }));
-    const results: ToolResult[] = [];
+      setState((prev) => ({ ...prev, isProcessingTools: true }));
+      const results: ToolResult[] = [];
 
-    const toolCalls = content.filter(
-      (block) => block.type === "tool_use" &&
-      (block.name === "add_trip_locations" || block.name === "create_itinerary")
-    );
+      const toolCalls = content.filter(
+        (block) =>
+          block.type === 'tool_use' &&
+          (block.name === 'add_trip_locations' || block.name === 'create_itinerary')
+      );
 
-    for (const tool of toolCalls) {
-      try {
-        if (tool.name === "add_trip_locations" && tool.input?.locations) {
-          const createdIds = await addLocations({
-            tripId,
-            locations: tool.input.locations,
-          });
-
-          results.push({
-            toolName: "add_trip_locations",
-            success: true,
-            message: `Added ${createdIds.length} locations to your trip`,
-            createdIds: createdIds.map(id => id.toString()),
-            undoAction: async () => {
-              await removeLocations({ locationIds: createdIds });
-            },
-          });
-        }
-
-        if (tool.name === "create_itinerary" && tool.input?.days) {
-          // Get the default plan (Plan A)
-          const defaultPlan = tripData?.plans?.find(p => p.order === 0);
-          if (!defaultPlan) {
-            results.push({
-              toolName: "create_itinerary",
-              success: false,
-              message: "No plan found to add itinerary to",
+      for (const tool of toolCalls) {
+        try {
+          if (tool.name === 'add_trip_locations' && tool.input?.locations) {
+            const createdIds = await addLocations({
+              tripId,
+              locations: tool.input.locations,
             });
-            continue;
+
+            results.push({
+              toolName: 'add_trip_locations',
+              success: true,
+              message: `Added ${createdIds.length} locations to your trip`,
+              createdIds: createdIds.map((id) => id.toString()),
+              undoAction: async () => {
+                await removeLocations({ locationIds: createdIds });
+              },
+            });
           }
 
-          const createdIds = await createItinerary({
-            tripId,
-            planId: defaultPlan._id,
-            days: tool.input.days,
-          });
+          if (tool.name === 'create_itinerary' && tool.input?.days) {
+            // Get the default plan (Plan A)
+            const defaultPlan = tripData?.plans?.find((p) => p.order === 0);
+            if (!defaultPlan) {
+              results.push({
+                toolName: 'create_itinerary',
+                success: false,
+                message: 'No plan found to add itinerary to',
+              });
+              continue;
+            }
 
+            const createdIds = await createItinerary({
+              tripId,
+              planId: defaultPlan._id,
+              days: tool.input.days,
+            });
+
+            results.push({
+              toolName: 'create_itinerary',
+              success: true,
+              message: `Created itinerary with ${createdIds.length} activities`,
+              createdIds: createdIds.map((id) => id.toString()),
+              undoAction: async () => {
+                await deleteItems({ itemIds: createdIds });
+              },
+            });
+          }
+        } catch (error) {
           results.push({
-            toolName: "create_itinerary",
-            success: true,
-            message: `Created itinerary with ${createdIds.length} activities`,
-            createdIds: createdIds.map(id => id.toString()),
-            undoAction: async () => {
-              await deleteItems({ itemIds: createdIds });
-            },
+            toolName: tool.name || 'unknown',
+            success: false,
+            message: error instanceof Error ? error.message : 'Unknown error',
           });
         }
-      } catch (error) {
-        results.push({
-          toolName: tool.name || "unknown",
-          success: false,
-          message: error instanceof Error ? error.message : "Unknown error",
-        });
       }
-    }
 
-    setState(prev => ({
-      ...prev,
-      isProcessingTools: false,
-      lastToolResults: results,
-    }));
+      setState((prev) => ({
+        ...prev,
+        isProcessingTools: false,
+        lastToolResults: results,
+      }));
 
-    return results;
-  }, [tripId, addLocations, removeLocations, createItinerary, deleteItems, tripData]);
+      return results;
+    },
+    [tripId, addLocations, removeLocations, createItinerary, deleteItems, tripData]
+  );
 
   // Build trip context for Claude
   const getTripContext = useCallback(() => {
@@ -172,8 +168,8 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
   const getTripLocations = useCallback(() => {
     if (!locations) return [];
 
-    return locations.map(loc => ({
-      name: loc.customName || "",
+    return locations.map((loc) => ({
+      name: loc.customName || '',
       category: loc.customCategory,
       description: loc.customDescription,
       lat: loc.customLat,
@@ -183,7 +179,7 @@ export function useAITripPlanner(tripId?: Id<"trips">) {
 
   // Clear last results
   const clearResults = useCallback(() => {
-    setState(prev => ({ ...prev, lastToolResults: [] }));
+    setState((prev) => ({ ...prev, lastToolResults: [] }));
   }, []);
 
   return {

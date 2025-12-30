@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
+import {
+  X,
+  MapPin,
+  Clock,
+  DollarSign,
+  Car,
+  Star,
+  AlertTriangle,
+  Lightbulb,
+  ExternalLink,
+  Sparkles,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
 import { AddToPlanModal } from '../ui/AddToPlanModal';
@@ -10,15 +21,24 @@ interface RightDetailPanelProps {
   days: DayPlan[];
   selectedDayId: string | null;
   onClose: () => void;
-  onAddToPlan: (planType: 'A' | 'B', details: {
-    dayId: string;
-    startTime: string;
-    endTime: string;
-    notes?: string;
-  }) => void;
+  onAddToPlan: (
+    planType: 'A' | 'B',
+    details: {
+      dayId: string;
+      startTime: string;
+      endTime: string;
+      notes?: string;
+    }
+  ) => void;
 }
 
-export function RightDetailPanel({ location, days, selectedDayId, onClose, onAddToPlan }: RightDetailPanelProps) {
+export function RightDetailPanel({
+  location,
+  days,
+  selectedDayId,
+  onClose,
+  onAddToPlan,
+}: RightDetailPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlanType, setSelectedPlanType] = useState<'A' | 'B'>('A');
 
@@ -171,7 +191,10 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               </div>
               <ul className="space-y-1">
                 {location.warnings.map((warning, i) => (
-                  <li key={`${location.id}-warning-${i}-${warning.slice(0, 20)}`} className="text-xs text-red-200/80 flex items-start gap-2">
+                  <li
+                    key={`${location.id}-warning-${i}-${warning.slice(0, 20)}`}
+                    className="text-xs text-red-200/80 flex items-start gap-2"
+                  >
                     <span className="text-red-400">•</span>
                     {warning}
                   </li>
@@ -189,7 +212,10 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
               </div>
               <ul className="space-y-1">
                 {location.tips.map((tip, i) => (
-                  <li key={`${location.id}-tip-${i}-${tip.slice(0, 20)}`} className="text-xs text-green-200/80 flex items-start gap-2">
+                  <li
+                    key={`${location.id}-tip-${i}-${tip.slice(0, 20)}`}
+                    className="text-xs text-green-200/80 flex items-start gap-2"
+                  >
                     <span className="text-green-400">•</span>
                     {tip}
                   </li>
@@ -231,9 +257,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
             <GlassBadge color={location.isIndoor ? 'blue' : 'green'}>
               {location.isIndoor ? 'Indoor' : 'Outdoor'}
             </GlassBadge>
-            {location.bookingRequired && (
-              <GlassBadge color="amber">Booking Required</GlassBadge>
-            )}
+            {location.bookingRequired && <GlassBadge color="amber">Booking Required</GlassBadge>}
           </div>
         </div>
 

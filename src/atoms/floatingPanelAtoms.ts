@@ -9,7 +9,14 @@ interface PanelState {
 }
 
 // All available floating panels
-export type PanelId = 'tripPlanner' | 'days' | 'checklist' | 'filters' | 'suggestions' | 'alerts' | 'itinerary';
+export type PanelId =
+  | 'tripPlanner'
+  | 'days'
+  | 'checklist'
+  | 'filters'
+  | 'suggestions'
+  | 'alerts'
+  | 'itinerary';
 
 // Helper function to get viewport-aware default position
 const getDefaultPosition = (preferredX: number, preferredY: number): { x: number; y: number } => {
@@ -99,7 +106,7 @@ const initializePanels = (): Record<PanelId, PanelState> => {
     if (storedData) {
       stored = JSON.parse(storedData);
     }
-  } catch (_e) {
+  } catch {
     // Ignore localStorage errors
   }
 
@@ -146,54 +153,45 @@ export const nextZIndexAtom = atom(
 );
 
 // Helper atoms for common operations
-export const openPanelAtom = atom(
-  null,
-  (get, set, panelId: PanelId) => {
-    const panels = get(panelsAtom);
-    const currentZIndex = get(nextZIndexAtom);
+export const openPanelAtom = atom(null, (get, set, panelId: PanelId) => {
+  const panels = get(panelsAtom);
+  const currentZIndex = get(nextZIndexAtom);
 
-    set(panelsAtom, {
-      ...panels,
-      [panelId]: {
-        ...panels[panelId],
-        isOpen: true,
-        isMinimized: false,
-        zIndex: currentZIndex,
-      },
-    });
-    set(nextZIndexAtom, currentZIndex + 1);
-  }
-);
+  set(panelsAtom, {
+    ...panels,
+    [panelId]: {
+      ...panels[panelId],
+      isOpen: true,
+      isMinimized: false,
+      zIndex: currentZIndex,
+    },
+  });
+  set(nextZIndexAtom, currentZIndex + 1);
+});
 
-export const closePanelAtom = atom(
-  null,
-  (get, set, panelId: PanelId) => {
-    const panels = get(panelsAtom);
+export const closePanelAtom = atom(null, (get, set, panelId: PanelId) => {
+  const panels = get(panelsAtom);
 
-    set(panelsAtom, {
-      ...panels,
-      [panelId]: {
-        ...panels[panelId],
-        isOpen: false,
-      },
-    });
-  }
-);
+  set(panelsAtom, {
+    ...panels,
+    [panelId]: {
+      ...panels[panelId],
+      isOpen: false,
+    },
+  });
+});
 
-export const toggleMinimizeAtom = atom(
-  null,
-  (get, set, panelId: PanelId) => {
-    const panels = get(panelsAtom);
+export const toggleMinimizeAtom = atom(null, (get, set, panelId: PanelId) => {
+  const panels = get(panelsAtom);
 
-    set(panelsAtom, {
-      ...panels,
-      [panelId]: {
-        ...panels[panelId],
-        isMinimized: !panels[panelId].isMinimized,
-      },
-    });
-  }
-);
+  set(panelsAtom, {
+    ...panels,
+    [panelId]: {
+      ...panels[panelId],
+      isMinimized: !panels[panelId].isMinimized,
+    },
+  });
+});
 
 export const updatePositionAtom = atom(
   null,
@@ -211,19 +209,16 @@ export const updatePositionAtom = atom(
   }
 );
 
-export const bringToFrontAtom = atom(
-  null,
-  (get, set, panelId: PanelId) => {
-    const panels = get(panelsAtom);
-    const currentZIndex = get(nextZIndexAtom);
+export const bringToFrontAtom = atom(null, (get, set, panelId: PanelId) => {
+  const panels = get(panelsAtom);
+  const currentZIndex = get(nextZIndexAtom);
 
-    set(panelsAtom, {
-      ...panels,
-      [panelId]: {
-        ...panels[panelId],
-        zIndex: currentZIndex,
-      },
-    });
-    set(nextZIndexAtom, currentZIndex + 1);
-  }
-);
+  set(panelsAtom, {
+    ...panels,
+    [panelId]: {
+      ...panels[panelId],
+      zIndex: currentZIndex,
+    },
+  });
+  set(nextZIndexAtom, currentZIndex + 1);
+});

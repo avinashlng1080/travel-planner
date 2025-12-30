@@ -22,10 +22,7 @@ import { MobileNavBar } from '../components/Layout/MobileNavBar';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { FullScreenMap } from '../components/Map/FullScreenMap';
-import {
-  ChecklistFloatingPanel,
-  FiltersPanel,
-} from '../components/floating';
+import { ChecklistFloatingPanel, FiltersPanel } from '../components/floating';
 
 interface TripPlannerAppProps {
   onBack?: () => void;
@@ -52,8 +49,10 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
     const tripEnd = new Date('2026-01-06');
     const today = new Date();
 
-    const currentDay = Math.floor((today.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    const totalDays = Math.floor((tripEnd.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const currentDay =
+      Math.floor((today.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const totalDays =
+      Math.floor((tripEnd.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     // Find today's plan ID
     const todayStr = today.toISOString().split('T')[0];
@@ -80,7 +79,7 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
 
     // Start from home base
     const routePoints: Array<{ lat: number; lng: number }> = [
-      { lat: HOME_BASE.lat, lng: HOME_BASE.lng }
+      { lat: HOME_BASE.lat, lng: HOME_BASE.lng },
     ];
 
     // Add all scheduled locations
@@ -114,7 +113,6 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
     return { planALocationIds: planAIds, planBLocationIds: planBIds };
   }, [selectedDayPlan]);
 
-
   // Handle AI chat
   const handleSendMessage = useCallback(
     async (message: string) => {
@@ -139,13 +137,17 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
           const data = await response.json();
           // Extract text from response - may have multiple content blocks with web search
           const textBlocks = data.content?.filter((block: any) => block.type === 'text') || [];
-          const assistantMessage = textBlocks.map((block: any) => block.text).join('\n\n')
-            || 'Sorry, I couldn\'t process that request.';
+          const assistantMessage =
+            textBlocks.map((block: any) => block.text).join('\n\n') ||
+            "Sorry, I couldn't process that request.";
           addChatMessage({ role: 'assistant', content: assistantMessage });
 
           // Extract map pins from tool_use blocks
-          const toolUseBlocks = data.content?.filter((block: any) => block.type === 'tool_use') || [];
-          const mapPinTools = toolUseBlocks.filter((block: any) => block.name === 'suggest_map_pins');
+          const toolUseBlocks =
+            data.content?.filter((block: any) => block.type === 'tool_use') || [];
+          const mapPinTools = toolUseBlocks.filter(
+            (block: any) => block.name === 'suggest_map_pins'
+          );
 
           if (mapPinTools.length > 0) {
             const allPins = mapPinTools.flatMap((tool: any) => tool.input?.pins || []);
@@ -154,10 +156,16 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
             }
           }
         } else {
-          addChatMessage({ role: 'assistant', content: 'Sorry, there was an error processing your request. Please try again.' });
+          addChatMessage({
+            role: 'assistant',
+            content: 'Sorry, there was an error processing your request. Please try again.',
+          });
         }
-      } catch (error) {
-        addChatMessage({ role: 'assistant', content: 'Sorry, I\'m having trouble connecting. Please check your internet connection.' });
+      } catch {
+        addChatMessage({
+          role: 'assistant',
+          content: "Sorry, I'm having trouble connecting. Please check your internet connection.",
+        });
       } finally {
         setAILoading(false);
       }

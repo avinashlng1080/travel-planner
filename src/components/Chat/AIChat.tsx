@@ -29,10 +29,10 @@ export function AIChat() {
   };
 
   const suggestedQuestions = [
-    "What should we pack for Batu Caves with our toddler?",
-    "Is Aquaria KLCC stroller-friendly?",
-    "Best toddler-friendly restaurants near our hotel?",
-    "How do we get from M Vertica to KLCC?",
+    'What should we pack for Batu Caves with our toddler?',
+    'Is Aquaria KLCC stroller-friendly?',
+    'Best toddler-friendly restaurants near our hotel?',
+    'How do we get from M Vertica to KLCC?',
   ];
 
   return (
@@ -68,7 +68,9 @@ export function AIChat() {
             </button>
           )}
           <button className="p-2 hover:bg-white/10 rounded transition-colors">
-            <X className={`w-5 h-5 text-white transition-transform ${isExpanded ? '' : 'rotate-45'}`} />
+            <X
+              className={`w-5 h-5 text-white transition-transform ${isExpanded ? '' : 'rotate-45'}`}
+            />
           </button>
         </div>
       </div>
@@ -87,9 +89,7 @@ export function AIChat() {
                 </p>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-3">
-                    Try asking:
-                  </p>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-3">Try asking:</p>
                   {suggestedQuestions.map((question, index) => (
                     <button
                       key={index}
@@ -115,8 +115,14 @@ export function AIChat() {
                     <div className="bg-slate-100 rounded-lg px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                        <div
+                          className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"
+                          style={{ animationDelay: '0.2s' }}
+                        ></div>
+                        <div
+                          className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"
+                          style={{ animationDelay: '0.4s' }}
+                        ></div>
                       </div>
                     </div>
                   </div>

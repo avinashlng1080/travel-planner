@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
 import { Sparkles, MessageCircle, Send, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
-import { hasInteractedWithChatAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import {
+  hasInteractedWithChatAtom,
+  advanceToNextStepAtom,
+  FALLBACK_MESSAGES,
+  STEP_CONFIGS,
+} from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -14,7 +19,7 @@ export function AICompanionStep() {
   const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
-  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'chat') + 1;
+  const stepNumber = STEP_CONFIGS.findIndex((c) => c.step === 'chat') + 1;
 
   return (
     <>
@@ -42,12 +47,8 @@ export function AICompanionStep() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display font-bold text-slate-900 mb-1">
-                Meet Your AI Companion
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                {FALLBACK_MESSAGES.chat}
-              </p>
+              <h3 className="font-display font-bold text-slate-900 mb-1">Meet Your AI Companion</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">{FALLBACK_MESSAGES.chat}</p>
             </div>
           </div>
 
@@ -81,7 +82,7 @@ export function AICompanionStep() {
           >
             <Send className="w-4 h-4 text-sunset-500" />
             <span className="text-sunset-600 text-sm font-medium">
-              {hasInteractedWithChat ? 'Nice! You\'re connected!' : 'Send a message in the chat'}
+              {hasInteractedWithChat ? "Nice! You're connected!" : 'Send a message in the chat'}
             </span>
           </motion.div>
 
@@ -111,9 +112,7 @@ export function AICompanionStep() {
           <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-sunset-500" />
-              <span className="text-sm font-medium text-slate-700">
-                Chat with me here!
-              </span>
+              <span className="text-sm font-medium text-slate-700">Chat with me here!</span>
             </div>
           </div>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-sunset-500">

@@ -23,9 +23,10 @@ export function PassportCard() {
       transition={{ duration: 0.4, delay: 0.3 }}
       className={`
         fixed z-60 transition-all duration-300
-        ${isPassportExpanded
-          ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
-          : 'top-4 right-4 md:top-6 md:right-6'
+        ${
+          isPassportExpanded
+            ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+            : 'top-4 right-4 md:top-6 md:right-6'
         }
       `}
     >
@@ -54,18 +55,12 @@ export function PassportCard() {
         {/* Expanded view - full passport */}
         <AnimatePresence>
           {isPassportExpanded && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-6 h-6 text-sunset-500" />
-                  <h3 className="font-display font-bold text-lg text-slate-900">
-                    Travel Passport
-                  </h3>
+                  <h3 className="font-display font-bold text-lg text-slate-900">Travel Passport</h3>
                 </div>
                 <button
                   onClick={() => setPassportExpanded(false)}
@@ -78,7 +73,7 @@ export function PassportCard() {
 
               {/* Stamps grid */}
               <div className="grid grid-cols-3 gap-4 mb-4">
-                {STEP_CONFIGS.filter(c => c.step !== 'complete').map((config) => {
+                {STEP_CONFIGS.filter((c) => c.step !== 'complete').map((config) => {
                   const stamp = stamps.find((s) => s.step === config.step);
                   const isJustEarned = justEarnedStep === config.step;
 
@@ -114,10 +109,7 @@ export function PassportCard() {
 
       {/* Click outside to collapse */}
       {isPassportExpanded && (
-        <div
-          className="fixed inset-0 -z-10"
-          onClick={() => setPassportExpanded(false)}
-        />
+        <div className="fixed inset-0 -z-10" onClick={() => setPassportExpanded(false)} />
       )}
     </motion.div>
   );

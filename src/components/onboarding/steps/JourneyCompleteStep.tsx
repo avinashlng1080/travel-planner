@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, BookOpen, Sparkles, PartyPopper } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
-import { stampsAtom, completeOnboardingAtom, STEP_CONFIGS, FALLBACK_MESSAGES } from '@/atoms/onboardingAtoms';
+import {
+  stampsAtom,
+  completeOnboardingAtom,
+  STEP_CONFIGS,
+  FALLBACK_MESSAGES,
+} from '@/atoms/onboardingAtoms';
 import { PassportStamp } from '../PassportStamp';
 
 /**
@@ -173,9 +178,7 @@ export function JourneyCompleteStep() {
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-slate-100 rounded-xl rounded-tl-none p-3 flex-1">
-                    <p className="text-slate-700 text-sm">
-                      {FALLBACK_MESSAGES.complete}
-                    </p>
+                    <p className="text-slate-700 text-sm">{FALLBACK_MESSAGES.complete}</p>
                   </div>
                 </div>
               </motion.div>

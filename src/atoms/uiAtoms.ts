@@ -41,7 +41,10 @@ const visibleCategoriesStorageAtom = atomWithStorage<string[]>(
   'malaysia-trip-ui-visibleCategories',
   ALL_CATEGORIES
 );
-const sidebarCollapsedStorageAtom = atomWithStorage<boolean>('malaysia-trip-ui-sidebarCollapsed', false);
+const sidebarCollapsedStorageAtom = atomWithStorage<boolean>(
+  'malaysia-trip-ui-sidebarCollapsed',
+  false
+);
 const chatMessagesStorageAtom = atomWithStorage<ChatMessage[]>('malaysia-trip-ui-chatMessages', []);
 
 // Non-persisted state atoms
@@ -97,16 +100,13 @@ export const chatMessagesAtom = atom(
 );
 
 // Action atoms
-export const toggleCategoryAtom = atom(
-  null,
-  (get, set, category: string) => {
-    const current = get(visibleCategoriesAtom);
-    const updated = current.includes(category)
-      ? current.filter((c) => c !== category)
-      : [...current, category];
-    set(visibleCategoriesAtom, updated);
-  }
-);
+export const toggleCategoryAtom = atom(null, (get, set, category: string) => {
+  const current = get(visibleCategoriesAtom);
+  const updated = current.includes(category)
+    ? current.filter((c) => c !== category)
+    : [...current, category];
+  set(visibleCategoriesAtom, updated);
+});
 
 export const addChatMessageAtom = atom(
   null,
@@ -127,12 +127,9 @@ export const addChatMessageAtom = atom(
   }
 );
 
-export const clearChatMessagesAtom = atom(
-  null,
-  (_get, set) => {
-    set(chatMessagesAtom, []);
-  }
-);
+export const clearChatMessagesAtom = atom(null, (_get, set) => {
+  set(chatMessagesAtom, []);
+});
 
 export const addDynamicPinsAtom = atom(
   null,
@@ -148,25 +145,19 @@ export const addDynamicPinsAtom = atom(
   }
 );
 
-export const clearDynamicPinsAtom = atom(
-  null,
-  (_get, set) => {
-    set(dynamicPinsAtom, []);
-    set(newlyAddedPinsAtom, null);
-  }
-);
+export const clearDynamicPinsAtom = atom(null, (_get, set) => {
+  set(dynamicPinsAtom, []);
+  set(newlyAddedPinsAtom, null);
+});
 
-export const removeDynamicPinAtom = atom(
-  null,
-  (get, set, id: string) => {
-    const current = get(dynamicPinsAtom);
-    set(dynamicPinsAtom, current.filter((pin) => pin.id !== id));
-  }
-);
+export const removeDynamicPinAtom = atom(null, (get, set, id: string) => {
+  const current = get(dynamicPinsAtom);
+  set(
+    dynamicPinsAtom,
+    current.filter((pin) => pin.id !== id)
+  );
+});
 
-export const clearNewlyAddedPinsAtom = atom(
-  null,
-  (_get, set) => {
-    set(newlyAddedPinsAtom, null);
-  }
-);
+export const clearNewlyAddedPinsAtom = atom(null, (_get, set) => {
+  set(newlyAddedPinsAtom, null);
+});

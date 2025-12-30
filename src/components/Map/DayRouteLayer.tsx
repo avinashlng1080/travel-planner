@@ -39,9 +39,8 @@ export function DayRouteLayer({ tripId, planId, activePlan }: DayRouteLayerProps
   // Format metrics for popup
   const distanceStr = distance ? `${distance.toFixed(1)} km` : '';
   const durationStr = duration ? `${Math.round(duration)} min` : '';
-  const metricsText = distanceStr && durationStr
-    ? `Distance: ${distanceStr}\nDuration: ${durationStr}`
-    : '';
+  const metricsText =
+    distanceStr && durationStr ? `Distance: ${distanceStr}\nDuration: ${durationStr}` : '';
 
   return (
     <Polyline

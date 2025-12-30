@@ -2,7 +2,13 @@ import { MapPin } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import {
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
 
@@ -46,12 +52,10 @@ export function ItineraryPanel() {
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <MapPin className="w-12 h-12 text-slate-300 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              No Day Selected
-            </h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">No Day Selected</h3>
             <p className="text-sm text-slate-600 max-w-xs">
-              Select a day from the map or days panel to view its itinerary
-              with drag-and-drop reordering.
+              Select a day from the map or days panel to view its itinerary with drag-and-drop
+              reordering.
             </p>
           </div>
         )}

@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, LayersControl, useMapEvents } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
+  LayersControl,
+  useMapEvents,
+} from 'react-leaflet';
 import L from 'leaflet';
 import type { Location } from '../../data/tripData';
 import type { DynamicPin } from '../../atoms/uiAtoms';
@@ -20,17 +27,17 @@ L.Icon.Default.mergeOptions({
 
 // Tropical Sunset palette for map markers - softer colors for eye comfort
 const CATEGORY_COLORS: Record<string, string> = {
-  'home-base': '#F97316',       // Sunset coral - warm home (kept)
+  'home-base': '#F97316', // Sunset coral - warm home (kept)
   'toddler-friendly': '#F9A8D4', // Softer pink - gentle, friendly
-  attraction: '#14B8A6',         // Softer teal - adventure
-  shopping: '#FBBF24',           // Warmer gold - luxury
-  restaurant: '#F97316',         // Softer orange - warmth
-  nature: '#34D399',             // Softer emerald - natural
-  temple: '#EF4444',             // Softer red - sacred, traditional
-  playground: '#38BDF8',         // Softer sky - playful
-  medical: '#EF4444',            // Softer red - universal
-  avoid: '#94A3B8',              // Lighter slate - muted
-  'ai-suggested': '#F97316',     // Sunset coral for AI (kept)
+  attraction: '#14B8A6', // Softer teal - adventure
+  shopping: '#FBBF24', // Warmer gold - luxury
+  restaurant: '#F97316', // Softer orange - warmth
+  nature: '#34D399', // Softer emerald - natural
+  temple: '#EF4444', // Softer red - sacred, traditional
+  playground: '#38BDF8', // Softer sky - playful
+  medical: '#EF4444', // Softer red - universal
+  avoid: '#94A3B8', // Lighter slate - muted
+  'ai-suggested': '#F97316', // Sunset coral for AI (kept)
 };
 
 // Plan indicator type
@@ -38,8 +45,15 @@ type PlanIndicator = 'A' | 'B' | 'both' | null;
 
 // Unique silhouette marker SVGs for each category
 // Each marker has a distinctive shape that's recognizable at a glance
-function createCategoryMarkerSVG(category: string, size: number, isSelected: boolean, planIndicator: PlanIndicator = null): string {
-  const shadow = isSelected ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));' : 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));';
+function createCategoryMarkerSVG(
+  category: string,
+  size: number,
+  isSelected: boolean,
+  planIndicator: PlanIndicator = null
+): string {
+  const shadow = isSelected
+    ? 'filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));'
+    : 'filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));';
   const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
   const color = CATEGORY_COLORS[category] || '#64748b';
 
@@ -89,7 +103,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Camera/landmark for attractions
-    'attraction': `
+    attraction: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <path d="M6 12 L14 12 L17 8 L23 8 L26 12 L34 12 L34 36 L6 36 Z" fill="${color}" stroke="white" stroke-width="2"/>
         <circle cx="20" cy="24" r="8" fill="white" opacity="0.3" stroke="white" stroke-width="1"/>
@@ -99,7 +113,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Shopping bag silhouette
-    'shopping': `
+    shopping: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <path d="M8 14 L32 14 L34 42 L6 42 Z" fill="${color}" stroke="white" stroke-width="2"/>
         <path d="M14 14 L14 10 C14 6 16 4 20 4 C24 4 26 6 26 10 L26 14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
@@ -108,7 +122,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Plate with utensils for restaurants
-    'restaurant': `
+    restaurant: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <ellipse cx="20" cy="24" rx="16" ry="16" fill="${color}" stroke="white" stroke-width="2"/>
         <ellipse cx="20" cy="24" rx="10" ry="10" fill="white" opacity="0.2"/>
@@ -120,7 +134,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Tree silhouette for nature/parks
-    'nature': `
+    nature: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <path d="M20 2 L32 18 L26 18 L34 30 L6 30 L14 18 L8 18 Z" fill="${color}" stroke="white" stroke-width="2"/>
         <rect x="17" y="30" width="6" height="12" fill="#8B4513" stroke="white" stroke-width="1"/>
@@ -130,7 +144,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Pagoda/temple silhouette
-    'temple': `
+    temple: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <path d="M20 2 L28 10 L12 10 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
         <path d="M8 10 L32 10 L30 18 L10 18 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
@@ -142,7 +156,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Swing/playground silhouette
-    'playground': `
+    playground: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <path d="M4 42 L12 4 L28 4 L36 42" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
         <rect x="10" y="4" width="20" height="4" rx="2" fill="${color}" stroke="white" stroke-width="1"/>
@@ -157,7 +171,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Cross/hospital for medical
-    'medical': `
+    medical: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <rect x="4" y="4" width="32" height="38" rx="4" fill="${color}" stroke="white" stroke-width="2"/>
         <rect x="16" y="10" width="8" height="26" rx="1" fill="white"/>
@@ -166,7 +180,7 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
     `,
 
     // Warning/avoid symbol
-    'avoid': `
+    avoid: `
       <svg width="${size}" height="${size}" viewBox="0 0 40 44" style="${shadow}${pulse}">
         <circle cx="20" cy="22" r="18" fill="${color}" stroke="white" stroke-width="2"/>
         <line x1="8" y1="34" x2="32" y2="10" stroke="white" stroke-width="4" stroke-linecap="round"/>
@@ -178,7 +192,11 @@ function createCategoryMarkerSVG(category: string, size: number, isSelected: boo
   return markers[category] || markers['attraction'];
 }
 
-function createCustomIcon(category: string, isSelected: boolean = false, planIndicator: PlanIndicator = null) {
+function createCustomIcon(
+  category: string,
+  isSelected: boolean = false,
+  planIndicator: PlanIndicator = null
+) {
   const size = isSelected ? 48 : 40;
 
   return L.divIcon({
@@ -193,7 +211,9 @@ function createCustomIcon(category: string, isSelected: boolean = false, planInd
 // Special icon for AI-suggested dynamic pins with sparkle badge
 function createDynamicPinIcon(isSelected: boolean = false) {
   const size = isSelected ? 48 : 40;
-  const shadow = isSelected ? 'filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.6));' : 'filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.4));';
+  const shadow = isSelected
+    ? 'filter: drop-shadow(0 4px 12px rgba(249, 115, 22, 0.6));'
+    : 'filter: drop-shadow(0 2px 8px rgba(249, 115, 22, 0.4));';
   const pulse = isSelected ? 'animation: pulse 1s ease-in-out infinite;' : '';
 
   return L.divIcon({
@@ -280,7 +300,7 @@ function MapBoundsController({ planRoute, selectedLocation }: MapBoundsControlle
     }
 
     // For multiple points, fit bounds with padding
-    const bounds = L.latLngBounds(planRoute.map(p => [p.lat, p.lng]));
+    const bounds = L.latLngBounds(planRoute.map((p) => [p.lat, p.lng]));
     map.fitBounds(bounds, {
       padding: [50, 50],
       duration: 1,
@@ -333,7 +353,7 @@ interface DynamicPinBoundsControllerProps {
 function DynamicPinBoundsController({
   newlyAddedPins,
   onFirstPinSelect,
-  onPinsFocused
+  onPinsFocused,
 }: DynamicPinBoundsControllerProps) {
   const map = useMap();
 
@@ -347,7 +367,7 @@ function DynamicPinBoundsController({
       });
     } else {
       // For multiple pins, fit bounds to show all
-      const bounds = L.latLngBounds(newlyAddedPins.map(p => [p.lat, p.lng]));
+      const bounds = L.latLngBounds(newlyAddedPins.map((p) => [p.lat, p.lng]));
       map.fitBounds(bounds, {
         padding: [80, 80],
         maxZoom: 14,
@@ -374,10 +394,10 @@ interface FullScreenMapProps {
   planRoute: Array<{ lat: number; lng: number }>;
   dynamicPins?: DynamicPin[];
   newlyAddedPins?: DynamicPin[] | null; // Pins just added by AI, triggers auto-focus
-  planALocationIds?: string[];  // IDs of locations in current day's Plan A
-  planBLocationIds?: string[];  // IDs of locations in current day's Plan B
-  tripId?: Id<'trips'> | null;  // Trip ID for day route visualization
-  selectedPlanId?: Id<'tripPlans'> | null;  // Selected plan ID for day route visualization
+  planALocationIds?: string[]; // IDs of locations in current day's Plan A
+  planBLocationIds?: string[]; // IDs of locations in current day's Plan B
+  tripId?: Id<'trips'> | null; // Trip ID for day route visualization
+  selectedPlanId?: Id<'tripPlans'> | null; // Selected plan ID for day route visualization
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
   onNewPinsFocused?: () => void; // Called after map focuses on new pins
@@ -399,9 +419,7 @@ export function FullScreenMap({
   onDynamicPinSelect,
   onNewPinsFocused,
 }: FullScreenMapProps) {
-  const filteredLocations = locations.filter((loc) =>
-    visibleCategories.includes(loc.category)
-  );
+  const filteredLocations = locations.filter((loc) => visibleCategories.includes(loc.category));
 
   const routeColor = activePlan === 'A' ? '#10B981' : '#6366F1'; // Plan A: solid green, Plan B: indigo
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
@@ -505,7 +523,7 @@ export function FullScreenMap({
           <LayersControl.BaseLayer name="Satellite">
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
             />
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Dark Mode">
@@ -538,11 +556,7 @@ export function FullScreenMap({
         />
 
         {/* Day-by-Day Route Visualization - Shows route for selected day only */}
-        <DayRouteLayer
-          tripId={tripId}
-          planId={selectedPlanId}
-          activePlan={activePlan}
-        />
+        <DayRouteLayer tripId={tripId} planId={selectedPlanId} activePlan={activePlan} />
 
         {/* POI Layer - Shopping malls, zoos, museums, parks, attractions */}
         <POILayer bounds={mapBounds} visible={true} />

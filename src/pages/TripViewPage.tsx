@@ -29,7 +29,9 @@ interface TripViewPageProps {
 export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<Id<'tripPlans'> | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(null);
+  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(
+    null
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -133,8 +135,15 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const { trip, members } = tripData;
 
   // Calculate current day and total days for FloatingHeader
-  const currentDay = tripData ? Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
-  const totalDays = tripData ? Math.floor((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
+  const currentDay = tripData
+    ? Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+    : 1;
+  const totalDays = tripData
+    ? Math.floor(
+        (new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) /
+          (1000 * 60 * 60 * 24)
+      ) + 1
+    : 1;
 
   // Get user's role from members (needed for ActivityDetailPanel)
   const currentMember = members.find((m) => m.status === 'accepted');
@@ -170,9 +179,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     })) || [];
 
   // Get all categories for filtering
-  const visibleCategories = Array.from(
-    new Set(mapLocations.map((loc) => loc.category))
-  );
+  const visibleCategories = Array.from(new Set(mapLocations.map((loc) => loc.category)));
 
   return (
     <div className="h-screen overflow-hidden bg-white text-slate-900 font-['DM_Sans']">
@@ -199,9 +206,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       />
 
       {/* Navigation Dock */}
-      <NavigationDock
-        onImportClick={() => setIsImportModalOpen(true)}
-      />
+      <NavigationDock onImportClick={() => setIsImportModalOpen(true)} />
 
       {/* Floating Panels */}
       <ChecklistFloatingPanel />
@@ -209,7 +214,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       <TripPlannerPanel
         tripId={tripId}
         selectedPlanId={selectedPlanId}
-        onActivityClick={(activityId) => setSelectedActivityId(activityId as Id<'tripScheduleItems'>)}
+        onActivityClick={(activityId) =>
+          setSelectedActivityId(activityId as Id<'tripScheduleItems'>)
+        }
       />
 
       {/* Right Detail Panel - shows when a location is clicked */}
@@ -291,10 +298,12 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         location={
           activityLocation
             ? {
-                name: activityLocation.customName || activityLocation.baseLocation?.name || 'Unknown',
+                name:
+                  activityLocation.customName || activityLocation.baseLocation?.name || 'Unknown',
                 lat: activityLocation.customLat || activityLocation.baseLocation?.lat || 0,
                 lng: activityLocation.customLng || activityLocation.baseLocation?.lng || 0,
-                category: activityLocation.customCategory || activityLocation.baseLocation?.category,
+                category:
+                  activityLocation.customCategory || activityLocation.baseLocation?.category,
               }
             : undefined
         }

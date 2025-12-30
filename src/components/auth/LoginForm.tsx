@@ -84,12 +84,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         </div>
       )}
 
-      <GlassButton
-        variant="primary"
-        size="lg"
-        className="w-full"
-        disabled={isLoading}
-      >
+      <GlassButton variant="primary" size="lg" className="w-full" disabled={isLoading}>
         {isLoading ? 'Signing in...' : 'Sign In'}
       </GlassButton>
 

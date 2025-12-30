@@ -3,13 +3,14 @@ import { CheckSquare } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { ChecklistPanel } from '../checklist/ChecklistPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import {
-  FileText,
-  Heart,
-  Briefcase,
-  Package,
-} from 'lucide-react';
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
+import { FileText, Heart, Briefcase, Package } from 'lucide-react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
 interface ChecklistItem {

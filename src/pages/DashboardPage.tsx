@@ -177,12 +177,8 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
         {/* Page Title and CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              My Trips
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Plan, organize, and share your travel adventures
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">My Trips</h1>
+            <p className="mt-2 text-slate-600">Plan, organize, and share your travel adventures</p>
           </div>
 
           {/* Create Trip Button - Desktop */}
@@ -198,19 +194,19 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
         {/* Filter Tabs */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-          <FilterTab
+          <FilterTabButton
             label="All Trips"
             count={trips?.length || 0}
             isActive={activeFilter === 'all'}
             onClick={() => setActiveFilter('all')}
           />
-          <FilterTab
+          <FilterTabButton
             label="My Trips"
             count={trips?.filter((t) => t.userRole === 'owner').length || 0}
             isActive={activeFilter === 'my-trips'}
             onClick={() => setActiveFilter('my-trips')}
           />
-          <FilterTab
+          <FilterTabButton
             label="Shared With Me"
             count={trips?.filter((t) => t.userRole !== 'owner').length || 0}
             isActive={activeFilter === 'shared'}
@@ -276,7 +272,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 }
 
 // Filter Tab Component
-function FilterTab({
+function FilterTabButton({
   label,
   count,
   isActive,
@@ -299,9 +295,7 @@ function FilterTab({
       {label}
       <span
         className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-          isActive
-            ? 'bg-sunset-100 text-sunset-700'
-            : 'bg-slate-100 text-slate-600'
+          isActive ? 'bg-sunset-100 text-sunset-700' : 'bg-slate-100 text-slate-600'
         }`}
       >
         {count}
@@ -353,12 +347,8 @@ function EmptyState({
         <MapPin className="w-10 h-10 text-sunset-600" />
       </div>
 
-      <h3 className="text-xl font-semibold text-slate-900 mb-2">
-        {message.title}
-      </h3>
-      <p className="text-slate-600 text-center max-w-md mb-6">
-        {message.description}
-      </p>
+      <h3 className="text-xl font-semibold text-slate-900 mb-2">{message.title}</h3>
+      <p className="text-slate-600 text-center max-w-md mb-6">{message.description}</p>
 
       {message.showCTA && (
         <button

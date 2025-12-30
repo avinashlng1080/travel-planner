@@ -40,16 +40,17 @@ export function DashboardPage() {
   };
 
   // Transform trips data for TripCard
-  const trips = tripsData?.map(trip => ({
-    _id: trip._id,
-    name: trip.name,
-    description: trip.description,
-    startDate: trip.startDate,
-    endDate: trip.endDate,
-    coverImageUrl: trip.coverImageUrl,
-    memberCount: getTripMembers(trip._id), // This will trigger multiple queries - not ideal
-    role: trip.userRole,
-  })) ?? [];
+  const trips =
+    tripsData?.map((trip) => ({
+      _id: trip._id,
+      name: trip.name,
+      description: trip.description,
+      startDate: trip.startDate,
+      endDate: trip.endDate,
+      coverImageUrl: trip.coverImageUrl,
+      memberCount: getTripMembers(trip._id), // This will trigger multiple queries - not ideal
+      role: trip.userRole,
+    })) ?? [];
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -205,12 +206,8 @@ export function DashboardPage() {
         {/* Page Title and CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              My Trips
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Plan, organize, and share your travel adventures
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">My Trips</h1>
+            <p className="mt-2 text-slate-600">Plan, organize, and share your travel adventures</p>
           </div>
 
           {/* Create Trip Button - Desktop */}
@@ -303,9 +300,7 @@ function FilterTab({
       {label}
       <span
         className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-          isActive
-            ? 'bg-sunset-100 text-sunset-700'
-            : 'bg-slate-100 text-slate-600'
+          isActive ? 'bg-sunset-100 text-sunset-700' : 'bg-slate-100 text-slate-600'
         }`}
       >
         {count}
@@ -357,12 +352,8 @@ function EmptyState({
         <MapPin className="w-10 h-10 text-sunset-600" />
       </div>
 
-      <h3 className="text-xl font-semibold text-slate-900 mb-2">
-        {message.title}
-      </h3>
-      <p className="text-slate-600 text-center max-w-md mb-6">
-        {message.description}
-      </p>
+      <h3 className="text-xl font-semibold text-slate-900 mb-2">{message.title}</h3>
+      <p className="text-slate-600 text-center max-w-md mb-6">{message.description}</p>
 
       {message.showCTA && (
         <button

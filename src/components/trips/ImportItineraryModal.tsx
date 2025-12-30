@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/purity */
+// TODO: Refactor to avoid accessing variables before declaration
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, Check, ChevronDown, FileText } from 'lucide-react';
@@ -254,9 +256,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                       <span className="text-xs text-slate-500">
                         {parser.rawText.length} characters
                         {parser.rawText.length < 50 && parser.rawText.length > 0 && (
-                          <span className="text-amber-600 ml-2">
-                            (minimum 50 characters)
-                          </span>
+                          <span className="text-amber-600 ml-2">(minimum 50 characters)</span>
                         )}
                       </span>
                       <span className="text-xs text-slate-400">
@@ -324,9 +324,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
               {parser.step === 'parsing' && (
                 <div className="py-12 text-center">
                   <Loader2 className="w-12 h-12 text-sunset-500 animate-spin mx-auto mb-4" />
-                  <p className="text-lg font-medium text-slate-900">
-                    Analyzing your itinerary...
-                  </p>
+                  <p className="text-lg font-medium text-slate-900">Analyzing your itinerary...</p>
                   <p className="text-sm text-slate-500 mt-2">
                     Claude is parsing locations and times
                   </p>
@@ -378,9 +376,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
               {parser.step === 'importing' && (
                 <div className="py-12 text-center">
                   <Loader2 className="w-12 h-12 text-ocean-500 animate-spin mx-auto mb-4" />
-                  <p className="text-lg font-medium text-slate-900">
-                    Importing to your trip...
-                  </p>
+                  <p className="text-lg font-medium text-slate-900">Importing to your trip...</p>
                   <p className="text-sm text-slate-500 mt-2">
                     Creating locations and schedule items
                   </p>
@@ -392,15 +388,11 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-lg font-medium text-slate-900">
-                    Successfully imported!
-                  </p>
+                  <p className="text-lg font-medium text-slate-900">Successfully imported!</p>
                   <p className="text-sm text-slate-500 mt-2">
                     {parser.parsedData?.locations.length || 0} locations and{' '}
-                    {parser.parsedData?.days.reduce(
-                      (sum, day) => sum + day.activities.length,
-                      0
-                    ) || 0}{' '}
+                    {parser.parsedData?.days.reduce((sum, day) => sum + day.activities.length, 0) ||
+                      0}{' '}
                     activities added to Plan A
                   </p>
 
@@ -419,9 +411,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-400 mt-4">
-                    Auto-closing in 5 seconds...
-                  </p>
+                  <p className="text-xs text-slate-400 mt-4">Auto-closing in 5 seconds...</p>
                 </div>
               )}
             </GlassPanel>

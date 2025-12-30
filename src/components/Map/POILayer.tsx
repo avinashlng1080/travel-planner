@@ -116,11 +116,7 @@ export function POILayer({ bounds, categories, visible = true }: POILayerProps) 
       </style>
 
       {pois.map((poi: POI) => (
-        <Marker
-          key={poi._id}
-          position={[poi.lat, poi.lng]}
-          icon={createPOIIcon(poi.category)}
-        >
+        <Marker key={poi._id} position={[poi.lat, poi.lng]} icon={createPOIIcon(poi.category)}>
           <Popup>
             <div style={{ minWidth: '180px' }}>
               <div

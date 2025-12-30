@@ -1,6 +1,11 @@
 import { motion } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
-import { statusAtom, currentStepAtom, showSkipConfirmAtom, skipOnboardingAtom } from '@/atoms/onboardingAtoms';
+import {
+  statusAtom,
+  currentStepAtom,
+  showSkipConfirmAtom,
+  skipOnboardingAtom,
+} from '@/atoms/onboardingAtoms';
 import { PassportCard } from './PassportCard';
 import { SkipButton } from './SkipButton';
 import { FlightArrivalStep } from './steps/FlightArrivalStep';
@@ -93,7 +98,8 @@ export function OnboardingOverlay() {
               Skip the tour?
             </h3>
             <p className="text-slate-600 text-sm mb-4">
-              You can always take the tour later from Settings. Your travel companion will still be here to help!
+              You can always take the tour later from Settings. Your travel companion will still be
+              here to help!
             </p>
             <div className="flex gap-3">
               <button

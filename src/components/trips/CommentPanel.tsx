@@ -125,9 +125,7 @@ function CommentItem({
             <span className="font-medium text-slate-900 text-sm">
               {comment.author?.name || 'Unknown User'}
             </span>
-            <span className="text-xs text-slate-500">
-              {formatTime(comment.createdAt)}
-            </span>
+            <span className="text-xs text-slate-500">{formatTime(comment.createdAt)}</span>
             {comment.updatedAt && comment.updatedAt > comment.createdAt && (
               <span className="text-xs text-slate-500">(edited)</span>
             )}
@@ -189,10 +187,7 @@ function CommentItem({
               {showActions && (
                 <>
                   {/* Backdrop */}
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowActions(false)}
-                  />
+                  <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
 
                   {/* Dropdown Menu */}
                   <motion.div
@@ -279,19 +274,16 @@ export function CommentPanel({
   const queryFunction = scheduleItemId
     ? api.tripComments.getCommentsByScheduleItem
     : planId
-    ? api.tripComments.getCommentsByPlan
-    : null;
+      ? api.tripComments.getCommentsByPlan
+      : null;
 
   const queryArgs = scheduleItemId
     ? { scheduleItemId }
     : planId
-    ? { planId, includeResolved: true }
-    : 'skip';
+      ? { planId, includeResolved: true }
+      : 'skip';
 
-  const comments = useQuery(
-    queryFunction as any,
-    queryArgs as any
-  ) as Comment[] | undefined;
+  const comments = useQuery(queryFunction as any, queryArgs as any) as Comment[] | undefined;
 
   const addComment = useMutation(api.tripComments.addComment);
   const updateComment = useMutation(api.tripComments.updateComment);
@@ -413,9 +405,7 @@ export function CommentPanel({
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Comments</h2>
                     {unresolvedCount > 0 && (
-                      <p className="text-xs text-slate-600">
-                        {unresolvedCount} unresolved
-                      </p>
+                      <p className="text-xs text-slate-600">{unresolvedCount} unresolved</p>
                     )}
                   </div>
                 </div>
@@ -502,7 +492,8 @@ export function CommentPanel({
               {!canComment && (
                 <div className="px-6 py-4 border-t border-slate-200/50 bg-slate-50/50">
                   <p className="text-sm text-slate-600 text-center">
-                    You have view-only access. Contact the trip owner to request comment permissions.
+                    You have view-only access. Contact the trip owner to request comment
+                    permissions.
                   </p>
                 </div>
               )}

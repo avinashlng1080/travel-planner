@@ -1,7 +1,13 @@
 import { Calendar } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import {
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
 import { GlassBadge } from '../ui/GlassPanel';
@@ -28,7 +34,9 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
       onClick={onClick}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className={`text-xs font-semibold ${isSelected ? 'text-sunset-100' : 'text-slate-600'}`}>
+        <span
+          className={`text-xs font-semibold ${isSelected ? 'text-sunset-100' : 'text-slate-600'}`}
+        >
           {dayOfWeek}
         </span>
         {isToday && (
@@ -44,7 +52,7 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
         {new Date(date).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
-          year: 'numeric'
+          year: 'numeric',
         })}
       </div>
     </button>

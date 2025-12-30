@@ -3,16 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {
-  X,
-  Clock,
-  MapPin,
-  Edit2,
-  Trash2,
-  AlertTriangle,
-  FileText,
-  Tag,
-} from 'lucide-react';
+import { X, Clock, MapPin, Edit2, Trash2, AlertTriangle, FileText, Tag } from 'lucide-react';
 import { GlassPanel, GlassButton, GlassBadge } from '../ui/GlassPanel';
 import type { Id } from '../../../convex/_generated/dataModel';
 
@@ -151,9 +142,7 @@ export function ActivityDetailPanel({
                   >
                     {activity.title}
                   </h2>
-                  <p className="text-sm text-slate-600 mt-1">
-                    {formatDate(activity.dayDate)}
-                  </p>
+                  <p className="text-sm text-slate-600 mt-1">{formatDate(activity.dayDate)}</p>
                 </div>
                 <button
                   onClick={onClose}
@@ -183,9 +172,7 @@ export function ActivityDetailPanel({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-slate-600">End</span>
-                      <span className="text-sm font-medium text-slate-900">
-                        {activity.endTime}
-                      </span>
+                      <span className="text-sm font-medium text-slate-900">{activity.endTime}</span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                       <span className="text-sm text-slate-600">Duration</span>
@@ -272,9 +259,7 @@ export function ActivityDetailPanel({
                 {/* Empty state for notes */}
                 {!activity.notes && canEdit && (
                   <GlassPanel className="p-4 border-dashed">
-                    <p className="text-sm text-slate-500 text-center">
-                      No notes added yet
-                    </p>
+                    <p className="text-sm text-slate-500 text-center">No notes added yet</p>
                   </GlassPanel>
                 )}
               </div>
@@ -285,11 +270,7 @@ export function ActivityDetailPanel({
               <div className="flex-shrink-0 p-4 border-t border-slate-200/50 bg-white/95 backdrop-blur-xl">
                 <div className="flex items-center gap-2">
                   {onEdit && (
-                    <GlassButton
-                      variant="default"
-                      className="flex-1"
-                      onClick={onEdit}
-                    >
+                    <GlassButton variant="default" className="flex-1" onClick={onEdit}>
                       <Edit2 className="w-4 h-4 mr-2" />
                       Edit Activity
                     </GlassButton>
@@ -342,8 +323,8 @@ export function ActivityDetailPanel({
                         Delete Activity?
                       </h3>
                       <p className="text-sm text-slate-600">
-                        Are you sure you want to delete "{activity.title}"? This action
-                        cannot be undone.
+                        Are you sure you want to delete "{activity.title}"? This action cannot be
+                        undone.
                       </p>
                     </div>
                   </div>
@@ -356,11 +337,7 @@ export function ActivityDetailPanel({
                     >
                       Cancel
                     </GlassButton>
-                    <GlassButton
-                      variant="danger"
-                      className="flex-1"
-                      onClick={handleDelete}
-                    >
+                    <GlassButton variant="danger" className="flex-1" onClick={handleDelete}>
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </GlassButton>

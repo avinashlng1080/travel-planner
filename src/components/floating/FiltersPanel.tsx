@@ -1,7 +1,13 @@
 import { Filter } from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import {
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
 import { visibleCategoriesAtom, toggleCategoryAtom } from '../../atoms/uiAtoms';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
 
@@ -36,7 +42,7 @@ export function FiltersPanel() {
   const panelState = panels.filters;
 
   const handleShowAll = () => {
-    setAllCategories(categories.map(cat => cat.id));
+    setAllCategories(categories.map((cat) => cat.id));
   };
 
   const handleHideAll = () => {
@@ -95,7 +101,9 @@ export function FiltersPanel() {
                   className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                   style={{ backgroundColor: cat.color }}
                 />
-                <span className={`text-sm font-medium flex-1 ${isVisible ? 'text-slate-900' : 'text-slate-400'}`}>
+                <span
+                  className={`text-sm font-medium flex-1 ${isVisible ? 'text-slate-900' : 'text-slate-400'}`}
+                >
                   {cat.name}
                 </span>
               </label>

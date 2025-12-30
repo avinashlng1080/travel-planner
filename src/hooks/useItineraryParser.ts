@@ -65,61 +65,64 @@ export function useItineraryParser(): UseItineraryParserReturn {
    * Parse raw itinerary text.
    * Uses local parser first (fast, no AI), falls back to Claude if needed.
    */
-  const parse = useCallback(async (tripId: string, tripContext: TripContext) => {
-    if (!rawText.trim()) {
-      setError('Please paste your itinerary text');
-      return;
-    }
+  const parse = useCallback(
+    async (tripId: string, tripContext: TripContext) => {
+      if (!rawText.trim()) {
+        setError('Please paste your itinerary text');
+        return;
+      }
 
-    if (rawText.length < 50) {
-      setError("This doesn't look like a full itinerary. Please paste more text.");
-      return;
-    }
+      if (rawText.length < 50) {
+        setError("This doesn't look like a full itinerary. Please paste more text.");
+        return;
+      }
 
-    setIsParsing(true);
-    setError(null);
-    setStep('parsing');
+      setIsParsing(true);
+      setError(null);
+      setStep('parsing');
 
-    try {
-      const convexUrl = import.meta.env.VITE_CONVEX_URL;
-      const siteUrl = convexUrl.replace('.cloud', '.site');
+      try {
+        const convexUrl = import.meta.env.VITE_CONVEX_URL;
+        const siteUrl = convexUrl.replace('.cloud', '.site');
 
-      // Try local parser first (faster, no rate limits)
-      let response = await fetch(`${siteUrl}/parseItineraryLocal`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rawText, tripId, tripContext }),
-      });
-
-      let data = await response.json();
-
-      // If local parser failed, try Claude parser as fallback
-      if (!data.success && data.error?.includes('Could not parse')) {
-        console.log('Local parser failed, trying Claude...');
-        response = await fetch(`${siteUrl}/parseItinerary`, {
+        // Try local parser first (faster, no rate limits)
+        let response = await fetch(`${siteUrl}/parseItineraryLocal`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ rawText, tripId, tripContext }),
         });
-        data = await response.json();
-      }
 
-      if (!data.success) {
-        setError(data.error || 'Failed to parse itinerary. Please try again.');
+        let data = await response.json();
+
+        // If local parser failed, try Claude parser as fallback
+        if (!data.success && data.error?.includes('Could not parse')) {
+          console.log('Local parser failed, trying Claude...');
+          response = await fetch(`${siteUrl}/parseItinerary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rawText, tripId, tripContext }),
+          });
+          data = await response.json();
+        }
+
+        if (!data.success) {
+          setError(data.error || 'Failed to parse itinerary. Please try again.');
+          setStep('input');
+          return;
+        }
+
+        setParsedData(data.parsed);
+        setStep('preview');
+      } catch (err) {
+        console.error('Parse error:', err);
+        setError('Network error. Please check your connection and try again.');
         setStep('input');
-        return;
+      } finally {
+        setIsParsing(false);
       }
-
-      setParsedData(data.parsed);
-      setStep('preview');
-    } catch (err) {
-      console.error('Parse error:', err);
-      setError('Network error. Please check your connection and try again.');
-      setStep('input');
-    } finally {
-      setIsParsing(false);
-    }
-  }, [rawText]);
+    },
+    [rawText]
+  );
 
   /**
    * Update a parsed location.
@@ -129,9 +132,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
       if (!prev) return prev;
       return {
         ...prev,
-        locations: prev.locations.map((loc) =>
-          loc.id === id ? { ...loc, ...updates } : loc
-        ),
+        locations: prev.locations.map((loc) => (loc.id === id ? { ...loc, ...updates } : loc)),
       };
     });
   }, []);
@@ -186,9 +187,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
       if (newDays[dayIndex]) {
         newDays[dayIndex] = {
           ...newDays[dayIndex],
-          activities: newDays[dayIndex].activities.filter(
-            (act) => act.id !== activityId
-          ),
+          activities: newDays[dayIndex].activities.filter((act) => act.id !== activityId),
         };
       }
       // Remove empty days

@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
 import { useSetAtom } from 'jotai';
-import { advanceToNextStepAtom, skipOnboardingAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import {
+  advanceToNextStepAtom,
+  skipOnboardingAtom,
+  FALLBACK_MESSAGES,
+  STEP_CONFIGS,
+} from '@/atoms/onboardingAtoms';
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -15,7 +20,7 @@ export function WelcomeHomeStep() {
   const skipOnboarding = useSetAtom(skipOnboardingAtom);
 
   // Get current step number for display
-  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'welcome') + 1;
+  const stepNumber = STEP_CONFIGS.findIndex((c) => c.step === 'welcome') + 1;
   const [claudeMessage, setClaudeMessage] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
@@ -65,9 +70,7 @@ export function WelcomeHomeStep() {
                 <Home className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-white text-lg">
-                  Your Home Base
-                </h3>
+                <h3 className="font-display font-bold text-white text-lg">Your Home Base</h3>
                 <p className="text-white/80 text-sm">M Vertica Residence, Cheras</p>
               </div>
             </div>

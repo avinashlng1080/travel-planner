@@ -78,9 +78,7 @@ export function FloatingHeader({
                 Day {currentDay} of {totalDays}
               </GlassBadge>
             ) : currentDay <= 0 ? (
-              <span className="text-sm text-slate-600">
-                {Math.abs(currentDay)} days until trip
-              </span>
+              <span className="text-sm text-slate-600">{Math.abs(currentDay)} days until trip</span>
             ) : (
               <span className="text-sm text-slate-600">Trip completed</span>
             )}

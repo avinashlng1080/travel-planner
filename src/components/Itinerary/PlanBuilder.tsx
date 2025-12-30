@@ -14,7 +14,11 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
+import type {
+  DayPlan as DayPlanType,
+  ScheduleItem as ScheduleItemType,
+  Location,
+} from '../../data/tripData';
 import { PlanColumn } from './PlanColumn';
 import { ScheduleItem } from './ScheduleItem';
 
@@ -99,23 +103,15 @@ export function PlanBuilder({ dayPlan, locations = [] }: PlanBuilderProps) {
     if (!movedItem) return;
 
     // Determine insert position
-    let newIndex = overIndex >= 0 ? overIndex : overItems.length;
+    const newIndex = overIndex >= 0 ? overIndex : overItems.length;
 
     // Update local state
     if (activeContainer === 'A') {
       setPlanAItems((items) => items.filter((item) => item.id !== active.id));
-      setPlanBItems((items) => [
-        ...items.slice(0, newIndex),
-        movedItem,
-        ...items.slice(newIndex),
-      ]);
+      setPlanBItems((items) => [...items.slice(0, newIndex), movedItem, ...items.slice(newIndex)]);
     } else {
       setPlanBItems((items) => items.filter((item) => item.id !== active.id));
-      setPlanAItems((items) => [
-        ...items.slice(0, newIndex),
-        movedItem,
-        ...items.slice(newIndex),
-      ]);
+      setPlanAItems((items) => [...items.slice(0, newIndex), movedItem, ...items.slice(newIndex)]);
     }
   };
 

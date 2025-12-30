@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
 import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
@@ -55,25 +62,29 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
       }
 
       if (onReorder) {
-        onReorder(selectedPlan, reordered.map((item) => item.id));
+        onReorder(
+          selectedPlan,
+          reordered.map((item) => item.id)
+        );
       }
     }
   };
 
-  const weatherIcon = dayPlan.weatherConsideration === 'outdoor-heavy' ? (
-    <Sun className="w-4 h-4" />
-  ) : dayPlan.weatherConsideration === 'indoor-heavy' ? (
-    <CloudRain className="w-4 h-4" />
-  ) : (
-    <Sun className="w-4 h-4" />
-  );
+  const weatherIcon =
+    dayPlan.weatherConsideration === 'outdoor-heavy' ? (
+      <Sun className="w-4 h-4" />
+    ) : dayPlan.weatherConsideration === 'indoor-heavy' ? (
+      <CloudRain className="w-4 h-4" />
+    ) : (
+      <Sun className="w-4 h-4" />
+    );
 
   const weatherColor =
     dayPlan.weatherConsideration === 'outdoor-heavy'
       ? 'text-amber-500'
       : dayPlan.weatherConsideration === 'indoor-heavy'
-      ? 'text-blue-500'
-      : 'text-slate-500';
+        ? 'text-blue-500'
+        : 'text-slate-500';
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -82,7 +93,11 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
           <div className="flex items-center gap-3">
             <Calendar className="w-5 h-5 text-sunset-500" />
             <h3 className="text-xl font-semibold text-slate-900">
-              {dayPlan.dayOfWeek}, {new Date(dayPlan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {dayPlan.dayOfWeek},{' '}
+              {new Date(dayPlan.date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}
             </h3>
           </div>
           <div className={`flex items-center gap-2 ${weatherColor}`}>

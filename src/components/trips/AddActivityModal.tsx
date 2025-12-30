@@ -36,7 +36,7 @@ export function AddActivityModal({
   onClose,
   tripId,
   planId,
-  onSuccess
+  onSuccess,
 }: AddActivityModalProps) {
   // Get trip data to determine default date
   const trip = useQuery(api.trips.getTrip, { tripId });
@@ -61,7 +61,7 @@ export function AddActivityModal({
   // Update default date when trip loads
   useEffect(() => {
     if (trip?.startDate) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         dayDate: getDefaultDate(trip.startDate),
       }));
@@ -179,14 +179,14 @@ export function AddActivityModal({
   };
 
   const handleChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
     // Clear time range error when either time field changes
     if ((field === 'startTime' || field === 'endTime') && errors.timeRange) {
-      setErrors(prev => ({ ...prev, timeRange: undefined }));
+      setErrors((prev) => ({ ...prev, timeRange: undefined }));
     }
   };
 
@@ -239,16 +239,17 @@ export function AddActivityModal({
                 <h2 id="add-activity-title" className="text-xl font-semibold text-slate-900">
                   Add Activity
                 </h2>
-                <p className="text-sm text-slate-600 mt-1">
-                  Add a new activity to your trip plan
-                </p>
+                <p className="text-sm text-slate-600 mt-1">Add a new activity to your trip plan</p>
               </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Activity Title */}
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                  >
                     Activity Title <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -261,14 +262,15 @@ export function AddActivityModal({
                     className={`w-full bg-white backdrop-blur-lg border rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${errors.title ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200'}`}
                     disabled={isSubmitting}
                   />
-                  {errors.title && (
-                    <p className="mt-1 text-xs text-red-600">{errors.title}</p>
-                  )}
+                  {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
                 </div>
 
                 {/* Date */}
                 <div>
-                  <label htmlFor="dayDate" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label
+                    htmlFor="dayDate"
+                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                  >
                     Date <span className="text-red-500">*</span>
                   </label>
                   <GlassInput
@@ -276,19 +278,24 @@ export function AddActivityModal({
                     type="date"
                     value={formData.dayDate}
                     onChange={(e) => handleChange('dayDate', e.target.value)}
-                    className={errors.dayDate ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
+                    className={
+                      errors.dayDate
+                        ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
+                        : ''
+                    }
                     disabled={isSubmitting}
                   />
-                  {errors.dayDate && (
-                    <p className="mt-1 text-xs text-red-600">{errors.dayDate}</p>
-                  )}
+                  {errors.dayDate && <p className="mt-1 text-xs text-red-600">{errors.dayDate}</p>}
                 </div>
 
                 {/* Time Range */}
                 <div className="grid grid-cols-2 gap-4">
                   {/* Start Time */}
                   <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <label
+                      htmlFor="startTime"
+                      className="block text-sm font-medium text-slate-700 mb-1.5"
+                    >
                       Start Time <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -297,7 +304,11 @@ export function AddActivityModal({
                         type="time"
                         value={formData.startTime}
                         onChange={(e) => handleChange('startTime', e.target.value)}
-                        className={errors.startTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
+                        className={
+                          errors.startTime || errors.timeRange
+                            ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
+                            : ''
+                        }
                         disabled={isSubmitting}
                       />
                       <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -309,7 +320,10 @@ export function AddActivityModal({
 
                   {/* End Time */}
                   <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <label
+                      htmlFor="endTime"
+                      className="block text-sm font-medium text-slate-700 mb-1.5"
+                    >
                       End Time <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -318,7 +332,11 @@ export function AddActivityModal({
                         type="time"
                         value={formData.endTime}
                         onChange={(e) => handleChange('endTime', e.target.value)}
-                        className={errors.endTime || errors.timeRange ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
+                        className={
+                          errors.endTime || errors.timeRange
+                            ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
+                            : ''
+                        }
                         disabled={isSubmitting}
                       />
                       <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -336,7 +354,10 @@ export function AddActivityModal({
 
                 {/* Notes */}
                 <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                  >
                     Notes
                   </label>
                   <textarea

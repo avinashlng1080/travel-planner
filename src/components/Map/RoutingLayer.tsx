@@ -34,7 +34,10 @@ export function RoutingLayer({
   opacity = 0.8,
   enabled = true,
 }: RoutingLayerProps) {
-  const { coordinates, isLoading, error, useFallback, distance, duration } = useRouting(waypoints, enabled);
+  const { coordinates, isLoading, error, useFallback, distance, duration } = useRouting(
+    waypoints,
+    enabled
+  );
 
   // Log routing status for debugging (only in development)
   useEffect(() => {
@@ -49,7 +52,7 @@ export function RoutingLayer({
         const distanceStr = distance ? `${distance.toFixed(1)}km` : '';
         const durationStr = duration ? `${duration.toFixed(0)}min` : '';
         const metrics = distanceStr && durationStr ? ` (${distanceStr}, ${durationStr})` : '';
-        console.log('[RoutingLayer] Route loaded with', coordinates.length, 'points' + metrics);
+        console.log('[RoutingLayer] Route loaded with', coordinates.length, `points${  metrics}`);
       }
     }
   }, [isLoading, error, useFallback, coordinates.length, waypoints.length, distance, duration]);

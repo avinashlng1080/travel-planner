@@ -91,9 +91,12 @@ export function GlassButton({
 }) {
   const variantClasses = {
     default: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
-    primary: 'bg-gradient-to-r from-sunset-500 to-ocean-600 hover:from-sunset-600 hover:to-ocean-700 text-white shadow-glow-sunset',
-    success: 'bg-gradient-to-r from-ocean-500 to-ocean-600 hover:from-ocean-600 hover:to-ocean-700 text-white',
-    danger: 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white',
+    primary:
+      'bg-gradient-to-r from-sunset-500 to-ocean-600 hover:from-sunset-600 hover:to-ocean-700 text-white shadow-glow-sunset',
+    success:
+      'bg-gradient-to-r from-ocean-500 to-ocean-600 hover:from-ocean-600 hover:to-ocean-700 text-white',
+    danger:
+      'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white',
   };
 
   const sizeClasses = {
@@ -155,7 +158,17 @@ export function GlassBadge({
   className = '',
 }: {
   children: ReactNode;
-  color?: 'slate' | 'pink' | 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'cyan' | 'sunset' | 'ocean';
+  color?:
+    | 'slate'
+    | 'pink'
+    | 'green'
+    | 'blue'
+    | 'amber'
+    | 'red'
+    | 'purple'
+    | 'cyan'
+    | 'sunset'
+    | 'ocean';
   className?: string;
 }) {
   const colorClasses = {

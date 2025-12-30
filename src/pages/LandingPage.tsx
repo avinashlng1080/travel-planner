@@ -43,9 +43,8 @@ export function LandingPage() {
               </h1>
 
               <p className="mt-6 text-lg text-slate-600 leading-relaxed">
-                AI-powered travel planning designed for families with toddlers.
-                Interactive maps, flexible itineraries, and smart recommendations
-                make trip planning a breeze.
+                AI-powered travel planning designed for families with toddlers. Interactive maps,
+                flexible itineraries, and smart recommendations make trip planning a breeze.
               </p>
 
               {/* Feature List */}
@@ -119,15 +118,9 @@ export function LandingPage() {
 
                 {/* Auth Forms */}
                 {authMode === 'signup' ? (
-                  <SignupForm
-                    onSuccess={() => {}}
-                    onSwitchToLogin={() => setAuthMode('login')}
-                  />
+                  <SignupForm onSuccess={() => {}} onSwitchToLogin={() => setAuthMode('login')} />
                 ) : (
-                  <LoginForm
-                    onSuccess={() => {}}
-                    onSwitchToSignup={() => setAuthMode('signup')}
-                  />
+                  <LoginForm onSuccess={() => {}} onSwitchToSignup={() => setAuthMode('signup')} />
                 )}
               </GlassPanel>
             </motion.div>

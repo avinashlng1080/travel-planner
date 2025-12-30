@@ -117,12 +117,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
         </div>
       )}
 
-      <GlassButton
-        variant="primary"
-        size="lg"
-        className="w-full"
-        disabled={isLoading}
-      >
+      <GlassButton variant="primary" size="lg" className="w-full" disabled={isLoading}>
         {isLoading ? 'Creating account...' : 'Create Account'}
       </GlassButton>
 

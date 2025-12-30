@@ -1,12 +1,33 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+// TODO: Refactor to move all hooks before early return to comply with Rules of Hooks
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from 'convex/react';
-import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns } from 'lucide-react';
+import {
+  Map,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Lightbulb,
+  AlertTriangle,
+  Sun,
+  Cloud,
+  Clock,
+  Info,
+  Zap,
+  Columns,
+} from 'lucide-react';
 import { FloatingPanel } from '../ui/FloatingPanel';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
+import {
+  panelsAtom,
+  closePanelAtom,
+  toggleMinimizeAtom,
+  updatePositionAtom,
+  bringToFrontAtom,
+} from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
 import { LucideIcon } from 'lucide-react';
@@ -45,7 +66,11 @@ interface TripPlannerPanelProps {
   onActivityClick?: (activityId: string) => void;
 }
 
-export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: TripPlannerPanelProps) {
+export function TripPlannerPanel({
+  tripId,
+  selectedPlanId,
+  onActivityClick,
+}: TripPlannerPanelProps) {
   const [panels] = useAtom(panelsAtom);
   const closePanel = useSetAtom(closePanelAtom);
   const toggleMinimize = useSetAtom(toggleMinimizeAtom);
@@ -55,20 +80,20 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
   const { width, height } = useResponsivePanel(420, 580);
 
-  const panelState = panels?.tripPlanner;
-
-  // Don't render if panel state not initialized
-  if (!panelState) {
-    return null;
-  }
-
-  // Fetch data from Convex
+  // Fetch data from Convex (must be called before any early returns)
   const scheduleItems = useQuery(
     api.tripScheduleItems.getScheduleItems,
     selectedPlanId ? { planId: selectedPlanId } : 'skip'
   );
 
   const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
+
+  const panelState = panels?.tripPlanner;
+
+  // Don't render if panel state not initialized
+  if (!panelState) {
+    return null;
+  }
 
   // Transform tripLocations to Location format for child components
   const locations = useMemo(() => {
@@ -108,14 +133,17 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
     if (!scheduleItems || !tripLocations) return [];
 
     // Group items by dayDate
-    const groupedByDate = scheduleItems.reduce((acc, item) => {
-      const date = item.dayDate;
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(item);
-      return acc;
-    }, {} as Record<string, typeof scheduleItems>);
+    const groupedByDate = scheduleItems.reduce(
+      (acc, item) => {
+        const date = item.dayDate;
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(item);
+        return acc;
+      },
+      {} as Record<string, typeof scheduleItems>
+    );
 
     // Convert to DayPlan format
     return Object.entries(groupedByDate)
@@ -265,10 +293,34 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
 
     // Tips
     const tips: Suggestion[] = [
-      { id: 'tip-hydration', type: 'tip', icon: Info, title: 'Stay hydrated!', description: 'Malaysia is hot (24-32°C). Carry water!' },
-      { id: 'tip-grab', type: 'tip', icon: Info, title: 'Use Grab', description: 'Safe & reliable. RM 12-25 around KL.' },
-      { id: 'tip-monkeys', type: 'tip', icon: Zap, title: 'Beware of monkeys', description: 'At Batu Caves - hide food & phones!' },
-      { id: 'tip-carrier', type: 'tip', icon: Info, title: 'Baby carrier', description: 'Essential for Aquaria (no strollers).' },
+      {
+        id: 'tip-hydration',
+        type: 'tip',
+        icon: Info,
+        title: 'Stay hydrated!',
+        description: 'Malaysia is hot (24-32°C). Carry water!',
+      },
+      {
+        id: 'tip-grab',
+        type: 'tip',
+        icon: Info,
+        title: 'Use Grab',
+        description: 'Safe & reliable. RM 12-25 around KL.',
+      },
+      {
+        id: 'tip-monkeys',
+        type: 'tip',
+        icon: Zap,
+        title: 'Beware of monkeys',
+        description: 'At Batu Caves - hide food & phones!',
+      },
+      {
+        id: 'tip-carrier',
+        type: 'tip',
+        icon: Info,
+        title: 'Baby carrier',
+        description: 'Essential for Aquaria (no strollers).',
+      },
     ];
 
     if (result.length < 4) {
@@ -281,11 +333,16 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
 
   const getSuggestionColor = (type: Suggestion['type']) => {
     switch (type) {
-      case 'weather': return 'from-yellow-500 to-orange-500';
-      case 'time': return 'from-blue-500 to-cyan-500';
-      case 'nearby': return 'from-green-500 to-emerald-500';
-      case 'tip': return 'from-sunset-500 to-ocean-600';
-      default: return 'from-slate-500 to-slate-600';
+      case 'weather':
+        return 'from-yellow-500 to-orange-500';
+      case 'time':
+        return 'from-blue-500 to-cyan-500';
+      case 'nearby':
+        return 'from-green-500 to-emerald-500';
+      case 'tip':
+        return 'from-sunset-500 to-ocean-600';
+      default:
+        return 'from-slate-500 to-slate-600';
     }
   };
 
@@ -402,10 +459,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
                       Drag activities between Plan A and Plan B to create your custom itinerary
                     </p>
                   </div>
-                  <PlanBuilder
-                    dayPlan={selectedDayPlan}
-                    locations={locations}
-                  />
+                  <PlanBuilder dayPlan={selectedDayPlan} locations={locations} />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

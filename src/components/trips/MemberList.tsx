@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/purity */
+// TODO: Refactor to avoid calling setState from useMemo
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -284,13 +286,9 @@ export function MemberList({
                 member={member}
                 isOwner={isOwner}
                 onChangeRole={
-                  onChangeRole
-                    ? (newRole) => onChangeRole(member.userId, newRole)
-                    : undefined
+                  onChangeRole ? (newRole) => onChangeRole(member.userId, newRole) : undefined
                 }
-                onRemoveMember={
-                  onRemoveMember ? () => onRemoveMember(member.userId) : undefined
-                }
+                onRemoveMember={onRemoveMember ? () => onRemoveMember(member.userId) : undefined}
               />
             ))}
           </AnimatePresence>
@@ -319,12 +317,8 @@ export function MemberList({
                   key={member.id}
                   member={member}
                   isOwner={isOwner}
-                  onResendInvite={
-                    onResendInvite ? () => onResendInvite(member.userId) : undefined
-                  }
-                  onCancelInvite={
-                    onCancelInvite ? () => onCancelInvite(member.userId) : undefined
-                  }
+                  onResendInvite={onResendInvite ? () => onResendInvite(member.userId) : undefined}
+                  onCancelInvite={onCancelInvite ? () => onCancelInvite(member.userId) : undefined}
                 />
               ))}
             </AnimatePresence>

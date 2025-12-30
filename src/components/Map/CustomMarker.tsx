@@ -5,14 +5,14 @@ import type { Location } from '../../types';
 const CATEGORY_COLORS: Record<string, string> = {
   'home-base': '#EC4899',
   'toddler-friendly': '#F472B6',
-  'attraction': '#10B981',
-  'shopping': '#8B5CF6',
-  'restaurant': '#F59E0B',
-  'nature': '#22C55E',
-  'temple': '#EF4444',
-  'playground': '#06B6D4',
-  'medical': '#DC2626',
-  'avoid': '#64748b',
+  attraction: '#10B981',
+  shopping: '#8B5CF6',
+  restaurant: '#F59E0B',
+  nature: '#22C55E',
+  temple: '#EF4444',
+  playground: '#06B6D4',
+  medical: '#DC2626',
+  avoid: '#64748b',
 };
 
 interface CustomMarkerProps {
