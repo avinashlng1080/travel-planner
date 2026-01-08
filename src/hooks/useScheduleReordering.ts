@@ -46,9 +46,11 @@
  * ```
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useMutation } from 'convex/react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
 import { api } from '../../convex/_generated/api';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 /**
@@ -111,7 +113,7 @@ function sortByTime(items: ScheduleItem[]): ScheduleItem[] {
   return [...items].sort((a, b) => {
     // First compare by start time
     const timeCompare = a.startTime.localeCompare(b.startTime);
-    if (timeCompare !== 0) return timeCompare;
+    if (timeCompare !== 0) {return timeCompare;}
 
     // If start times are equal, compare by order (undefined orders go last)
     return (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER);
@@ -129,7 +131,7 @@ function sortByOrder(items: ScheduleItem[]): ScheduleItem[] {
  * Check if items have been manually reordered (order differs from time-based order)
  */
 function checkHasManualOrder(items: ScheduleItem[]): boolean {
-  if (items.length === 0) return false;
+  if (items.length === 0) {return false;}
 
   const timeOrdered = sortByTime(items);
   const orderOrdered = sortByOrder(items);
@@ -166,13 +168,13 @@ export function useScheduleReordering({
 
   // Compute sorted items (use optimistic if available, otherwise server data)
   const sortedItems = useMemo(() => {
-    const items = optimisticItems || scheduleItems || [];
+    const items = optimisticItems ?? scheduleItems ?? [];
     return sortByOrder(items);
   }, [optimisticItems, scheduleItems]);
 
   // Check if items have manual ordering
   const hasManualOrder = useMemo(() => {
-    return checkHasManualOrder(scheduleItems || []);
+    return checkHasManualOrder(scheduleItems ?? []);
   }, [scheduleItems]);
 
   /**

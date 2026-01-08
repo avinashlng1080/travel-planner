@@ -21,7 +21,7 @@ export const getMembers = query({
       )
       .first();
 
-    if (!userMembership || userMembership.status !== "accepted") {
+    if (userMembership?.status !== "accepted") {
       throw new Error("You don't have access to this trip");
     }
 
@@ -60,10 +60,10 @@ export const getMembers = query({
     const roleOrder = { owner: 0, editor: 1, commenter: 2, viewer: 3 };
     membersWithProfiles.sort((a, b) => {
       const roleCompare = roleOrder[a.role] - roleOrder[b.role];
-      if (roleCompare !== 0) return roleCompare;
+      if (roleCompare !== 0) {return roleCompare;}
 
-      const nameA = a.profile?.name || "";
-      const nameB = b.profile?.name || "";
+      const nameA = a.profile?.name ?? "";
+      const nameB = b.profile?.name ?? "";
       return nameA.localeCompare(nameB);
     });
 
@@ -94,7 +94,7 @@ export const inviteMember = mutation({
       )
       .first();
 
-    if (!userMembership || userMembership.role !== "owner") {
+    if (userMembership?.role !== "owner") {
       throw new Error("Only trip owners can invite members");
     }
 
@@ -179,7 +179,7 @@ export const createInviteLink = mutation({
       )
       .first();
 
-    if (!userMembership || userMembership.role !== "owner") {
+    if (userMembership?.role !== "owner") {
       throw new Error("Only trip owners can create invite links");
     }
 
@@ -399,7 +399,7 @@ export const updateMemberRole = mutation({
       )
       .first();
 
-    if (!userMembership || userMembership.role !== "owner") {
+    if (userMembership?.role !== "owner") {
       throw new Error("Only trip owners can update member roles");
     }
 
@@ -613,7 +613,7 @@ export const getTripPendingInvites = query({
         return {
           _id: member._id,
           userId: member.userId,
-          email: user?.email || "Unknown",
+          email: user?.email ?? "Unknown",
           role: member.role,
           invitedAt: member.invitedAt,
         };
@@ -691,7 +691,7 @@ export const revokeInviteLink = mutation({
       )
       .first();
 
-    if (!userMembership || userMembership.role !== "owner") {
+    if (userMembership?.role !== "owner") {
       throw new Error("Only trip owners can revoke invite links");
     }
 
@@ -721,7 +721,7 @@ export const getMemberCount = query({
       )
       .first();
 
-    if (!userMembership || userMembership.status !== "accepted") {
+    if (userMembership?.status !== "accepted") {
       return 0;
     }
 

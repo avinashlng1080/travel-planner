@@ -1,5 +1,7 @@
 import { useSetAtom } from 'jotai';
+
 import { advanceToNextStepAtom } from '@/atoms/onboardingAtoms';
+
 import { FlightPathAnimation } from '../FlightPathAnimation';
 
 /**

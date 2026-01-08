@@ -1,4 +1,4 @@
-import { ChatMessage as ChatMessageType } from '../../hooks/useAIChat';
+import { type ChatMessage as ChatMessageType } from '../../hooks/useAIChat';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -28,7 +28,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         );
       }
-      if (line.trim() === '') return <br key={`br-${i}`} />;
+      if (line.trim() === '') {return <br key={`br-${i}`} />;}
       return <p key={`line-${i}-${line.slice(0, 20)}`} className="my-1">{line}</p>;
     });
   };

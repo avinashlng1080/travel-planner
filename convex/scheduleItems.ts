@@ -55,10 +55,7 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
-    );
-    await ctx.db.patch(id, cleanUpdates);
+    await ctx.db.patch(id, updates);
   },
 });
 
@@ -74,7 +71,7 @@ export const moveItemBetweenPlans = mutation({
 
     // Get the item being moved
     const item = await ctx.db.get(itemId);
-    if (!item) throw new Error("Item not found");
+    if (!item) {throw new Error("Item not found");}
 
     const sourcePlanType = item.planType;
     const dayPlanId = item.dayPlanId;
@@ -91,7 +88,7 @@ export const moveItemBetweenPlans = mutation({
       const sorted = items.sort((a, b) => a.order - b.order);
       const oldIndex = sorted.findIndex((i) => i._id === itemId);
 
-      if (oldIndex === targetIndex) return { success: true };
+      if (oldIndex === targetIndex) {return { success: true };}
 
       // Remove item and reinsert at new position
       const reordered = [...sorted];

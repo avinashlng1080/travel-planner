@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Minus, Minimize2, Square } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import { X, Minus, Minimize2, Square , type LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface FloatingPanelProps {
   id: string;
@@ -43,7 +42,7 @@ export function FloatingPanel({
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
   // Calculate dimensions based on state
@@ -94,7 +93,7 @@ export function FloatingPanel({
           dragElastic={0}
           dragConstraints={dragConstraints}
           onDragEnd={(_event, info) => {
-            if (isMaximized) return;
+            if (isMaximized) {return;}
             const newX = position.x + info.offset.x;
             const newY = position.y + info.offset.y;
 
@@ -123,6 +122,15 @@ export function FloatingPanel({
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}
               onPointerDown={(e) => !isMaximized && dragControls.start(e)}
               onDoubleClick={toggleMaximize}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleMaximize();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={isMaximized ? 'Restore panel' : 'Maximize panel'}
             >
               <div className="flex items-center gap-3 pointer-events-none">
                 <div className="w-8 h-8 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-lg flex items-center justify-center shadow-lg shadow-sunset-500/30">
@@ -142,7 +150,7 @@ export function FloatingPanel({
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (isMaximized) setIsMaximized(false);
+                    if (isMaximized) {setIsMaximized(false);}
                     onMinimize();
                   }}
                   className="p-2.5 md:p-1.5 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center"

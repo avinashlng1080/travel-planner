@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Map, CheckSquare, Filter, Upload, Users } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Map, CheckSquare, Filter, Upload, Users } from 'lucide-react';
+import { useState } from 'react';
+
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavIconProps {
@@ -32,8 +33,8 @@ function NavIcon({ icon: Icon, label, isActive, onClick }: NavIconProps) {
           }
         `}
         onClick={onClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+        onMouseEnter={() => { setShowTooltip(true); }}
+        onMouseLeave={() => { setShowTooltip(false); }}
         aria-label={label}
       >
         <Icon className="w-5 h-5" />
@@ -56,11 +57,11 @@ export function NavigationDock({ onImportClick }: NavigationDockProps) {
   const [panels] = useAtom(panelsAtom);
   const openPanel = useSetAtom(openPanelAtom);
 
-  const navItems: Array<{
+  const navItems: {
     id: PanelId;
     icon: React.ElementType;
     label: string;
-  }> = [
+  }[] = [
     { id: 'tripPlanner', icon: Map, label: 'Trip Planner' },
     { id: 'checklist', icon: CheckSquare, label: 'Checklist' },
     { id: 'filters', icon: Filter, label: 'Filters' },
@@ -91,7 +92,7 @@ export function NavigationDock({ onImportClick }: NavigationDockProps) {
             label={item.label}
             panelId={item.id}
             isActive={panels[item.id].isOpen && !panels[item.id].isMinimized}
-            onClick={() => openPanel(item.id)}
+            onClick={() => { openPanel(item.id); }}
           />
         ))}
       </nav>

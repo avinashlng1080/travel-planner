@@ -1,5 +1,7 @@
 import { Droplets } from 'lucide-react';
+
 import { WeatherIcon } from './WeatherIcon';
+
 import type { ProcessedDailyForecast } from '../../types/weather';
 
 interface WeatherBadgeProps {

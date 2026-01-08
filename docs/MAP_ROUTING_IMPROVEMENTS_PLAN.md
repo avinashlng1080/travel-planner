@@ -383,7 +383,7 @@ For a travel planning app with moderate usage, this should be **sufficient for f
 
 ```env
 # .env
-VITE_GOOGLE_MAPS_API_KEY=AIza...
+VITE_GOOGLE_MAPS_KEY=AIza...
 
 # Remove
 # VITE_ORS_API_KEY=...
@@ -426,7 +426,7 @@ GOOGLE_MAPS_API_KEY=AIza...
 2. [ ] Enable Maps JavaScript API
 3. [ ] Enable Directions API
 4. [ ] Generate API key with domain restrictions
-5. [ ] Add `VITE_GOOGLE_MAPS_API_KEY` to `.env`
+5. [ ] Add `VITE_GOOGLE_MAPS_KEY` to `.env`
 6. [ ] Install `@vis.gl/react-google-maps`
 7. [ ] Create `src/components/Map/GoogleMap/` directory structure
 
@@ -463,7 +463,7 @@ interface GoogleMapProviderProps {
 }
 
 export function GoogleMapProvider({ children }: GoogleMapProviderProps) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 
   if (!apiKey) {
     console.error('Google Maps API key is required');

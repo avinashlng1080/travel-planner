@@ -64,7 +64,7 @@ export const createProfile = mutation({
     }
 
     const identity = await ctx.auth.getUserIdentity();
-    const email = identity?.email || "";
+    const email = identity?.email ?? "";
 
     // Check if profile already exists
     const existingProfile = await ctx.db
@@ -133,7 +133,7 @@ export const ensureProfile = mutation({
     }
 
     const identity = await ctx.auth.getUserIdentity();
-    const email = identity?.email || "";
+    const email = identity?.email ?? "";
 
     // Check if profile already exists
     const existingProfile = await ctx.db

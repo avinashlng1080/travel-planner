@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckSquare,
@@ -10,6 +9,8 @@ import {
   Briefcase,
   Package,
 } from 'lucide-react';
+import { useState } from 'react';
+
 import { GlassPanel, GlassInput, GlassButton, GlassBadge } from '../ui/GlassPanel';
 
 interface ChecklistItem {
@@ -83,7 +84,7 @@ function ChecklistSection({
     <div className="border-b border-slate-200/50 last:border-b-0">
       <button
         className="w-full flex items-center justify-between p-3 hover:bg-slate-100/40 transition-colors"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { setExpanded(!expanded); }}
       >
         <div className="flex items-center gap-3">
           <div
@@ -114,7 +115,7 @@ function ChecklistSection({
               <button
                 key={item.id}
                 className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100/40 transition-colors text-left"
-                onClick={() => onToggleItem(item.id)}
+                onClick={() => { onToggleItem(item.id); }}
               >
                 {item.checked ? (
                   <CheckSquare className="w-5 h-5 text-green-400 flex-shrink-0" />
@@ -133,11 +134,11 @@ function ChecklistSection({
               <div className="flex items-center gap-2 pt-2">
                 <GlassInput
                   value={newItemText}
-                  onChange={(e) => setNewItemText(e.target.value)}
+                  onChange={(e) => { setNewItemText(e.target.value); }}
                   placeholder="Add new item..."
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddItem();
-                    if (e.key === 'Escape') setShowAddInput(false);
+                    if (e.key === 'Enter') {handleAddItem();}
+                    if (e.key === 'Escape') {setShowAddInput(false);}
                   }}
                   autoFocus
                 />
@@ -148,7 +149,7 @@ function ChecklistSection({
             ) : (
               <button
                 className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 p-2"
-                onClick={() => setShowAddInput(true)}
+                onClick={() => { setShowAddInput(true); }}
               >
                 <Plus className="w-4 h-4" />
                 Add item
@@ -215,7 +216,7 @@ const DEFAULT_CHECKLISTS: ChecklistCategory[] = [
 ];
 
 export function ChecklistPanel({
-  checklists = DEFAULT_CHECKLISTS,
+  checklists,
   onToggleItem,
   onAddItem,
 }: ChecklistPanelProps) {
@@ -241,8 +242,8 @@ export function ChecklistPanel({
           <ChecklistSection
             key={category.id}
             category={category}
-            onToggleItem={(itemId) => onToggleItem(category.id, itemId)}
-            onAddItem={(text) => onAddItem(category.id, text)}
+            onToggleItem={(itemId) => { onToggleItem(category.id, itemId); }}
+            onAddItem={(text) => { onAddItem(category.id, text); }}
           />
         ))}
       </div>

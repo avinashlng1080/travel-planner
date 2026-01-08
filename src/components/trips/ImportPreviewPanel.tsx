@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -10,6 +9,10 @@ import {
   Calendar,
   Globe,
 } from 'lucide-react';
+import { useState } from 'react';
+
+import { getTimezoneOptions, getTimezoneAbbr, getGMTOffset } from '@/utils/timezone';
+
 import type {
   ParsedItinerary,
   ParsedLocation,
@@ -17,7 +20,7 @@ import type {
   ConfidenceLevel,
   LocationCategory,
 } from '@/types/itinerary';
-import { getTimezoneOptions, getTimezoneAbbr, getGMTOffset } from '@/utils/timezone';
+
 
 interface ImportPreviewPanelProps {
   data: ParsedItinerary;
@@ -142,7 +145,7 @@ export function ImportPreviewPanel({
         </p>
         <select
           value={selectedTimezone || ''}
-          onChange={(e) => onTimezoneChange(e.target.value)}
+          onChange={(e) => { onTimezoneChange(e.target.value); }}
           className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           <option value="">Select timezone...</option>
@@ -227,7 +230,7 @@ export function ImportPreviewPanel({
               <div className="flex items-center gap-2">
                 <ConfidenceBadge confidence={location.confidence} />
                 <button
-                  onClick={() => onDeleteLocation(location.id)}
+                  onClick={() => { onDeleteLocation(location.id); }}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   aria-label={`Delete ${location.name}`}
                 >
@@ -253,7 +256,7 @@ export function ImportPreviewPanel({
             >
               {/* Day Header */}
               <button
-                onClick={() => toggleDay(dayIndex)}
+                onClick={() => { toggleDay(dayIndex); }}
                 className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 transition-colors"
               >
                 <span className="font-medium text-slate-900">
@@ -315,7 +318,7 @@ export function ImportPreviewPanel({
                               </span>
                             )}
                             <button
-                              onClick={() => onDeleteActivity(dayIndex, activity.id)}
+                              onClick={() => { onDeleteActivity(dayIndex, activity.id); }}
                               className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               aria-label={`Delete ${activity.locationName} activity`}
                             >

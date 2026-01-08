@@ -1,26 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
-import { MapPin, Navigation } from 'lucide-react';
-import { FloatingHeader } from '../components/Layout/FloatingHeader';
-import { NavigationDock } from '../components/Layout/NavigationDock';
-import { MobileNavBar } from '../components/Layout/MobileNavBar';
-import { AIChatWidget } from '../components/Layout/AIChatWidget';
-import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
-import { EditTripModal } from '../components/trips/EditTripModal';
-import { AddActivityModal } from '../components/trips/AddActivityModal';
-import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
-import { EditActivityModal } from '../components/trips/EditActivityModal';
-import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
-import AddDestinationModal from '../components/trips/AddDestinationModal';
-import EditDestinationModal from '../components/trips/EditDestinationModal';
-import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
-import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
-import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
-import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
-import { WeatherIndicator } from '../components/weather';
 import { useAtom, useSetAtom } from 'jotai';
-import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
+import { MapPin, Navigation } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+import { api } from '../../convex/_generated/api';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
+import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
 import {
   focusedActivityAtom,
   addDestinationModalOpenAtom,
@@ -33,7 +18,28 @@ import {
   activeCommuteDestinationAtom,
   selectedDayIdAtom
 } from '../atoms/uiAtoms';
-import { api } from '../../convex/_generated/api';
+import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
+import { AIChatWidget } from '../components/Layout/AIChatWidget';
+import { FloatingHeader } from '../components/Layout/FloatingHeader';
+import { MobileNavBar } from '../components/Layout/MobileNavBar';
+import { NavigationDock } from '../components/Layout/NavigationDock';
+import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
+import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
+import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
+import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
+import { AddActivityModal } from '../components/trips/AddActivityModal';
+import AddDestinationModal from '../components/trips/AddDestinationModal';
+import CommutesPanel from '../components/trips/CommutesPanel';
+import DeleteDestinationDialog from '../components/trips/DeleteDestinationDialog';
+import { EditActivityModal } from '../components/trips/EditActivityModal';
+import EditDestinationModal from '../components/trips/EditDestinationModal';
+import { EditTripModal } from '../components/trips/EditTripModal';
+import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
+import { WeatherIndicator } from '../components/weather';
+import { useCommutes, type CommuteDestination } from '../hooks/useCommutes';
+
+
+
 import type { Id } from '../../convex/_generated/dataModel';
 import type { Location } from '../data/tripData';
 
@@ -124,7 +130,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       const timer = setTimeout(() => {
         startOnboarding();
       }, 500);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [tripData, onboardingStatus, startOnboarding]);
 
@@ -135,7 +141,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         openPanel('tripPlanner');
         setHasOpenedPanel(true);
       }, 800); // Open after onboarding animation
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [tripData, hasOpenedPanel, openPanel]);
 
@@ -145,6 +151,87 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       setSelectedPlanId(tripData.plans[0]._id);
     }
   }, [tripData, selectedPlanId]);
+
+  // Transform tripLocations to Location format for map (must be before early returns - hooks rule)
+  const mapLocations: Location[] = useMemo(() => {
+    if (!tripLocations) {return [];}
+    return tripLocations.map((loc) => ({
+      id: loc._id,
+      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
+      lat: loc.customLat || loc.baseLocation?.lat || 0,
+      lng: loc.customLng || loc.baseLocation?.lng || 0,
+      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as Location['category'],
+      description: loc.customDescription || loc.baseLocation?.description || '',
+      city: loc.baseLocation?.city || 'Malaysia',
+      toddlerRating: loc.baseLocation?.toddlerRating || 3,
+      isIndoor: loc.baseLocation?.isIndoor || false,
+      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
+      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
+      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
+      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
+      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
+      warnings: loc.baseLocation?.warnings || [],
+      tips: loc.baseLocation?.tips || [],
+      whatToBring: loc.baseLocation?.whatToBring || [],
+      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
+      bookingRequired: loc.baseLocation?.bookingRequired || false,
+      openingHours: loc.baseLocation?.openingHours || 'Check locally',
+      planIds: [],
+      address: loc.baseLocation?.address,
+      entranceFee: loc.baseLocation?.entranceFee,
+      dressCode: loc.baseLocation?.dressCode,
+    }));
+  }, [tripLocations]);
+
+  // Get all categories for filtering
+  const visibleCategories = useMemo(() => {
+    return Array.from(new Set(mapLocations.map((loc) => loc.category)));
+  }, [mapLocations]);
+
+  // Derive commute origin from trip data (use first location with 'home-base' category or first location)
+  const commuteOrigin = useMemo(() => {
+    const homeBase = mapLocations.find((loc) => loc.category === 'home-base');
+    if (homeBase) {
+      return { lat: homeBase.lat, lng: homeBase.lng };
+    }
+    // Fallback to first location or trip coordinates if available
+    if (mapLocations.length > 0) {
+      return { lat: mapLocations[0].lat, lng: mapLocations[0].lng };
+    }
+    // Default fallback (Kuala Lumpur city center)
+    return { lat: 3.1390, lng: 101.6869 };
+  }, [mapLocations]);
+
+  // Filter out origin location from commute destinations to avoid showing "0 mins" commute to self
+  const commuteDestinationsWithoutOrigin = useMemo(() => {
+    if (!commuteDestinations) {return [];}
+    // Remove any destination that's the same as origin (within small tolerance)
+    return commuteDestinations.filter((dest) => {
+      const latDiff = Math.abs(dest.lat - commuteOrigin.lat);
+      const lngDiff = Math.abs(dest.lng - commuteOrigin.lng);
+      return latDiff > 0.0001 || lngDiff > 0.0001; // ~10 meters tolerance
+    });
+  }, [commuteDestinations, commuteOrigin]);
+
+  // Transform Convex destinations to CommuteDestination format for useCommutes hook
+  const commuteDestinationsForHook: CommuteDestination[] = useMemo(() => {
+    return commuteDestinationsWithoutOrigin.map((dest) => ({
+      id: dest._id,
+      name: dest.name,
+      lat: dest.lat,
+      lng: dest.lng,
+      address: dest.address,
+      category: dest.category,
+    }));
+  }, [commuteDestinationsWithoutOrigin]);
+
+  // Calculate commute times for map display
+  const { results: commuteResults } = useCommutes({
+    origin: commuteOrigin,
+    destinations: commuteDestinationsForHook,
+    travelMode,
+    enabled: commutesPanelOpen && commuteDestinationsForHook.length > 0,
+  });
 
   // Loading state
   if (tripData === undefined) {
@@ -180,50 +267,16 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const { trip, members } = tripData;
 
   // Calculate current day and total days for FloatingHeader
-  const currentDay = tripData ? Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
-  const totalDays = tripData ? Math.floor((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
+  const currentDay = Math.floor((Date.now() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const totalDays = Math.floor((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
   // Get user's role from members (needed for ActivityDetailPanel)
   const currentMember = members.find((m) => m.status === 'accepted');
   const userRole = currentMember?.role || 'viewer';
 
-  // Transform tripLocations to Location format for map
-  const mapLocations: Location[] =
-    tripLocations?.map((loc) => ({
-      id: loc._id,
-      name: loc.customName || loc.baseLocation?.name || 'Unknown Location',
-      lat: loc.customLat || loc.baseLocation?.lat || 0,
-      lng: loc.customLng || loc.baseLocation?.lng || 0,
-      category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
-      description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
-      toddlerRating: loc.baseLocation?.toddlerRating || 3,
-      isIndoor: loc.baseLocation?.isIndoor || false,
-      bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
-      estimatedDuration: loc.baseLocation?.estimatedDuration || 'Varies',
-      grabEstimate: loc.baseLocation?.grabEstimate || 'Check Grab app',
-      distanceFromBase: loc.baseLocation?.distanceFromBase || 'N/A',
-      drivingTime: loc.baseLocation?.drivingTime || 'N/A',
-      warnings: loc.baseLocation?.warnings || [],
-      tips: loc.baseLocation?.tips || [],
-      whatToBring: loc.baseLocation?.whatToBring || [],
-      whatNotToBring: loc.baseLocation?.whatNotToBring || [],
-      bookingRequired: loc.baseLocation?.bookingRequired || false,
-      openingHours: loc.baseLocation?.openingHours || 'Check locally',
-      planIds: [],
-      address: loc.baseLocation?.address,
-      entranceFee: loc.baseLocation?.entranceFee,
-      dressCode: loc.baseLocation?.dressCode,
-    })) || [];
-
-  // Get all categories for filtering
-  const visibleCategories = Array.from(
-    new Set(mapLocations.map((loc) => loc.category))
-  );
-
   // Handler for deleting a destination
   const handleDeleteDestination = async () => {
-    if (!deletingDestinationId) return;
+    if (!deletingDestinationId) {return;}
 
     setIsDeleting(true);
     try {
@@ -249,9 +302,9 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         planRoute={[]}
         tripId={tripId}
         selectedPlanId={selectedPlanId}
-        commutes={commutes}
+        commutes={commuteResults}
         activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
-        onLocationSelect={(location) => setSelectedLocation(location)}
+        onLocationSelect={(location) => { setSelectedLocation(location); }}
       />
 
       {/* Floating Header */}
@@ -266,7 +319,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* Navigation Dock */}
       <NavigationDock
-        onImportClick={() => setIsImportModalOpen(true)}
+        onImportClick={() => { setIsImportModalOpen(true); }}
       />
 
       {/* Floating Panels */}
@@ -308,7 +361,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
           location={selectedLocation}
           days={[]}
           selectedDayId={null}
-          onClose={() => setSelectedLocation(null)}
+          onClose={() => { setSelectedLocation(null); }}
           onAddToPlan={(plan, details) => {
             console.log(`Add ${selectedLocation.name} to Plan ${plan}`, details);
             // TODO: Persist to database/state
@@ -329,7 +382,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Commutes Panel Toggle Button */}
       {commuteDestinationsWithoutOrigin.length > 0 && (
         <button
-          onClick={() => setCommutesPanelOpen(!commutesPanelOpen)}
+          onClick={() => { setCommutesPanelOpen(!commutesPanelOpen); }}
           className={`fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 ${
             commutesPanelOpen
               ? 'bg-ocean-600 text-white hover:bg-ocean-700'
@@ -349,13 +402,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0 && (
         <div className="fixed bottom-32 sm:bottom-16 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[600px] max-w-full z-30">
           <CommutesPanel
+            tripId={tripId}
             origin={commuteOrigin}
-            destinations={commuteDestinationsWithoutOrigin}
             travelMode={travelMode}
             onTravelModeChange={setTravelMode}
             onActiveDestinationChange={setActiveCommuteDestination}
-            commutes={commutes}
-            isLoading={isCommutesLoading}
           />
         </div>
       )}
@@ -369,7 +420,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Edit Trip Modal */}
       <EditTripModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => { setIsEditModalOpen(false); }}
         trip={trip}
         onSuccess={() => {
           // Trip data will refresh automatically via Convex reactivity
@@ -380,7 +431,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {selectedPlanId && (
         <AddActivityModal
           isOpen={isAddActivityModalOpen}
-          onClose={() => setIsAddActivityModalOpen(false)}
+          onClose={() => { setIsAddActivityModalOpen(false); }}
           tripId={tripId}
           planId={selectedPlanId}
           onSuccess={() => {
@@ -410,7 +461,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Activity Detail Panel */}
       <ActivityDetailPanel
         isOpen={!!selectedActivityId}
-        onClose={() => setSelectedActivityId(null)}
+        onClose={() => { setSelectedActivityId(null); }}
         activity={selectedActivity || null}
         location={
           activityLocation
@@ -438,7 +489,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {selectedPlanId && selectedActivity && (
         <EditActivityModal
           isOpen={isEditActivityModalOpen}
-          onClose={() => setIsEditActivityModalOpen(false)}
+          onClose={() => { setIsEditActivityModalOpen(false); }}
           activity={selectedActivity}
           tripId={tripId}
           planId={selectedPlanId}
@@ -452,7 +503,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Add Destination Modal */}
       <AddDestinationModal
         isOpen={addDestinationModalOpen}
-        onClose={() => setAddDestinationModalOpen(false)}
+        onClose={() => { setAddDestinationModalOpen(false); }}
         tripId={tripId}
         onSuccess={() => {
           // Destinations will refresh automatically via Convex reactivity

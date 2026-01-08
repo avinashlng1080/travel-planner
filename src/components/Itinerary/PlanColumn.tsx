@@ -2,8 +2,10 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
+
 import { DraggableItem } from './DraggableItem';
+
+import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface PlanColumnProps {
   planType: 'A' | 'B';

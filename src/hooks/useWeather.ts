@@ -9,13 +9,22 @@
  * - Flash flood risk calculation for Malaysia
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 import {
   weatherLocationAtom,
   weatherAutoRefreshAtom,
   lastWeatherDataAtom,
 } from '../atoms/weatherAtoms';
+import {
+  getWeatherCondition,
+  getWeatherDescription,
+  calculateFlashFloodRisk,
+  generateFlashFloodAlert,
+  getDayOfWeek,
+} from '../utils/weatherUtils';
+
 import type {
   OpenMeteoResponse,
   ProcessedCurrentWeather,
@@ -24,13 +33,6 @@ import type {
   UseWeatherResult,
   WeatherLocation,
 } from '../types/weather';
-import {
-  getWeatherCondition,
-  getWeatherDescription,
-  calculateFlashFloodRisk,
-  generateFlashFloodAlert,
-  getDayOfWeek,
-} from '../utils/weatherUtils';
 
 const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast';
 const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
@@ -132,7 +134,7 @@ export function useWeather(enabled = true): UseWeatherResult {
 
   // Fetch weather data from API
   const fetchWeather = useCallback(
-    async (lat: number, lng: number, forceRefresh = false) => {
+    async (lat: number, lng: number, forceRefresh) => {
       const cacheKey = getCacheKey(lat, lng);
 
       // Check cache first (unless forcing refresh)
@@ -203,7 +205,7 @@ export function useWeather(enabled = true): UseWeatherResult {
           console.log('[useWeather] Fetched weather data:', {
             temp: processed.current.temperature,
             condition: processed.current.condition,
-            flashFloodRisk: processed.flashFloodAlert?.level || 'low',
+            flashFloodRisk: processed.flashFloodAlert?.level ?? 'low',
           });
         }
       } catch (err) {
@@ -239,7 +241,7 @@ export function useWeather(enabled = true): UseWeatherResult {
       fetchWeather(location.lat, location.lng);
     }, DEBOUNCE_DELAY);
 
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [enabled, location.lat, location.lng, fetchWeather]);
 
   // Auto-refresh interval
@@ -252,7 +254,7 @@ export function useWeather(enabled = true): UseWeatherResult {
       fetchWeather(location.lat, location.lng, true);
     }, REFRESH_INTERVAL);
 
-    return () => clearInterval(intervalId);
+    return () => { clearInterval(intervalId); };
   }, [enabled, autoRefresh, location.lat, location.lng, fetchWeather]);
 
   return {

@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'convex/react';
 import { useSetAtom } from 'jotai';
 import {
@@ -15,10 +14,8 @@ import {
   Trash2,
   Clock,
 } from 'lucide-react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { GlassPanel, GlassCard } from '../ui/GlassPanel';
-import { useCommutes, TravelMode, CommuteDestination } from '@/hooks/useCommutes';
+import { useState, useRef, useEffect } from 'react';
+
 import {
   addDestinationModalOpenAtom,
   editDestinationModalOpenAtom,
@@ -26,6 +23,11 @@ import {
   deleteDestinationDialogOpenAtom,
   deletingDestinationIdAtom,
 } from '@/atoms/uiAtoms';
+import { useCommutes, type TravelMode, type CommuteDestination } from '@/hooks/useCommutes';
+
+import { api } from '../../../convex/_generated/api';
+import { type Id } from '../../../convex/_generated/dataModel';
+import { GlassPanel, GlassCard } from '../ui/GlassPanel';
 
 export interface CommutesPanelProps {
   tripId: Id<'trips'>;
@@ -35,12 +37,12 @@ export interface CommutesPanelProps {
   onActiveDestinationChange?: (destinationId: string | null) => void;
 }
 
-const TRAVEL_MODES: Array<{
+const TRAVEL_MODES: {
   mode: TravelMode;
   icon: typeof Car;
   label: string;
   color: string;
-}> = [
+}[] = [
   { mode: 'DRIVING', icon: Car, label: 'Drive', color: 'text-blue-600' },
   { mode: 'TRANSIT', icon: Train, label: 'Transit', color: 'text-green-600' },
   { mode: 'BICYCLING', icon: Bike, label: 'Bike', color: 'text-yellow-600' },
@@ -102,14 +104,14 @@ export default function CommutesPanel({
   useEffect(() => {
     updateScrollButtons();
     window.addEventListener('resize', updateScrollButtons);
-    return () => window.removeEventListener('resize', updateScrollButtons);
+    return () => { window.removeEventListener('resize', updateScrollButtons); };
   }, [destinations]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', updateScrollButtons);
-      return () => container.removeEventListener('scroll', updateScrollButtons);
+      return () => { container.removeEventListener('scroll', updateScrollButtons); };
     }
   }, []);
 
@@ -149,10 +151,10 @@ export default function CommutesPanel({
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setOpenMenuId(null);
+    const handleClickOutside = () => { setOpenMenuId(null); };
     if (openMenuId) {
       document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      return () => { document.removeEventListener('click', handleClickOutside); };
     }
   }, [openMenuId]);
 
@@ -167,7 +169,7 @@ export default function CommutesPanel({
           </p>
         </div>
         <button
-          onClick={() => setAddModalOpen(true)}
+          onClick={() => { setAddModalOpen(true); }}
           className="p-2 rounded-lg bg-gradient-to-r from-sunset-500 to-ocean-600 text-white hover:opacity-90 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Add destination"
         >
@@ -182,7 +184,7 @@ export default function CommutesPanel({
           return (
             <button
               key={mode}
-              onClick={() => onTravelModeChange(mode)}
+              onClick={() => { onTravelModeChange(mode); }}
               className={`
                 flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all duration-200 min-h-[60px]
                 ${isActive
@@ -214,7 +216,7 @@ export default function CommutesPanel({
             Add your first commute destination to see travel times
           </p>
           <button
-            onClick={() => setAddModalOpen(true)}
+            onClick={() => { setAddModalOpen(true); }}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-sunset-500 to-ocean-600 text-white font-semibold hover:opacity-90 transition-opacity min-h-[44px]"
           >
             Add Destination
@@ -225,7 +227,7 @@ export default function CommutesPanel({
           {/* Left Scroll Button */}
           {canScrollLeft && (
             <button
-              onClick={() => scroll('left')}
+              onClick={() => { scroll('left'); }}
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:bg-slate-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Scroll left"
             >
@@ -236,7 +238,7 @@ export default function CommutesPanel({
           {/* Right Scroll Button */}
           {canScrollRight && (
             <button
-              onClick={() => scroll('right')}
+              onClick={() => { scroll('right'); }}
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:bg-slate-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Scroll right"
             >
@@ -260,16 +262,16 @@ export default function CommutesPanel({
                 <div
                   key={dest.id}
                   className="relative flex-shrink-0"
-                  onMouseEnter={() => setHoveredDestinationId(dest.id)}
-                  onMouseLeave={() => setHoveredDestinationId(null)}
+                  onMouseEnter={() => { setHoveredDestinationId(dest.id); }}
+                  onMouseLeave={() => { setHoveredDestinationId(null); }}
                 >
                   <GlassCard
                     className={`
                       w-64 p-4 relative
                       ${isActive ? 'ring-2 ring-sunset-500 border-sunset-500' : ''}
                     `}
-                    onClick={() => handleDestinationClick(dest.id)}
-                    hover={true}
+                    onClick={() => { handleDestinationClick(dest.id); }}
+                    hover
                   >
                     {/* Kebab Menu */}
                     {(isHovered || menuOpen) && (
@@ -289,14 +291,14 @@ export default function CommutesPanel({
                         {menuOpen && (
                           <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-20 min-w-[140px]">
                             <button
-                              onClick={(e) => handleEdit(dest.id, e)}
+                              onClick={(e) => { handleEdit(dest.id, e); }}
                               className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 min-h-[40px]"
                             >
                               <Edit className="w-4 h-4" />
                               Edit
                             </button>
                             <button
-                              onClick={(e) => handleDelete(dest.id, e)}
+                              onClick={(e) => { handleDelete(dest.id, e); }}
                               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 min-h-[40px]"
                             >
                               <Trash2 className="w-4 h-4" />
