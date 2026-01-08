@@ -140,7 +140,8 @@ export default function AddDestinationModal({
       setShowPredictions(false);
     }
     setSelectedIndex(-1); // Reset selection when search changes
-  }, [searchQuery, search, clearPredictions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   // Scroll selected item into view
   useEffect(() => {
