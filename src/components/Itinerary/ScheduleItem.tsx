@@ -1,4 +1,5 @@
 import { Clock, Info, Star, Home, Umbrella, Car, Baby } from 'lucide-react';
+
 import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface ScheduleItemProps {
@@ -13,13 +14,13 @@ interface ScheduleItemProps {
 const CATEGORY_COLORS: Record<string, string> = {
   'home-base': 'bg-sunset-500',
   'toddler-friendly': 'bg-sunset-400',
-  attraction: 'bg-green-500',
-  shopping: 'bg-ocean-500',
-  restaurant: 'bg-amber-500',
-  nature: 'bg-green-400',
-  temple: 'bg-red-500',
-  playground: 'bg-cyan-500',
-  medical: 'bg-red-600',
+  'attraction': 'bg-green-500',
+  'shopping': 'bg-ocean-500',
+  'restaurant': 'bg-amber-500',
+  'nature': 'bg-green-400',
+  'temple': 'bg-red-500',
+  'playground': 'bg-cyan-500',
+  'medical': 'bg-red-600',
 };
 
 export function ScheduleItem({
@@ -85,11 +86,7 @@ export function ScheduleItem({
       onKeyDown={handleKeyDown}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      aria-label={
-        onClick
-          ? `View details for ${item.isNapTime ? 'Nap Time' : locationName} from ${item.startTime} to ${item.endTime}`
-          : undefined
-      }
+      aria-label={onClick ? `View details for ${item.isNapTime ? 'Nap Time' : locationName} from ${item.startTime} to ${item.endTime}` : undefined}
     >
       <div className="flex items-start gap-3">
         {/* Time badge */}
@@ -112,16 +109,10 @@ export function ScheduleItem({
               {duration}
             </span>
             {location && !item.isNapTime && (
-              <>
-                <span className="inline-flex items-center gap-1 text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                  {location.isIndoor ? (
-                    <Home className="w-2.5 h-2.5" />
-                  ) : (
-                    <Umbrella className="w-2.5 h-2.5" />
-                  )}
+              <span className="inline-flex items-center gap-1 text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                  {location.isIndoor ? <Home className="w-2.5 h-2.5" /> : <Umbrella className="w-2.5 h-2.5" />}
                   {location.isIndoor ? 'Indoor' : 'Outdoor'}
                 </span>
-              </>
             )}
             {item.isFlexible && (
               <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
@@ -144,9 +135,7 @@ export function ScheduleItem({
               {location.grabEstimate && location.grabEstimate !== 'N/A' && (
                 <div className="flex items-center gap-1.5 text-xs md:text-[10px] text-slate-500">
                   <Car className="w-3 h-3" />
-                  <span>
-                    {location.drivingTime} • Grab ~{location.grabEstimate}
-                  </span>
+                  <span>{location.drivingTime} • Grab ~{location.grabEstimate}</span>
                 </div>
               )}
             </div>

@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/purity */
-// TODO: Refactor to avoid calling setState from useMemo
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserPlus,
@@ -12,8 +9,10 @@ import {
   X,
   Clock,
 } from 'lucide-react';
-import { GlassPanel, GlassBadge, GlassButton } from '@/components/ui/GlassPanel';
+import { useState } from 'react';
+
 import { Avatar } from '@/components/ui/Avatar';
+import { GlassPanel, GlassBadge, GlassButton } from '@/components/ui/GlassPanel';
 
 interface Member {
   id: string;
@@ -113,7 +112,7 @@ function MemberRow({
         {isOwner && member.role !== 'owner' && (
           <div className="relative">
             <button
-              onClick={() => setShowActions(!showActions)}
+              onClick={() => { setShowActions(!showActions); }}
               className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
               aria-label="Member actions"
             >
@@ -130,6 +129,15 @@ function MemberRow({
                       setShowActions(false);
                       setShowRoleMenu(false);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setShowActions(false);
+                        setShowRoleMenu(false);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Close menu"
                   />
 
                   {/* Dropdown Menu */}
@@ -169,7 +177,7 @@ function MemberRow({
                       <>
                         <div className="relative">
                           <button
-                            onClick={() => setShowRoleMenu(!showRoleMenu)}
+                            onClick={() => { setShowRoleMenu(!showRoleMenu); }}
                             className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                           >
                             <span>Change role</span>
@@ -286,9 +294,13 @@ export function MemberList({
                 member={member}
                 isOwner={isOwner}
                 onChangeRole={
-                  onChangeRole ? (newRole) => onChangeRole(member.userId, newRole) : undefined
+                  onChangeRole
+                    ? (newRole) => { onChangeRole(member.userId, newRole); }
+                    : undefined
                 }
-                onRemoveMember={onRemoveMember ? () => onRemoveMember(member.userId) : undefined}
+                onRemoveMember={
+                  onRemoveMember ? () => { onRemoveMember(member.userId); } : undefined
+                }
               />
             ))}
           </AnimatePresence>
@@ -317,8 +329,12 @@ export function MemberList({
                   key={member.id}
                   member={member}
                   isOwner={isOwner}
-                  onResendInvite={onResendInvite ? () => onResendInvite(member.userId) : undefined}
-                  onCancelInvite={onCancelInvite ? () => onCancelInvite(member.userId) : undefined}
+                  onResendInvite={
+                    onResendInvite ? () => { onResendInvite(member.userId); } : undefined
+                  }
+                  onCancelInvite={
+                    onCancelInvite ? () => { onCancelInvite(member.userId); } : undefined
+                  }
                 />
               ))}
             </AnimatePresence>

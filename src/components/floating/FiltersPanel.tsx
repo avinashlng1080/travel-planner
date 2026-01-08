@@ -1,15 +1,8 @@
-import { Filter } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import {
-  panelsAtom,
-  closePanelAtom,
-  toggleMinimizeAtom,
-  updatePositionAtom,
-  bringToFrontAtom,
-} from '../../atoms/floatingPanelAtoms';
+import { Filter } from 'lucide-react';
+
 import { visibleCategoriesAtom, toggleCategoryAtom } from '../../atoms/uiAtoms';
-import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
 
 interface Category {
   id: string;
@@ -30,19 +23,11 @@ const categories: Category[] = [
 ];
 
 export function FiltersPanel() {
-  const [panels] = useAtom(panelsAtom);
-  const closePanel = useSetAtom(closePanelAtom);
-  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
-  const updatePosition = useSetAtom(updatePositionAtom);
-  const bringToFront = useSetAtom(bringToFrontAtom);
   const [visibleCategories, setAllCategories] = useAtom(visibleCategoriesAtom);
   const toggleCategory = useSetAtom(toggleCategoryAtom);
-  const { width, height } = useResponsivePanel(300, 400);
-
-  const panelState = panels.filters;
 
   const handleShowAll = () => {
-    setAllCategories(categories.map((cat) => cat.id));
+    setAllCategories(categories.map(cat => cat.id));
   };
 
   const handleHideAll = () => {
@@ -50,19 +35,11 @@ export function FiltersPanel() {
   };
 
   return (
-    <FloatingPanel
-      id="filters"
+    <ResponsivePanelWrapper
+      panelId="filters"
       title="Category Filters"
       icon={Filter}
-      isOpen={panelState.isOpen}
-      isMinimized={panelState.isMinimized}
-      position={panelState.position}
-      size={{ width, height }}
-      zIndex={panelState.zIndex}
-      onClose={() => closePanel('filters')}
-      onMinimize={() => toggleMinimize('filters')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'filters', position: pos })}
-      onFocus={() => bringToFront('filters')}
+      defaultSize={{ width: 300, height: 400 }}
     >
       <div className="p-4 h-full flex flex-col">
         {/* Quick Actions */}
@@ -94,16 +71,14 @@ export function FiltersPanel() {
                 <input
                   type="checkbox"
                   checked={isVisible}
-                  onChange={() => toggleCategory(cat.id)}
+                  onChange={() => { toggleCategory(cat.id); }}
                   className="w-5 h-5 rounded border-slate-300 bg-white text-sunset-500 focus:ring-sunset-500/50 focus:ring-2 cursor-pointer transition-all"
                 />
                 <span
                   className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                   style={{ backgroundColor: cat.color }}
                 />
-                <span
-                  className={`text-sm font-medium flex-1 ${isVisible ? 'text-slate-900' : 'text-slate-400'}`}
-                >
+                <span className={`text-sm font-medium flex-1 ${isVisible ? 'text-slate-900' : 'text-slate-400'}`}>
                   {cat.name}
                 </span>
               </label>
@@ -118,6 +93,6 @@ export function FiltersPanel() {
           </p>
         </div>
       </div>
-    </FloatingPanel>
+    </ResponsivePanelWrapper>
   );
 }

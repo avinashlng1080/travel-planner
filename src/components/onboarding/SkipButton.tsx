@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
 import { useAtom } from 'jotai';
+import { X } from 'lucide-react';
+
 import { showSkipConfirmAtom } from '@/atoms/onboardingAtoms';
 
 /**
@@ -15,7 +16,7 @@ export function SkipButton() {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: 0.5 }}
-      onClick={() => setShowSkipConfirm(true)}
+      onClick={() => { setShowSkipConfirm(true); }}
       className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-60 flex items-center gap-2 px-3 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white/80 hover:bg-white/30 hover:text-white transition-all min-h-[44px] text-sm font-medium"
       aria-label="Skip tour"
     >

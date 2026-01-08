@@ -1,9 +1,10 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Map, Calendar, Bot, Baby, CheckCircle2 } from 'lucide-react';
-import { GlassPanel } from '../components/ui/GlassPanel';
+import { useState } from 'react';
+
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignupForm } from '../components/auth/SignupForm';
+import { GlassPanel } from '../components/ui/GlassPanel';
 
 export function LandingPage() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
@@ -43,8 +44,9 @@ export function LandingPage() {
               </h1>
 
               <p className="mt-6 text-lg text-slate-600 leading-relaxed">
-                AI-powered travel planning designed for families with toddlers. Interactive maps,
-                flexible itineraries, and smart recommendations make trip planning a breeze.
+                AI-powered travel planning designed for families with toddlers.
+                Interactive maps, flexible itineraries, and smart recommendations
+                make trip planning a breeze.
               </p>
 
               {/* Feature List */}
@@ -95,7 +97,7 @@ export function LandingPage() {
                 {/* Tab Switcher */}
                 <div className="flex mb-6 bg-slate-100 rounded-lg p-1">
                   <button
-                    onClick={() => setAuthMode('signup')}
+                    onClick={() => { setAuthMode('signup'); }}
                     className={`flex-1 py-3 text-sm font-medium rounded-md transition-all ${
                       authMode === 'signup'
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -105,7 +107,7 @@ export function LandingPage() {
                     Sign Up
                   </button>
                   <button
-                    onClick={() => setAuthMode('login')}
+                    onClick={() => { setAuthMode('login'); }}
                     className={`flex-1 py-3 text-sm font-medium rounded-md transition-all ${
                       authMode === 'login'
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -118,9 +120,15 @@ export function LandingPage() {
 
                 {/* Auth Forms */}
                 {authMode === 'signup' ? (
-                  <SignupForm onSuccess={() => {}} onSwitchToLogin={() => setAuthMode('login')} />
+                  <SignupForm
+                    onSuccess={() => {}}
+                    onSwitchToLogin={() => { setAuthMode('login'); }}
+                  />
                 ) : (
-                  <LoginForm onSuccess={() => {}} onSwitchToSignup={() => setAuthMode('signup')} />
+                  <LoginForm
+                    onSuccess={() => {}}
+                    onSwitchToSignup={() => { setAuthMode('signup'); }}
+                  />
                 )}
               </GlassPanel>
             </motion.div>

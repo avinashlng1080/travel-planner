@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useState } from 'react';
+
 import { GlassButton, GlassInput } from '../ui/GlassPanel';
 
 interface LoginFormProps {
@@ -47,7 +48,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
           Email
@@ -56,7 +57,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           id="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); }}
           placeholder="you@example.com"
           required
           autoComplete="email"
@@ -71,7 +72,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           id="password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); }}
           placeholder="Enter your password"
           required
           autoComplete="current-password"
@@ -84,7 +85,13 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         </div>
       )}
 
-      <GlassButton variant="primary" size="lg" className="w-full" disabled={isLoading}>
+      <GlassButton
+        variant="primary"
+        size="lg"
+        className="w-full"
+        disabled={isLoading}
+        type="submit"
+      >
         {isLoading ? 'Signing in...' : 'Sign In'}
       </GlassButton>
 

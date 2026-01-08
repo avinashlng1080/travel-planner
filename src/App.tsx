@@ -1,18 +1,33 @@
-import { useState } from 'react';
 import { useConvexAuth } from 'convex/react';
+import { useState, useEffect } from 'react';
+
+import { GoogleMapsProvider } from './components/Map/GoogleMapsProvider';
+import { LoadingScreen } from './components/ui/LoadingScreen';
+import { DashboardPage } from './pages/DashboardPage';
+import { JoinTripPage } from './pages/JoinTripPage';
 import { LandingPage } from './pages/LandingPage';
 import { TripPlannerApp } from './pages/TripPlannerApp';
-import { DashboardPage } from './pages/DashboardPage';
 import { TripViewPage } from './pages/TripViewPage';
-import { LoadingScreen } from './components/ui/LoadingScreen';
+
 import type { Id } from '../convex/_generated/dataModel';
 
-type AppView = 'dashboard' | 'trip' | 'legacy-planner';
+type AppView = 'dashboard' | 'trip' | 'legacy-planner' | 'join';
 
 function App() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const [currentView, setCurrentView] = useState<AppView>('dashboard');
   const [selectedTripId, setSelectedTripId] = useState<Id<'trips'> | null>(null);
+  const [joinToken, setJoinToken] = useState<string | null>(null);
+
+  // Parse URL for join tokens
+  useEffect(() => {
+    const path = window.location.pathname;
+    const joinMatch = /^\/join\/([a-f0-9]+)$/.exec(path);
+    if (joinMatch) {
+      setJoinToken(joinMatch[1]);
+      setCurrentView('join');
+    }
+  }, []);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -22,30 +37,48 @@ function App() {
     return <LandingPage />;
   }
 
-  // Authenticated views
-  if (currentView === 'trip' && selectedTripId) {
+  // Join trip flow (not wrapped in GoogleMapsProvider as it doesn't need maps)
+  if (currentView === 'join' && joinToken) {
     return (
-      <TripViewPage
-        tripId={selectedTripId}
-        onBack={() => {
+      <JoinTripPage
+        token={joinToken}
+        onSuccess={(tripId) => {
+          setSelectedTripId(tripId);
+          setCurrentView('trip');
+          setJoinToken(null);
+          window.history.replaceState({}, '', '/');
+        }}
+        onCancel={() => {
           setCurrentView('dashboard');
-          setSelectedTripId(null);
+          setJoinToken(null);
+          window.history.replaceState({}, '', '/');
         }}
       />
     );
   }
 
-  if (currentView === 'legacy-planner') {
-    return <TripPlannerApp onBack={() => setCurrentView('dashboard')} />;
-  }
-
+  // Authenticated views - wrapped with GoogleMapsProvider for map access
   return (
-    <DashboardPage
-      onOpenTrip={(tripId) => {
-        setSelectedTripId(tripId);
-        setCurrentView('trip');
-      }}
-    />
+    <GoogleMapsProvider>
+      {currentView === 'trip' && selectedTripId ? (
+        <TripViewPage
+          tripId={selectedTripId}
+          onBack={() => {
+            setCurrentView('dashboard');
+            setSelectedTripId(null);
+          }}
+        />
+      ) : currentView === 'legacy-planner' ? (
+        <TripPlannerApp onBack={() => { setCurrentView('dashboard'); }} />
+      ) : (
+        <DashboardPage
+          onOpenTrip={(tripId) => {
+            setSelectedTripId(tripId);
+            setCurrentView('trip');
+          }}
+        />
+      )}
+    </GoogleMapsProvider>
   );
 }
 

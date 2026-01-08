@@ -1,12 +1,9 @@
 import { motion } from 'framer-motion';
-import { Map, MousePointer, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
-import {
-  hasInteractedWithMarkerAtom,
-  advanceToNextStepAtom,
-  FALLBACK_MESSAGES,
-  STEP_CONFIGS,
-} from '@/atoms/onboardingAtoms';
+import { Map, MousePointer, ArrowRight } from 'lucide-react';
+
+import { hasInteractedWithMarkerAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**
@@ -19,7 +16,7 @@ export function DiscoverMapStep() {
   const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
 
   // Get current step number for display
-  const stepNumber = STEP_CONFIGS.findIndex((c) => c.step === 'map') + 1;
+  const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'map') + 1;
 
   return (
     <>
@@ -47,8 +44,12 @@ export function DiscoverMapStep() {
               <Map className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display font-bold text-slate-900 mb-1">Explore the Map</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{FALLBACK_MESSAGES.map}</p>
+              <h3 className="font-display font-bold text-slate-900 mb-1">
+                Explore the Map
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                {FALLBACK_MESSAGES.map}
+              </p>
             </div>
           </div>
 

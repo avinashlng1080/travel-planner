@@ -1,15 +1,16 @@
-/* eslint-disable react-hooks/purity */
-// TODO: Refactor to avoid accessing variables before declaration
-import { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, Check, ChevronDown, FileText } from 'lucide-react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
-import { GlassPanel } from '../ui/GlassPanel';
+import { useState, useEffect, useRef } from 'react';
+
 import { useItineraryParser } from '@/hooks/useItineraryParser';
-import { ImportPreviewPanel } from './ImportPreviewPanel';
 import { detectTimezoneFromDestination } from '@/utils/timezone';
+
+import { ImportPreviewPanel } from './ImportPreviewPanel';
+import { api } from '../../../convex/_generated/api';
+import { type Id } from '../../../convex/_generated/dataModel';
+import { GlassPanel } from '../ui/GlassPanel';
+
 
 export interface ImportItineraryModalProps {
   isOpen: boolean;
@@ -96,7 +97,7 @@ export function ImportItineraryModal({
       const timer = setTimeout(() => {
         textareaRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen, parser.step]);
 
@@ -109,13 +110,13 @@ export function ImportItineraryModal({
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen, parser.isParsing, parser.isImporting]);
 
   // Clear undo timeout on unmount
   useEffect(() => {
     return () => {
-      if (undoTimeout) clearTimeout(undoTimeout);
+      if (undoTimeout) { clearTimeout(undoTimeout); }
     };
   }, [undoTimeout]);
 
@@ -132,7 +133,7 @@ export function ImportItineraryModal({
   };
 
   const handleParse = async () => {
-    if (!trip) return;
+    if (!trip) { return; }
 
     await parser.parse(tripId, {
       name: trip.name,
@@ -172,7 +173,7 @@ export function ImportItineraryModal({
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault();
       if (parser.rawText.length >= 50 && parser.step === 'input') {
-        handleParse();
+        void handleParse();
       }
     }
   };
@@ -239,7 +240,7 @@ export function ImportItineraryModal({
                     <textarea
                       ref={textareaRef}
                       value={parser.rawText}
-                      onChange={(e) => parser.setRawText(e.target.value)}
+                      onChange={(e) => { parser.setRawText(e.target.value); }}
                       onKeyDown={handleKeyDown}
                       placeholder="Paste your itinerary here...
 
@@ -256,7 +257,9 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                       <span className="text-xs text-slate-500">
                         {parser.rawText.length} characters
                         {parser.rawText.length < 50 && parser.rawText.length > 0 && (
-                          <span className="text-amber-600 ml-2">(minimum 50 characters)</span>
+                          <span className="text-amber-600 ml-2">
+                            (minimum 50 characters)
+                          </span>
                         )}
                       </span>
                       <span className="text-xs text-slate-400">
@@ -268,7 +271,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                   {/* Format Examples Dropdown */}
                   <div>
                     <button
-                      onClick={() => setShowExamples(!showExamples)}
+                      onClick={() => { setShowExamples(!showExamples); }}
                       className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
                     >
                       <FileText className="w-4 h-4" />
@@ -312,7 +315,7 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
 
                   {/* Parse Button */}
                   <button
-                    onClick={handleParse}
+                    onClick={() => { void handleParse(); }}
                     disabled={parser.rawText.length < 50 || parser.isParsing}
                     className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-sunset-500 to-ocean-600 text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[48px]"
                   >
@@ -324,7 +327,9 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
               {parser.step === 'parsing' && (
                 <div className="py-12 text-center">
                   <Loader2 className="w-12 h-12 text-sunset-500 animate-spin mx-auto mb-4" />
-                  <p className="text-lg font-medium text-slate-900">Analyzing your itinerary...</p>
+                  <p className="text-lg font-medium text-slate-900">
+                    Analyzing your itinerary...
+                  </p>
                   <p className="text-sm text-slate-500 mt-2">
                     Claude is parsing locations and times
                   </p>
@@ -353,13 +358,13 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     <button
-                      onClick={() => parser.reset()}
+                      onClick={() => { parser.reset(); }}
                       className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
-                      onClick={handleImport}
+                      onClick={() => { void handleImport(); }}
                       disabled={
                         parser.isImporting ||
                         !parser.parsedData?.locations.length ||
@@ -376,7 +381,9 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
               {parser.step === 'importing' && (
                 <div className="py-12 text-center">
                   <Loader2 className="w-12 h-12 text-ocean-500 animate-spin mx-auto mb-4" />
-                  <p className="text-lg font-medium text-slate-900">Importing to your trip...</p>
+                  <p className="text-lg font-medium text-slate-900">
+                    Importing to your trip...
+                  </p>
                   <p className="text-sm text-slate-500 mt-2">
                     Creating locations and schedule items
                   </p>
@@ -388,17 +395,21 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-lg font-medium text-slate-900">Successfully imported!</p>
+                  <p className="text-lg font-medium text-slate-900">
+                    Successfully imported!
+                  </p>
                   <p className="text-sm text-slate-500 mt-2">
                     {parser.parsedData?.locations.length || 0} locations and{' '}
-                    {parser.parsedData?.days.reduce((sum, day) => sum + day.activities.length, 0) ||
-                      0}{' '}
+                    {parser.parsedData?.days.reduce(
+                      (sum, day) => sum + day.activities.length,
+                      0
+                    ) || 0}{' '}
                     activities added to Plan A
                   </p>
 
                   <div className="mt-6 flex gap-3 justify-center">
                     <button
-                      onClick={handleUndo}
+                      onClick={() => { void handleUndo(); }}
                       className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
                     >
                       Undo Import
@@ -411,7 +422,9 @@ Gombak, 68100 Batu Caves, Selangor Until 10:00 GMT+8"
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-400 mt-4">Auto-closing in 5 seconds...</p>
+                  <p className="text-xs text-slate-400 mt-4">
+                    Auto-closing in 5 seconds...
+                  </p>
                 </div>
               )}
             </GlassPanel>

@@ -55,17 +55,18 @@ const hospitals = [
   },
 ];
 
-export default function EmergencyNumbers() {
-  const getColorClasses = (color: string) => {
-    const colors: Record<string, { bg: string; border: string; text: string }> = {
-      blue: { bg: 'bg-blue-900/30', border: 'border-blue-700', text: 'text-blue-400' },
-      red: { bg: 'bg-red-900/40', border: 'border-red-600', text: 'text-red-400' },
-      orange: { bg: 'bg-orange-900/30', border: 'border-orange-700', text: 'text-orange-400' },
-      cyan: { bg: 'bg-cyan-900/30', border: 'border-cyan-700', text: 'text-cyan-400' },
-      purple: { bg: 'bg-purple-900/30', border: 'border-purple-700', text: 'text-purple-400' },
-    };
-    return colors[color] || colors.blue;
+const getColorClasses = (color: string) => {
+  const colors: Record<string, { bg: string; border: string; text: string }> = {
+    blue: { bg: 'bg-blue-900/30', border: 'border-blue-700', text: 'text-blue-400' },
+    red: { bg: 'bg-red-900/40', border: 'border-red-600', text: 'text-red-400' },
+    orange: { bg: 'bg-orange-900/30', border: 'border-orange-700', text: 'text-orange-400' },
+    cyan: { bg: 'bg-cyan-900/30', border: 'border-cyan-700', text: 'text-cyan-400' },
+    purple: { bg: 'bg-purple-900/30', border: 'border-purple-700', text: 'text-purple-400' },
   };
+  return colors[color] ?? colors.blue;
+};
+
+export default function EmergencyNumbers() {
 
   return (
     <div className="space-y-6">

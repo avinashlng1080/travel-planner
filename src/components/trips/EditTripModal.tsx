@@ -1,16 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMutation } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
-import { useMutation } from 'convex/react';
+import { useState, useEffect, useRef } from 'react';
+
 import { api } from '../../../convex/_generated/api';
 import { GlassPanel, GlassInput } from '../ui/GlassPanel';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 export interface EditTripModalProps {
   isOpen: boolean;
   onClose: () => void;
   trip: {
-    _id: Id<'trips'>;
+    _id: Id<"trips">;
     name: string;
     description?: string;
     destination?: string;
@@ -93,7 +95,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
       const timer = setTimeout(() => {
         firstInputRef.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [isOpen]);
 
@@ -106,7 +108,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => { document.removeEventListener('keydown', handleEscape); };
   }, [isOpen]);
 
   const handleClose = () => {
@@ -170,15 +172,14 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
     try {
       // Prepare homeBase data if provided
-      const homeBase =
-        showHomeBase && formData.homeBaseName && formData.homeBaseLat && formData.homeBaseLng
-          ? {
-              name: formData.homeBaseName,
-              lat: parseFloat(formData.homeBaseLat),
-              lng: parseFloat(formData.homeBaseLng),
-              city: '',
-            }
-          : undefined;
+      const homeBase = showHomeBase && formData.homeBaseName.trim() && formData.homeBaseLat.trim() && formData.homeBaseLng.trim()
+        ? {
+            name: formData.homeBaseName,
+            lat: parseFloat(formData.homeBaseLat),
+            lng: parseFloat(formData.homeBaseLng),
+            city: '',
+          }
+        : undefined;
 
       // Call Convex mutation
       await updateTrip({
@@ -200,10 +201,10 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
   };
 
   const handleChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+      setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -268,17 +269,16 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                 <h2 id="edit-trip-title" className="text-xl font-semibold text-slate-900">
                   Edit Trip
                 </h2>
-                <p className="text-sm text-slate-600 mt-1">Update your trip details</p>
+                <p className="text-sm text-slate-600 mt-1">
+                  Update your trip details
+                </p>
               </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Trip Name */}
                 <div>
-                  <label
-                    htmlFor="tripName"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
+                  <label htmlFor="tripName" className="block text-sm font-medium text-slate-700 mb-1.5">
                     Trip Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -287,7 +287,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                     type="text"
                     placeholder="Malaysia Family Adventure"
                     value={formData.tripName}
-                    onChange={(e) => handleChange('tripName', e.target.value)}
+                    onChange={(e) => { handleChange('tripName', e.target.value); }}
                     className={`w-full bg-white backdrop-blur-lg border rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${errors.tripName ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200'}`}
                     disabled={isSubmitting}
                   />
@@ -298,10 +298,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
                 {/* Destination */}
                 <div>
-                  <label
-                    htmlFor="destination"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
+                  <label htmlFor="destination" className="block text-sm font-medium text-slate-700 mb-1.5">
                     Destination
                   </label>
                   <GlassInput
@@ -309,7 +306,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                     type="text"
                     placeholder="Tokyo, Japan"
                     value={formData.destination}
-                    onChange={(e) => handleChange('destination', e.target.value)}
+                    onChange={(e) => { handleChange('destination', e.target.value); }}
                     disabled={isSubmitting}
                   />
                   <p className="mt-1 text-xs text-slate-500">
@@ -319,10 +316,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
                 {/* Who's Traveling */}
                 <div>
-                  <label
-                    htmlFor="travelerInfo"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
+                  <label htmlFor="travelerInfo" className="block text-sm font-medium text-slate-700 mb-1.5">
                     Who's Traveling?
                   </label>
                   <GlassInput
@@ -330,7 +324,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                     type="text"
                     placeholder="2 adults, 1 toddler (2yo)"
                     value={formData.travelerInfo}
-                    onChange={(e) => handleChange('travelerInfo', e.target.value)}
+                    onChange={(e) => { handleChange('travelerInfo', e.target.value); }}
                     disabled={isSubmitting}
                   />
                   <p className="mt-1 text-xs text-slate-500">
@@ -340,10 +334,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
                 {/* Description */}
                 <div>
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
+                  <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1.5">
                     Description
                   </label>
                   <textarea
@@ -351,7 +342,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                     rows={2}
                     placeholder="A magical trip with the little ones..."
                     value={formData.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
+                    onChange={(e) => { handleChange('description', e.target.value); }}
                     disabled={isSubmitting}
                     className="w-full bg-white backdrop-blur-lg border border-slate-200 rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 resize-none disabled:opacity-50"
                   />
@@ -361,22 +352,15 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                 <div className="grid grid-cols-2 gap-4">
                   {/* Start Date */}
                   <div>
-                    <label
-                      htmlFor="startDate"
-                      className="block text-sm font-medium text-slate-700 mb-1.5"
-                    >
+                    <label htmlFor="startDate" className="block text-sm font-medium text-slate-700 mb-1.5">
                       Start Date <span className="text-red-500">*</span>
                     </label>
                     <GlassInput
                       id="startDate"
                       type="date"
                       value={formData.startDate}
-                      onChange={(e) => handleChange('startDate', e.target.value)}
-                      className={
-                        errors.startDate
-                          ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
-                          : ''
-                      }
+                      onChange={(e) => { handleChange('startDate', e.target.value); }}
+                      className={errors.startDate ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                       disabled={isSubmitting}
                     />
                     {errors.startDate && (
@@ -386,22 +370,15 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
                   {/* End Date */}
                   <div>
-                    <label
-                      htmlFor="endDate"
-                      className="block text-sm font-medium text-slate-700 mb-1.5"
-                    >
+                    <label htmlFor="endDate" className="block text-sm font-medium text-slate-700 mb-1.5">
                       End Date <span className="text-red-500">*</span>
                     </label>
                     <GlassInput
                       id="endDate"
                       type="date"
                       value={formData.endDate}
-                      onChange={(e) => handleChange('endDate', e.target.value)}
-                      className={
-                        errors.endDate
-                          ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
-                          : ''
-                      }
+                      onChange={(e) => { handleChange('endDate', e.target.value); }}
+                      className={errors.endDate ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                       disabled={isSubmitting}
                     />
                     {errors.endDate && (
@@ -414,7 +391,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                 <div className="border-t border-slate-200 pt-4">
                   <button
                     type="button"
-                    onClick={() => setShowHomeBase(!showHomeBase)}
+                    onClick={() => { setShowHomeBase(!showHomeBase); }}
                     className="flex items-center justify-between w-full text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors"
                     disabled={isSubmitting}
                   >
@@ -441,10 +418,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                         <div className="space-y-4 mt-4">
                           {/* Home Base Name */}
                           <div>
-                            <label
-                              htmlFor="homeBaseName"
-                              className="block text-sm font-medium text-slate-700 mb-1.5"
-                            >
+                            <label htmlFor="homeBaseName" className="block text-sm font-medium text-slate-700 mb-1.5">
                               Name
                             </label>
                             <GlassInput
@@ -452,7 +426,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                               type="text"
                               placeholder="Hotel Grand Pacific"
                               value={formData.homeBaseName}
-                              onChange={(e) => handleChange('homeBaseName', e.target.value)}
+                              onChange={(e) => { handleChange('homeBaseName', e.target.value); }}
                               disabled={isSubmitting}
                             />
                           </div>
@@ -461,10 +435,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                           <div className="grid grid-cols-2 gap-4">
                             {/* Latitude */}
                             <div>
-                              <label
-                                htmlFor="homeBaseLat"
-                                className="block text-sm font-medium text-slate-700 mb-1.5"
-                              >
+                              <label htmlFor="homeBaseLat" className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Latitude
                               </label>
                               <GlassInput
@@ -472,12 +443,8 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                                 type="text"
                                 placeholder="3.1390"
                                 value={formData.homeBaseLat}
-                                onChange={(e) => handleChange('homeBaseLat', e.target.value)}
-                                className={
-                                  errors.homeBaseLat
-                                    ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
-                                    : ''
-                                }
+                                onChange={(e) => { handleChange('homeBaseLat', e.target.value); }}
+                                className={errors.homeBaseLat ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                                 disabled={isSubmitting}
                               />
                               {errors.homeBaseLat && (
@@ -487,10 +454,7 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
 
                             {/* Longitude */}
                             <div>
-                              <label
-                                htmlFor="homeBaseLng"
-                                className="block text-sm font-medium text-slate-700 mb-1.5"
-                              >
+                              <label htmlFor="homeBaseLng" className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Longitude
                               </label>
                               <GlassInput
@@ -498,12 +462,8 @@ export function EditTripModal({ isOpen, onClose, trip, onSuccess }: EditTripModa
                                 type="text"
                                 placeholder="101.6869"
                                 value={formData.homeBaseLng}
-                                onChange={(e) => handleChange('homeBaseLng', e.target.value)}
-                                className={
-                                  errors.homeBaseLng
-                                    ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500'
-                                    : ''
-                                }
+                                onChange={(e) => { handleChange('homeBaseLng', e.target.value); }}
+                                className={errors.homeBaseLng ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : ''}
                                 disabled={isSubmitting}
                               />
                               {errors.homeBaseLng && (

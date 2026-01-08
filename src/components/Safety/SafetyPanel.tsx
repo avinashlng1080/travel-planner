@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { SAFETY_INFO } from '../../data/tripData';
-import EmergencyNumbers from './EmergencyNumbers';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+
+import EmergencyNumbers from './EmergencyNumbers';
+import { SAFETY_INFO } from '../../data/tripData';
 
 export default function SafetyPanel() {
   const [expandedSection, setExpandedSection] = useState<string | null>('emergency');
@@ -22,7 +23,7 @@ export default function SafetyPanel() {
       {/* Health Tips */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('health')}
+          onClick={() => { toggleSection('health'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -52,7 +53,7 @@ export default function SafetyPanel() {
       {/* Scam Warnings */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('scams')}
+          onClick={() => { toggleSection('scams'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -82,7 +83,7 @@ export default function SafetyPanel() {
       {/* Cultural Etiquette */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('culture')}
+          onClick={() => { toggleSection('culture'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -112,7 +113,7 @@ export default function SafetyPanel() {
       {/* Toddler Safety */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('toddler')}
+          onClick={() => { toggleSection('toddler'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">

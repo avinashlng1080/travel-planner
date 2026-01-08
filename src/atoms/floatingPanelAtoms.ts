@@ -9,14 +9,7 @@ interface PanelState {
 }
 
 // All available floating panels
-export type PanelId =
-  | 'tripPlanner'
-  | 'days'
-  | 'checklist'
-  | 'filters'
-  | 'suggestions'
-  | 'alerts'
-  | 'itinerary';
+export type PanelId = 'tripPlanner' | 'days' | 'checklist' | 'filters' | 'suggestions' | 'alerts' | 'itinerary' | 'collaboration' | 'weather' | 'settings';
 
 // Helper function to get viewport-aware default position
 const getDefaultPosition = (preferredX: number, preferredY: number): { x: number; y: number } => {
@@ -80,9 +73,27 @@ const DEFAULT_PANELS: Record<PanelId, PanelState> = {
     position: getDefaultPosition(70, 70),
     zIndex: 7,
   },
+  collaboration: {
+    isOpen: false,
+    isMinimized: false,
+    position: { x: 80, y: 180 },
+    zIndex: 100,
+  },
+  weather: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(70, 300),
+    zIndex: 8,
+  },
+  settings: {
+    isOpen: false,
+    isMinimized: false,
+    position: getDefaultPosition(400, 120),
+    zIndex: 9,
+  },
 };
 
-const INITIAL_Z_INDEX = 8;
+const INITIAL_Z_INDEX = 9;
 
 // Storage atom for persisting positions only
 const panelsStorageAtom = atomWithStorage<Record<PanelId, Partial<PanelState>>>(
@@ -106,7 +117,7 @@ const initializePanels = (): Record<PanelId, PanelState> => {
     if (storedData) {
       stored = JSON.parse(storedData);
     }
-  } catch {
+  } catch (_e) {
     // Ignore localStorage errors
   }
 
@@ -149,49 +160,70 @@ export const panelsAtom = atom(
 
 export const nextZIndexAtom = atom(
   (get) => get(nextZIndexStorageAtom),
-  (_get, set, update: number) => set(nextZIndexStorageAtom, update)
+  (_get, set, update: number) => { set(nextZIndexStorageAtom, update); }
 );
 
 // Helper atoms for common operations
-export const openPanelAtom = atom(null, (get, set, panelId: PanelId) => {
-  const panels = get(panelsAtom);
-  const currentZIndex = get(nextZIndexAtom);
+export const openPanelAtom = atom(
+  null,
+  (get, set, panelId: PanelId) => {
+    const panels = get(panelsAtom);
+    const currentZIndex = get(nextZIndexAtom);
+    const isMobile = get(isMobileViewAtom);
 
-  set(panelsAtom, {
-    ...panels,
-    [panelId]: {
-      ...panels[panelId],
-      isOpen: true,
-      isMinimized: false,
-      zIndex: currentZIndex,
-    },
-  });
-  set(nextZIndexAtom, currentZIndex + 1);
-});
+    // On mobile, set this as the single active modal
+    if (isMobile) {
+      set(activeMobileModalAtom, panelId);
+    }
 
-export const closePanelAtom = atom(null, (get, set, panelId: PanelId) => {
-  const panels = get(panelsAtom);
+    set(panelsAtom, {
+      ...panels,
+      [panelId]: {
+        ...panels[panelId],
+        isOpen: true,
+        isMinimized: false,
+        zIndex: currentZIndex,
+      },
+    });
+    set(nextZIndexAtom, currentZIndex + 1);
+  }
+);
 
-  set(panelsAtom, {
-    ...panels,
-    [panelId]: {
-      ...panels[panelId],
-      isOpen: false,
-    },
-  });
-});
+export const closePanelAtom = atom(
+  null,
+  (get, set, panelId: PanelId) => {
+    const panels = get(panelsAtom);
+    const activeMobileModal = get(activeMobileModalAtom);
 
-export const toggleMinimizeAtom = atom(null, (get, set, panelId: PanelId) => {
-  const panels = get(panelsAtom);
+    // Clear active mobile modal if closing the active one
+    if (activeMobileModal === panelId) {
+      set(activeMobileModalAtom, null);
+    }
 
-  set(panelsAtom, {
-    ...panels,
-    [panelId]: {
-      ...panels[panelId],
-      isMinimized: !panels[panelId].isMinimized,
-    },
-  });
-});
+    set(panelsAtom, {
+      ...panels,
+      [panelId]: {
+        ...panels[panelId],
+        isOpen: false,
+      },
+    });
+  }
+);
+
+export const toggleMinimizeAtom = atom(
+  null,
+  (get, set, panelId: PanelId) => {
+    const panels = get(panelsAtom);
+
+    set(panelsAtom, {
+      ...panels,
+      [panelId]: {
+        ...panels[panelId],
+        isMinimized: !panels[panelId].isMinimized,
+      },
+    });
+  }
+);
 
 export const updatePositionAtom = atom(
   null,
@@ -209,16 +241,27 @@ export const updatePositionAtom = atom(
   }
 );
 
-export const bringToFrontAtom = atom(null, (get, set, panelId: PanelId) => {
-  const panels = get(panelsAtom);
-  const currentZIndex = get(nextZIndexAtom);
+export const bringToFrontAtom = atom(
+  null,
+  (get, set, panelId: PanelId) => {
+    const panels = get(panelsAtom);
+    const currentZIndex = get(nextZIndexAtom);
 
-  set(panelsAtom, {
-    ...panels,
-    [panelId]: {
-      ...panels[panelId],
-      zIndex: currentZIndex,
-    },
-  });
-  set(nextZIndexAtom, currentZIndex + 1);
+    set(panelsAtom, {
+      ...panels,
+      [panelId]: {
+        ...panels[panelId],
+        zIndex: currentZIndex,
+      },
+    });
+    set(nextZIndexAtom, currentZIndex + 1);
+  }
+);
+
+// Mobile-specific state atoms
+export const isMobileViewAtom = atom<boolean>((get) => {
+  if (typeof window === 'undefined') {return false;}
+  return window.innerWidth < 768; // Tailwind md breakpoint
 });
+
+export const activeMobileModalAtom = atom<PanelId | null>(null);

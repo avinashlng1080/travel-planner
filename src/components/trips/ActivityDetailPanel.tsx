@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { Map as GoogleMapComponent, AdvancedMarker } from '@vis.gl/react-google-maps';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { X, Clock, MapPin, Edit2, Trash2, AlertTriangle, FileText, Tag } from 'lucide-react';
-import { GlassPanel, GlassButton, GlassBadge } from '../ui/GlassPanel';
-import type { Id } from '../../../convex/_generated/dataModel';
+import {
+  X,
+  Clock,
+  MapPin,
+  Edit2,
+  Trash2,
+  AlertTriangle,
+  FileText,
+  Tag,
+} from 'lucide-react';
+import { useState } from 'react';
 
-// Fix default marker icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+import { GlassPanel, GlassButton, GlassBadge } from '../ui/GlassPanel';
+
+import type { Id } from '../../../convex/_generated/dataModel';
 
 interface ActivityDetailPanelProps {
   isOpen: boolean;
@@ -62,8 +63,16 @@ export function ActivityDetailPanel({
   onDelete,
 }: ActivityDetailPanelProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const mapId = import.meta.env.VITE_GOOGLE_MAPS_ID;
 
-  if (!activity) return null;
+  if (!mapId) {
+    console.warn(
+      '[ActivityDetailPanel] VITE_GOOGLE_MAPS_ID is not set. ' +
+      'AdvancedMarker requires a Map ID. See: https://console.cloud.google.com/google/maps-apis/studio/maps'
+    );
+  }
+
+  if (!activity) {return null;}
 
   const canEdit = userRole === 'owner' || userRole === 'editor';
 
@@ -142,7 +151,9 @@ export function ActivityDetailPanel({
                   >
                     {activity.title}
                   </h2>
-                  <p className="text-sm text-slate-600 mt-1">{formatDate(activity.dayDate)}</p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {formatDate(activity.dayDate)}
+                  </p>
                 </div>
                 <button
                   onClick={onClose}
@@ -172,7 +183,9 @@ export function ActivityDetailPanel({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-slate-600">End</span>
-                      <span className="text-sm font-medium text-slate-900">{activity.endTime}</span>
+                      <span className="text-sm font-medium text-slate-900">
+                        {activity.endTime}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                       <span className="text-sm text-slate-600">Duration</span>
@@ -213,27 +226,33 @@ export function ActivityDetailPanel({
                         )}
                       </div>
 
-                      {/* Mini Map */}
+                      {/* Mini Map - Google Maps */}
                       <div className="h-40 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                        <MapContainer
-                          center={[location.lat, location.lng]}
-                          zoom={14}
-                          className="h-full w-full"
+                        <GoogleMapComponent
+                          defaultCenter={{ lat: location.lat, lng: location.lng }}
+                          defaultZoom={14}
+                          mapId={mapId}
+                          gestureHandling="none"
+                          disableDefaultUI
                           zoomControl={false}
-                          attributionControl={false}
-                          dragging={false}
-                          scrollWheelZoom={false}
-                          doubleClickZoom={false}
-                          touchZoom={false}
+                          mapTypeControl={false}
+                          fullscreenControl={false}
+                          streetViewControl={false}
+                          style={{ width: '100%', height: '100%' }}
                         >
-                          <TileLayer
-                            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                          />
-                          <Marker position={[location.lat, location.lng]}>
-                            <Popup>{location.name}</Popup>
-                          </Marker>
-                        </MapContainer>
+                          <AdvancedMarker position={{ lat: location.lat, lng: location.lng }}>
+                            <div
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#F97316',
+                                borderRadius: '50%',
+                                border: '3px solid white',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              }}
+                            />
+                          </AdvancedMarker>
+                        </GoogleMapComponent>
                       </div>
 
                       <div className="text-xs text-slate-500">
@@ -259,7 +278,9 @@ export function ActivityDetailPanel({
                 {/* Empty state for notes */}
                 {!activity.notes && canEdit && (
                   <GlassPanel className="p-4 border-dashed">
-                    <p className="text-sm text-slate-500 text-center">No notes added yet</p>
+                    <p className="text-sm text-slate-500 text-center">
+                      No notes added yet
+                    </p>
                   </GlassPanel>
                 )}
               </div>
@@ -270,7 +291,11 @@ export function ActivityDetailPanel({
               <div className="flex-shrink-0 p-4 border-t border-slate-200/50 bg-white/95 backdrop-blur-xl">
                 <div className="flex items-center gap-2">
                   {onEdit && (
-                    <GlassButton variant="default" className="flex-1" onClick={onEdit}>
+                    <GlassButton
+                      variant="default"
+                      className="flex-1"
+                      onClick={onEdit}
+                    >
                       <Edit2 className="w-4 h-4 mr-2" />
                       Edit Activity
                     </GlassButton>
@@ -279,7 +304,7 @@ export function ActivityDetailPanel({
                     <GlassButton
                       variant="danger"
                       className="px-4"
-                      onClick={() => setShowDeleteConfirm(true)}
+                      onClick={() => { setShowDeleteConfirm(true); }}
                       aria-label="Delete activity"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -302,7 +327,7 @@ export function ActivityDetailPanel({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
-              onClick={() => setShowDeleteConfirm(false)}
+              onClick={() => { setShowDeleteConfirm(false); }}
             />
 
             {/* Confirmation Dialog */}
@@ -323,8 +348,8 @@ export function ActivityDetailPanel({
                         Delete Activity?
                       </h3>
                       <p className="text-sm text-slate-600">
-                        Are you sure you want to delete "{activity.title}"? This action cannot be
-                        undone.
+                        Are you sure you want to delete "{activity.title}"? This action
+                        cannot be undone.
                       </p>
                     </div>
                   </div>
@@ -333,11 +358,15 @@ export function ActivityDetailPanel({
                     <GlassButton
                       variant="default"
                       className="flex-1"
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={() => { setShowDeleteConfirm(false); }}
                     >
                       Cancel
                     </GlassButton>
-                    <GlassButton variant="danger" className="flex-1" onClick={handleDelete}>
+                    <GlassButton
+                      variant="danger"
+                      className="flex-1"
+                      onClick={handleDelete}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </GlassButton>

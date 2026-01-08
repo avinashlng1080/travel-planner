@@ -1,4 +1,4 @@
-import { ChatMessage as ChatMessageType } from '../../hooks/useAIChat';
+import { type ChatMessage as ChatMessageType } from '../../hooks/useAIChat';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -18,11 +18,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const renderContent = (content: string) => {
     return content.split('\n').map((line, i) => {
       if (line.startsWith('**') && line.endsWith('**')) {
-        return (
-          <strong key={`line-${i}-${line.slice(0, 20)}`} className="block font-semibold">
-            {line.slice(2, -2)}
-          </strong>
-        );
+        return <strong key={`line-${i}-${line.slice(0, 20)}`} className="block font-semibold">{line.slice(2, -2)}</strong>;
       }
       if (line.startsWith('- ') || line.startsWith('* ')) {
         return (
@@ -32,12 +28,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         );
       }
-      if (line.trim() === '') return <br key={`br-${i}`} />;
-      return (
-        <p key={`line-${i}-${line.slice(0, 20)}`} className="my-1">
-          {line}
-        </p>
-      );
+      if (line.trim() === '') {return <br key={`br-${i}`} />;}
+      return <p key={`line-${i}-${line.slice(0, 20)}`} className="my-1">{line}</p>;
     });
   };
 

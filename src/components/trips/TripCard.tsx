@@ -1,16 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  MoreVertical,
-  Share2,
-  Trash2,
-  Calendar,
-  Users,
-  Crown,
-  Edit,
-  Eye,
-  MessageSquare,
-} from 'lucide-react';
+import { MoreVertical, Share2, Trash2, Calendar, Users, Crown, Edit, Eye, MessageSquare } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface TripCardProps {
@@ -36,12 +27,12 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current !== null && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   // Format date range nicely
@@ -99,7 +90,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
       whileHover={{ y: -4 }}
     >
       <button
-        onClick={() => onOpen(trip._id)}
+        onClick={() => { onOpen(trip._id); }}
         className="relative w-full h-full bg-white/95 backdrop-blur-xl border border-slate-200/50 hover:border-slate-300 rounded-2xl overflow-hidden transition-all duration-200 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50 text-left"
         aria-label={`Open trip: ${trip.name}`}
       >
@@ -112,9 +103,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             />
           ) : (
-            <div
-              className={`w-full h-full bg-gradient-to-br ${gradients[gradientIndex]} transition-transform duration-300 group-hover:scale-110`}
-            >
+            <div className={`w-full h-full bg-gradient-to-br ${gradients[gradientIndex]} transition-transform duration-300 group-hover:scale-110`}>
               <div className="absolute inset-0 bg-black/10" />
             </div>
           )}
@@ -124,17 +113,12 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
 
           {/* Role Badge - Top Left */}
           <div className="absolute top-3 left-3">
-            <div
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 backdrop-blur-sm border ${
-                roleBadge.color === 'sunset'
-                  ? 'border-sunset-200 text-sunset-700'
-                  : roleBadge.color === 'blue'
-                    ? 'border-blue-200 text-blue-700'
-                    : roleBadge.color === 'purple'
-                      ? 'border-purple-200 text-purple-700'
-                      : 'border-slate-200 text-slate-700'
-              }`}
-            >
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 backdrop-blur-sm border ${
+              roleBadge.color === 'sunset' ? 'border-sunset-200 text-sunset-700' :
+              roleBadge.color === 'blue' ? 'border-blue-200 text-blue-700' :
+              roleBadge.color === 'purple' ? 'border-purple-200 text-purple-700' :
+              'border-slate-200 text-slate-700'
+            }`}>
               <RoleIcon className="w-3 h-3" />
               {roleBadge.label}
             </div>
@@ -171,7 +155,9 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
 
           {/* Description */}
           {trip.description && (
-            <p className="text-sm text-slate-600 line-clamp-2 mb-3">{trip.description}</p>
+            <p className="text-sm text-slate-600 line-clamp-2 mb-3">
+              {trip.description}
+            </p>
           )}
 
           {/* Date Range */}
@@ -228,11 +214,7 @@ export function TripCard({ trip, onOpen, onShare, onDelete }: TripCardProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (
-                          confirm(
-                            `Are you sure you want to delete "${trip.name}"? This action cannot be undone.`
-                          )
-                        ) {
+                        if (confirm(`Are you sure you want to delete "${trip.name}"? This action cannot be undone.`)) {
                           onDelete(trip._id);
                         }
                         setShowMenu(false);

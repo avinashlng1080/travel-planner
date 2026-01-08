@@ -1,19 +1,12 @@
-import { useState } from 'react';
-import {
-  X,
-  MapPin,
-  Clock,
-  DollarSign,
-  Car,
-  Star,
-  AlertTriangle,
-  Lightbulb,
-  ExternalLink,
-  Sparkles,
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
+import { X, MapPin, Clock, DollarSign, Car, Star, AlertTriangle, Lightbulb, ExternalLink, Sparkles } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+import { useWeather } from '../../hooks/useWeather';
 import { AddToPlanModal } from '../ui/AddToPlanModal';
+import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
+import { WeatherCard } from '../Weather';
+
 import type { Location, DayPlan } from '../../data/tripData';
 
 interface RightDetailPanelProps {
@@ -21,28 +14,29 @@ interface RightDetailPanelProps {
   days: DayPlan[];
   selectedDayId: string | null;
   onClose: () => void;
-  onAddToPlan: (
-    planType: 'A' | 'B',
-    details: {
-      dayId: string;
-      startTime: string;
-      endTime: string;
-      notes?: string;
-    }
-  ) => void;
+  onAddToPlan: (planType: 'A' | 'B', details: {
+    dayId: string;
+    startTime: string;
+    endTime: string;
+    notes?: string;
+  }) => void;
 }
 
-export function RightDetailPanel({
-  location,
-  days,
-  selectedDayId,
-  onClose,
-  onAddToPlan,
-}: RightDetailPanelProps) {
+export function RightDetailPanel({ location, days, selectedDayId, onClose, onAddToPlan }: RightDetailPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlanType, setSelectedPlanType] = useState<'A' | 'B'>('A');
 
-  if (!location) return null;
+  // Get weather data (defaults to Kuala Lumpur)
+  const { current: currentWeather, daily: weatherForecast, isLoading: weatherLoading } = useWeather();
+
+  // Get today's forecast
+  const todayForecast = useMemo(() => {
+    if (!weatherForecast.length) {return null;}
+    const today = new Date().toISOString().split('T')[0];
+    return weatherForecast.find((f) => f.date === today) || weatherForecast[0];
+  }, [weatherForecast]);
+
+  if (!location) {return null;}
 
   // Check if this is an AI-suggested dynamic pin
   const isAISuggested = location.id.startsWith('dynamic-');
@@ -70,7 +64,7 @@ export function RightDetailPanel({
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col"
+        className="fixed top-0 md:top-14 left-0 md:left-auto right-0 bottom-0 z-40 w-full md:w-96 bg-white/90 backdrop-blur-xl border-l border-slate-200/50 overflow-hidden flex flex-col safe-area-inset-top safe-area-inset-x safe-area-inset-bottom md:!pt-0"
       >
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl p-4 border-b border-slate-200/50 z-10">
@@ -157,6 +151,13 @@ export function RightDetailPanel({
             </GlassCard>
           </div>
 
+          {/* Current Weather */}
+          <WeatherCard
+            current={currentWeather ?? undefined}
+            forecast={todayForecast ?? undefined}
+            isLoading={weatherLoading}
+          />
+
           {/* Opening Hours & Fee */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -191,10 +192,7 @@ export function RightDetailPanel({
               </div>
               <ul className="space-y-1">
                 {location.warnings.map((warning, i) => (
-                  <li
-                    key={`${location.id}-warning-${i}-${warning.slice(0, 20)}`}
-                    className="text-xs text-red-200/80 flex items-start gap-2"
-                  >
+                  <li key={`${location.id}-warning-${i}-${warning.slice(0, 20)}`} className="text-xs text-red-200/80 flex items-start gap-2">
                     <span className="text-red-400">•</span>
                     {warning}
                   </li>
@@ -212,10 +210,7 @@ export function RightDetailPanel({
               </div>
               <ul className="space-y-1">
                 {location.tips.map((tip, i) => (
-                  <li
-                    key={`${location.id}-tip-${i}-${tip.slice(0, 20)}`}
-                    className="text-xs text-green-200/80 flex items-start gap-2"
-                  >
+                  <li key={`${location.id}-tip-${i}-${tip.slice(0, 20)}`} className="text-xs text-green-200/80 flex items-start gap-2">
                     <span className="text-green-400">•</span>
                     {tip}
                   </li>
@@ -257,7 +252,9 @@ export function RightDetailPanel({
             <GlassBadge color={location.isIndoor ? 'blue' : 'green'}>
               {location.isIndoor ? 'Indoor' : 'Outdoor'}
             </GlassBadge>
-            {location.bookingRequired && <GlassBadge color="amber">Booking Required</GlassBadge>}
+            {location.bookingRequired && (
+              <GlassBadge color="amber">Booking Required</GlassBadge>
+            )}
           </div>
         </div>
 
@@ -292,7 +289,7 @@ export function RightDetailPanel({
         planType={selectedPlanType}
         days={days}
         currentDayId={selectedDayId}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); }}
         onAdd={(details) => {
           onAddToPlan(selectedPlanType, details);
           setModalOpen(false);

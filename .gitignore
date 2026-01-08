@@ -9,8 +9,8 @@ node_modules/
 dist/
 .vite/
 
-# Convex generated files
-convex/_generated/
+# Convex generated files should be committed (required for builds)
+# See: https://docs.convex.dev/production/hosting/vercel
 
 # Test artifacts
 playwright-report/
@@ -34,6 +34,7 @@ npm-debug.log*
 * 2
 *copy*
 
-# macOS
-.DS_Store
-**/.DS_Store
+# Claude settings (contains API keys and sensitive data)
+.claude/settings.local.json
+.vercel
+.env*.local

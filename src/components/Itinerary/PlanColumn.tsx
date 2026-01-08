@@ -2,8 +2,10 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
+
 import { DraggableItem } from './DraggableItem';
+
+import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface PlanColumnProps {
   planType: 'A' | 'B';
@@ -58,18 +60,15 @@ export function PlanColumn({ planType, items, locations, isOver }: PlanColumnPro
       <motion.div
         ref={setNodeRef}
         animate={{
-          borderColor: showDropIndicator
-            ? planType === 'A'
-              ? '#10B981'
-              : '#3B82F6'
-            : 'rgb(226, 232, 240)',
-          backgroundColor: showDropIndicator
-            ? planType === 'A'
-              ? 'rgba(16, 185, 129, 0.05)'
-              : 'rgba(59, 130, 246, 0.05)'
-            : 'transparent',
+          borderColor: showDropIndicator ? (planType === 'A' ? 'rgba(16, 185, 129, 1)' : 'rgba(59, 130, 246, 1)') : 'rgba(226, 232, 240, 1)',
+          backgroundColor: showDropIndicator ? (planType === 'A' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(59, 130, 246, 0.05)') : 'rgba(255, 255, 255, 0)',
         }}
-        transition={{ duration: 0.15 }}
+        transition={{
+          duration: 0.15,
+          ease: 'easeInOut',
+          borderColor: { duration: 0.15 },
+          backgroundColor: { duration: 0.15 }
+        }}
         className={`
           flex-1 p-2 rounded-b-xl border-2 border-t-0
           ${showDropIndicator ? 'border-dashed' : 'border-slate-200'}
@@ -98,16 +97,16 @@ export function PlanColumn({ planType, items, locations, isOver }: PlanColumnPro
                   transition-colors duration-200
                 `}
               >
-                <div
-                  className={`
+                <div className={`
                   w-10 h-10 rounded-full flex items-center justify-center mb-2
                   ${showDropIndicator ? styles.badge : 'bg-slate-100'}
-                `}
-                >
+                `}>
                   <Plus className={`w-5 h-5 ${showDropIndicator ? '' : 'text-slate-400'}`} />
                 </div>
                 <p className="text-xs text-slate-500 text-center px-4">
-                  {showDropIndicator ? 'Drop activity here' : 'Drag activities here'}
+                  {showDropIndicator
+                    ? 'Drop activity here'
+                    : 'Drag activities here'}
                 </p>
               </motion.div>
             )}

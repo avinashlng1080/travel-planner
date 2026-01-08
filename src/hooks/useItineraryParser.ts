@@ -1,15 +1,18 @@
-import { useState, useCallback } from 'react';
 import { useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-import { Id } from '../../convex/_generated/dataModel';
+import { useState, useCallback } from 'react';
+
 import {
-  ParsedItinerary,
-  ParsedLocation,
-  ParsedActivity,
-  TripContext,
-  ParserStep,
-  ImportResult,
+  type ParsedItinerary,
+  type ParsedLocation,
+  type ParsedActivity,
+  type TripContext,
+  type ParserStep,
+  type ImportResult,
 } from '@/types/itinerary';
+
+import { api } from '../../convex/_generated/api';
+import { type Id } from '../../convex/_generated/dataModel';
+
 
 /**
  * Hook for managing the itinerary parsing flow.
@@ -65,74 +68,73 @@ export function useItineraryParser(): UseItineraryParserReturn {
    * Parse raw itinerary text.
    * Uses local parser first (fast, no AI), falls back to Claude if needed.
    */
-  const parse = useCallback(
-    async (tripId: string, tripContext: TripContext) => {
-      if (!rawText.trim()) {
-        setError('Please paste your itinerary text');
-        return;
-      }
+  const parse = useCallback(async (tripId: string, tripContext: TripContext) => {
+    if (!rawText.trim()) {
+      setError('Please paste your itinerary text');
+      return;
+    }
 
-      if (rawText.length < 50) {
-        setError("This doesn't look like a full itinerary. Please paste more text.");
-        return;
-      }
+    if (rawText.length < 50) {
+      setError("This doesn't look like a full itinerary. Please paste more text.");
+      return;
+    }
 
-      setIsParsing(true);
-      setError(null);
-      setStep('parsing');
+    setIsParsing(true);
+    setError(null);
+    setStep('parsing');
 
-      try {
-        const convexUrl = import.meta.env.VITE_CONVEX_URL;
-        const siteUrl = convexUrl.replace('.cloud', '.site');
+    try {
+      const convexUrl = import.meta.env.VITE_CONVEX_URL;
+      const siteUrl = convexUrl.replace('.cloud', '.site');
 
-        // Try local parser first (faster, no rate limits)
-        let response = await fetch(`${siteUrl}/parseItineraryLocal`, {
+      // Try local parser first (faster, no rate limits)
+      let response = await fetch(`${siteUrl}/parseItineraryLocal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rawText, tripId, tripContext }),
+      });
+
+      let data = await response.json();
+
+      // If local parser failed, try Claude parser as fallback
+      if (!data.success && data.error?.includes('Could not parse')) {
+        console.log('Local parser failed, trying Claude...');
+        response = await fetch(`${siteUrl}/parseItinerary`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ rawText, tripId, tripContext }),
         });
-
-        let data = await response.json();
-
-        // If local parser failed, try Claude parser as fallback
-        if (!data.success && data.error?.includes('Could not parse')) {
-          console.log('Local parser failed, trying Claude...');
-          response = await fetch(`${siteUrl}/parseItinerary`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rawText, tripId, tripContext }),
-          });
-          data = await response.json();
-        }
-
-        if (!data.success) {
-          setError(data.error || 'Failed to parse itinerary. Please try again.');
-          setStep('input');
-          return;
-        }
-
-        setParsedData(data.parsed);
-        setStep('preview');
-      } catch (err) {
-        console.error('Parse error:', err);
-        setError('Network error. Please check your connection and try again.');
-        setStep('input');
-      } finally {
-        setIsParsing(false);
+        data = await response.json();
       }
-    },
-    [rawText]
-  );
+
+      if (!data.success) {
+        setError(data.error ?? 'Failed to parse itinerary. Please try again.');
+        setStep('input');
+        return;
+      }
+
+      setParsedData(data.parsed);
+      setStep('preview');
+    } catch (err) {
+      console.error('Parse error:', err);
+      setError('Network error. Please check your connection and try again.');
+      setStep('input');
+    } finally {
+      setIsParsing(false);
+    }
+  }, [rawText]);
 
   /**
    * Update a parsed location.
    */
   const updateLocation = useCallback((id: string, updates: Partial<ParsedLocation>) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       return {
         ...prev,
-        locations: prev.locations.map((loc) => (loc.id === id ? { ...loc, ...updates } : loc)),
+        locations: prev.locations.map((loc) =>
+          loc.id === id ? { ...loc, ...updates } : loc
+        ),
       };
     });
   }, []);
@@ -142,7 +144,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    */
   const deleteLocation = useCallback((id: string) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       return {
         ...prev,
         locations: prev.locations.filter((loc) => loc.id !== id),
@@ -161,7 +163,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
   const updateActivity = useCallback(
     (dayIndex: number, activityId: string, updates: Partial<ParsedActivity>) => {
       setParsedData((prev) => {
-        if (!prev) return prev;
+        if (!prev) {return prev;}
         const newDays = [...prev.days];
         if (newDays[dayIndex]) {
           newDays[dayIndex] = {
@@ -182,12 +184,14 @@ export function useItineraryParser(): UseItineraryParserReturn {
    */
   const deleteActivity = useCallback((dayIndex: number, activityId: string) => {
     setParsedData((prev) => {
-      if (!prev) return prev;
+      if (!prev) {return prev;}
       const newDays = [...prev.days];
       if (newDays[dayIndex]) {
         newDays[dayIndex] = {
           ...newDays[dayIndex],
-          activities: newDays[dayIndex].activities.filter((act) => act.id !== activityId),
+          activities: newDays[dayIndex].activities.filter(
+            (act) => act.id !== activityId
+          ),
         };
       }
       // Remove empty days
@@ -265,7 +269,7 @@ export function useItineraryParser(): UseItineraryParserReturn {
    * Undo the last import.
    */
   const undo = useCallback(async () => {
-    if (!importResult) return;
+    if (!importResult) {return;}
 
     try {
       // Delete schedule items first (they may reference locations)

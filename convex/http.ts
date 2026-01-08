@@ -3,6 +3,8 @@ import { auth } from "./auth";
 import { chat } from "./claude";
 import { parseItinerary } from "./parseItinerary";
 import { parseItineraryLocal } from "./parseItineraryLocal";
+import { distanceMatrix } from "./distanceMatrix";
+import { getDailyForecast, getCurrentConditions, getWeatherAlerts } from "./weather";
 
 const http = httpRouter();
 
@@ -48,6 +50,56 @@ http.route({
   path: "/parseItineraryLocal",
   method: "OPTIONS",
   handler: parseItineraryLocal,
+});
+
+// Distance Matrix API proxy (for commute calculations)
+http.route({
+  path: "/api/distance-matrix",
+  method: "GET",
+  handler: distanceMatrix,
+});
+
+http.route({
+  path: "/api/distance-matrix",
+  method: "OPTIONS",
+  handler: distanceMatrix,
+});
+
+// Weather API routes
+http.route({
+  path: "/weather/forecast",
+  method: "POST",
+  handler: getDailyForecast,
+});
+
+http.route({
+  path: "/weather/forecast",
+  method: "OPTIONS",
+  handler: getDailyForecast,
+});
+
+http.route({
+  path: "/weather/current",
+  method: "POST",
+  handler: getCurrentConditions,
+});
+
+http.route({
+  path: "/weather/current",
+  method: "OPTIONS",
+  handler: getCurrentConditions,
+});
+
+http.route({
+  path: "/weather/alerts",
+  method: "POST",
+  handler: getWeatherAlerts,
+});
+
+http.route({
+  path: "/weather/alerts",
+  method: "OPTIONS",
+  handler: getWeatherAlerts,
 });
 
 export default http;

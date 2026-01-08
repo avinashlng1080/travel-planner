@@ -1,18 +1,12 @@
-import { Lightbulb, Sun, Cloud, Clock, MapPin, Info, Zap } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import {
-  panelsAtom,
-  closePanelAtom,
-  toggleMinimizeAtom,
-  updatePositionAtom,
-  bringToFrontAtom,
-} from '../../atoms/floatingPanelAtoms';
+import { Lightbulb, Sun, Cloud, Clock, MapPin, Info, Zap , type LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
+
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom, selectedLocationAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
-import { LucideIcon } from 'lucide-react';
-import { useMemo } from 'react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { FloatingPanel } from '../ui/FloatingPanel';
 
 interface Suggestion {
   id: string;
@@ -43,7 +37,9 @@ export function SuggestionsPanel() {
     const currentMinute = now.getMinutes();
 
     // Find selected day plan
-    const selectedDay = selectedDayId ? DAILY_PLANS.find((p) => p.id === selectedDayId) : null;
+    const selectedDay = selectedDayId
+      ? DAILY_PLANS.find((p) => p.id === selectedDayId)
+      : null;
 
     // Weather-based suggestions
     if (selectedDay) {
@@ -63,7 +59,7 @@ export function SuggestionsPanel() {
           title: 'Indoor-friendly day',
           description: `${selectedDay.title} focuses on indoor activities. Perfect for rainy weather or when the toddler needs AC breaks.`,
         });
-      } else if (selectedDay.weatherConsideration === 'mixed') {
+      } else {
         result.push({
           id: 'weather-mixed',
           type: 'weather',
@@ -212,8 +208,12 @@ export function SuggestionsPanel() {
 
     // Add 1-2 random hardcoded tips if we don't have many suggestions
     if (result.length < 4) {
-      const availableTips = hardcodedTips.filter((tip) => !result.some((r) => r.id === tip.id));
-      const randomTips = availableTips.sort(() => Math.random() - 0.5).slice(0, 5 - result.length);
+      const availableTips = hardcodedTips.filter(
+        (tip) => !result.some((r) => r.id === tip.id)
+      );
+      const randomTips = availableTips
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5 - result.length);
       result.push(...randomTips);
     }
 
@@ -245,10 +245,10 @@ export function SuggestionsPanel() {
       position={panelState.position}
       size={{ width, height }}
       zIndex={panelState.zIndex}
-      onClose={() => closePanel('suggestions')}
-      onMinimize={() => toggleMinimize('suggestions')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'suggestions', position: pos })}
-      onFocus={() => bringToFront('suggestions')}
+      onClose={() => { closePanel('suggestions'); }}
+      onMinimize={() => { toggleMinimize('suggestions'); }}
+      onPositionChange={(pos) => { updatePosition({ panelId: 'suggestions', position: pos }); }}
+      onFocus={() => { bringToFront('suggestions'); }}
     >
       <div className="p-5">
         {suggestions.length > 0 ? (
@@ -307,10 +307,12 @@ export function SuggestionsPanel() {
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Lightbulb className="w-12 h-12 text-slate-300 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No Suggestions Yet</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              No Suggestions Yet
+            </h3>
             <p className="text-sm text-slate-600 max-w-xs">
-              Select a day or location to get contextual suggestions based on weather, time, and
-              nearby attractions.
+              Select a day or location to get contextual suggestions based on
+              weather, time, and nearby attractions.
             </p>
           </div>
         )}

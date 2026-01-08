@@ -61,6 +61,7 @@ export interface ScheduleItem {
   notes?: string;
   isNapTime?: boolean;
   isFlexible?: boolean;
+  order?: number;
 }
 
 export interface TravelPlan {

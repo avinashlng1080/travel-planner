@@ -10,6 +10,53 @@ import { httpAction } from "./_generated/server";
  * 4. Returns structured JSON (no database writes)
  */
 
+// Types for parsed data
+interface ParsedLocation {
+  id?: string;
+  name: string;
+  lat?: number;
+  lng?: number;
+  category?: string;
+  description?: string;
+  toddlerRating?: number;
+  estimatedDuration?: string;
+  tips?: string[];
+  aiReason?: string;
+}
+
+interface ParsedActivity {
+  id?: string;
+  locationName?: string;
+  locationId?: string;
+  startTime: string;
+  endTime: string;
+  notes?: string;
+  isFlexible?: boolean;
+}
+
+interface ParsedDay {
+  date: string;
+  title?: string;
+  activities: ParsedActivity[];
+}
+
+interface ParsedResult {
+  locations?: ParsedLocation[];
+  days?: ParsedDay[];
+  warnings?: string[];
+  suggestions?: string[];
+}
+
+interface ClaudeContent {
+  type: string;
+  name?: string;
+  input?: ParsedResult;
+}
+
+interface ClaudeResponse {
+  content?: ClaudeContent[];
+}
+
 // CORS headers for browser requests
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,9 +86,9 @@ function buildParserSystemPrompt(tripContext: {
 
 TRIP CONTEXT:
 - Trip Name: ${tripContext.name}
-- Destination: ${tripContext.destination || 'Not specified'}
+- Destination: ${tripContext.destination ?? 'Not specified'}
 - Dates: ${tripContext.startDate} to ${tripContext.endDate}
-- Travelers: ${tripContext.travelerInfo || 'Not specified'}
+- Travelers: ${tripContext.travelerInfo ?? 'Not specified'}
 
 ACTIVITY TYPES TO EXTRACT:
 
@@ -282,7 +329,16 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      rawText: string;
+      tripContext?: {
+        name: string;
+        destination?: string;
+        startDate: string;
+        endDate: string;
+        travelerInfo?: string;
+      };
+    };
     const { rawText, tripContext } = body;
 
     // Validate input
@@ -308,7 +364,7 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
       );
     }
 
-    const systemPrompt = buildParserSystemPrompt(tripContext || {
+    const systemPrompt = buildParserSystemPrompt(tripContext ?? {
       name: 'Trip',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date().toISOString().split('T')[0],
@@ -348,14 +404,14 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as ClaudeResponse;
 
     // Process the response - look for tool use
-    let parsedResult = null;
+    let parsedResult: ParsedResult | null = null;
 
-    for (const content of data.content || []) {
+    for (const content of data.content ?? []) {
       if (content.type === 'tool_use' && content.name === 'parse_itinerary') {
-        parsedResult = content.input;
+        parsedResult = content.input ?? null;
         break;
       }
     }
@@ -373,7 +429,7 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
     }
 
     // Add IDs to parsed items
-    const locations = (parsedResult.locations || []).map((loc: any) => ({
+    const locations = (parsedResult.locations ?? []).map((loc) => ({
       ...loc,
       id: generateId(),
     }));
@@ -381,14 +437,18 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
     // Create a map of location names to IDs
     const locationNameToId: Record<string, string> = {};
     for (const loc of locations) {
-      locationNameToId[loc.name.toLowerCase()] = loc.id;
+      const locId = loc.id;
+      if (locId) {
+        locationNameToId[loc.name.toLowerCase()] = locId;
+      }
     }
 
-    const days = (parsedResult.days || []).map((day: any) => ({
+    const days = (parsedResult.days ?? []).map((day) => ({
       ...day,
-      activities: (day.activities || []).map((activity: any) => {
+      activities: (day.activities ?? []).map((activity) => {
         // Find the location ID by matching name
-        const locationId = locationNameToId[activity.locationName?.toLowerCase()] || '';
+        const locationKey = activity.locationName?.toLowerCase() ?? '';
+        const locationId = locationNameToId[locationKey] ?? '';
         return {
           ...activity,
           id: generateId(),
@@ -404,8 +464,8 @@ export const parseItinerary = httpAction(async (_ctx, request) => {
         parsed: {
           locations,
           days,
-          warnings: parsedResult.warnings || [],
-          suggestions: parsedResult.suggestions || [],
+          warnings: parsedResult.warnings,
+          suggestions: parsedResult.suggestions,
         },
       }),
       { headers: corsHeaders }

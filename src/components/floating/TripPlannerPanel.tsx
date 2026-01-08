@@ -1,38 +1,20 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-// TODO: Refactor to move all hooks before early return to comply with Rules of Hooks
+import { useQuery, useMutation } from 'convex/react';
+import { useAtom, useSetAtom } from 'jotai';
+import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns , type LucideIcon } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
-import { useQuery } from 'convex/react';
-import {
-  Map,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Lightbulb,
-  AlertTriangle,
-  Sun,
-  Cloud,
-  Clock,
-  Info,
-  Zap,
-  Columns,
-} from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
+
+import { api } from '../../../convex/_generated/api';
+import { panelsAtom } from '../../atoms/floatingPanelAtoms';
+import { selectedDayIdAtom } from '../../atoms/uiAtoms';
+import { useWeather } from '../../hooks/useWeather';
+import { sortScheduleItems } from '../../utils/sortScheduleItems';
 import { DayPlan } from '../Itinerary/DayPlan';
 import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
-import { useAtom, useSetAtom } from 'jotai';
-import {
-  panelsAtom,
-  closePanelAtom,
-  toggleMinimizeAtom,
-  updatePositionAtom,
-  bringToFrontAtom,
-} from '../../atoms/floatingPanelAtoms';
-import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { GlassBadge } from '../ui/GlassPanel';
-import { LucideIcon } from 'lucide-react';
-import { useResponsivePanel } from '../../hooks/useResponsivePanel';
-import { api } from '../../../convex/_generated/api';
+import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
+import { WeatherBadge } from '../Weather';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType } from '../../data/tripData';
 
@@ -66,27 +48,24 @@ interface TripPlannerPanelProps {
   onActivityClick?: (activityId: string) => void;
 }
 
-export function TripPlannerPanel({
-  tripId,
-  selectedPlanId,
-  onActivityClick,
-}: TripPlannerPanelProps) {
+export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: TripPlannerPanelProps) {
   const [panels] = useAtom(panelsAtom);
-  const closePanel = useSetAtom(closePanelAtom);
-  const toggleMinimize = useSetAtom(toggleMinimizeAtom);
-  const updatePosition = useSetAtom(updatePositionAtom);
-  const bringToFront = useSetAtom(bringToFrontAtom);
   const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
-  const { width, height } = useResponsivePanel(420, 580);
 
-  // Fetch data from Convex (must be called before any early returns)
+  // Get weather data (defaults to Kuala Lumpur)
+  const { daily: weatherForecast } = useWeather();
+
+  // Fetch data from Convex
   const scheduleItems = useQuery(
     api.tripScheduleItems.getScheduleItems,
     selectedPlanId ? { planId: selectedPlanId } : 'skip'
   );
 
   const tripLocations = useQuery(api.tripLocations.getLocations, { tripId });
+
+  // Get mutation for reordering
+  const reorderScheduleItems = useMutation(api.tripScheduleItems.reorderScheduleItems);
 
   const panelState = panels?.tripPlanner;
 
@@ -97,7 +76,7 @@ export function TripPlannerPanel({
 
   // Transform tripLocations to Location format for child components
   const locations = useMemo(() => {
-    if (!tripLocations) return [];
+    if (!tripLocations) {return [];}
 
     return tripLocations.map((loc) => ({
       id: loc._id,
@@ -130,41 +109,39 @@ export function TripPlannerPanel({
 
   // Group schedule items by dayDate to create "virtual" day plans
   const dailyPlans = useMemo<DayPlanType[]>(() => {
-    if (!scheduleItems || !tripLocations) return [];
+    if (!scheduleItems || !tripLocations) {return [];}
 
     // Group items by dayDate
-    const groupedByDate = scheduleItems.reduce(
-      (acc, item) => {
-        const date = item.dayDate;
-        if (!acc[date]) {
-          acc[date] = [];
-        }
-        acc[date].push(item);
-        return acc;
-      },
-      {} as Record<string, typeof scheduleItems>
-    );
+    const groupedByDate = scheduleItems.reduce<Record<string, typeof scheduleItems>>((acc, item) => {
+      const date = item.dayDate;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(item);
+      return acc;
+    }, {});
 
     // Convert to DayPlan format
-    return Object.entries(groupedByDate)
+    const result = Object.entries(groupedByDate)
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
       .map(([date, items]) => {
         const dayDate = new Date(date);
         const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'long' });
 
         // Transform items to ScheduleItemType format
-        const scheduleItemsForDay: ScheduleItemType[] = items
-          .sort((a, b) => a.order - b.order)
-          .map((item) => ({
+        const scheduleItemsForDay: ScheduleItemType[] = sortScheduleItems(
+          items.map((item) => ({
             id: item._id,
             locationId: item.locationId || '',
             startTime: item.startTime,
             endTime: item.endTime,
             notes: item.notes,
             isFlexible: item.isFlexible,
-          }));
+            order: item.order,
+          }))
+        );
 
-        return {
+        const dayPlan = {
           id: date,
           date,
           dayOfWeek,
@@ -174,7 +151,11 @@ export function TripPlannerPanel({
           notes: [],
           weatherConsideration: 'mixed' as const,
         };
+
+        return dayPlan;
       });
+
+    return result;
   }, [scheduleItems, tripLocations]);
 
   // Auto-select first day if none selected
@@ -186,7 +167,7 @@ export function TripPlannerPanel({
 
   // Find current day index
   const currentDayIndex = useMemo(() => {
-    if (!selectedDayId) return 0;
+    if (!selectedDayId) {return 0;}
     const index = dailyPlans.findIndex((p) => p.id === selectedDayId);
     return index >= 0 ? index : 0;
   }, [selectedDayId, dailyPlans]);
@@ -195,13 +176,19 @@ export function TripPlannerPanel({
 
   // Check if today
   const isToday = useMemo(() => {
-    if (!selectedDayPlan) return false;
+    if (!selectedDayPlan) {return false;}
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dayDate = new Date(selectedDayPlan.date);
     dayDate.setHours(0, 0, 0, 0);
     return dayDate.getTime() === today.getTime();
   }, [selectedDayPlan]);
+
+  // Get weather forecast for the selected day
+  const selectedDayWeather = useMemo(() => {
+    if (!selectedDayPlan || !weatherForecast.length) {return null;}
+    return weatherForecast.find((f) => f.date === selectedDayPlan.date) || null;
+  }, [selectedDayPlan, weatherForecast]);
 
   // Navigation handlers
   const goToPrevDay = () => {
@@ -217,8 +204,18 @@ export function TripPlannerPanel({
   };
 
   // Itinerary handlers
-  const handleReorder = (plan: 'A' | 'B', itemIds: string[]) => {
-    console.log('Reorder:', plan, itemIds);
+  const handleReorder = async (plan: 'A' | 'B', itemIds: string[]) => {
+    if (!selectedPlanId || !selectedDayPlan) {return;}
+
+    try {
+      await reorderScheduleItems({
+        planId: selectedPlanId,
+        dayDate: selectedDayPlan.date,
+        itemIds: itemIds as Id<'tripScheduleItems'>[],
+      });
+    } catch (error) {
+      console.error('Failed to reorder schedule items:', error);
+    }
   };
 
   // Generate suggestions
@@ -293,34 +290,10 @@ export function TripPlannerPanel({
 
     // Tips
     const tips: Suggestion[] = [
-      {
-        id: 'tip-hydration',
-        type: 'tip',
-        icon: Info,
-        title: 'Stay hydrated!',
-        description: 'Malaysia is hot (24-32°C). Carry water!',
-      },
-      {
-        id: 'tip-grab',
-        type: 'tip',
-        icon: Info,
-        title: 'Use Grab',
-        description: 'Safe & reliable. RM 12-25 around KL.',
-      },
-      {
-        id: 'tip-monkeys',
-        type: 'tip',
-        icon: Zap,
-        title: 'Beware of monkeys',
-        description: 'At Batu Caves - hide food & phones!',
-      },
-      {
-        id: 'tip-carrier',
-        type: 'tip',
-        icon: Info,
-        title: 'Baby carrier',
-        description: 'Essential for Aquaria (no strollers).',
-      },
+      { id: 'tip-hydration', type: 'tip', icon: Info, title: 'Stay hydrated!', description: 'Malaysia is hot (24-32°C). Carry water!' },
+      { id: 'tip-grab', type: 'tip', icon: Info, title: 'Use Grab', description: 'Safe & reliable. RM 12-25 around KL.' },
+      { id: 'tip-monkeys', type: 'tip', icon: Zap, title: 'Beware of monkeys', description: 'At Batu Caves - hide food & phones!' },
+      { id: 'tip-carrier', type: 'tip', icon: Info, title: 'Baby carrier', description: 'Essential for Aquaria (no strollers).' },
     ];
 
     if (result.length < 4) {
@@ -333,33 +306,20 @@ export function TripPlannerPanel({
 
   const getSuggestionColor = (type: Suggestion['type']) => {
     switch (type) {
-      case 'weather':
-        return 'from-yellow-500 to-orange-500';
-      case 'time':
-        return 'from-blue-500 to-cyan-500';
-      case 'nearby':
-        return 'from-green-500 to-emerald-500';
-      case 'tip':
-        return 'from-sunset-500 to-ocean-600';
-      default:
-        return 'from-slate-500 to-slate-600';
+      case 'weather': return 'from-yellow-500 to-orange-500';
+      case 'time': return 'from-blue-500 to-cyan-500';
+      case 'nearby': return 'from-green-500 to-emerald-500';
+      case 'tip': return 'from-sunset-500 to-ocean-600';
+      default: return 'from-slate-500 to-slate-600';
     }
   };
 
   return (
-    <FloatingPanel
-      id="tripPlanner"
+    <ResponsivePanelWrapper
+      panelId="tripPlanner"
       title="Trip Planner"
       icon={Map}
-      isOpen={panelState.isOpen}
-      isMinimized={panelState.isMinimized}
-      position={panelState.position}
-      size={{ width, height }}
-      zIndex={panelState.zIndex}
-      onClose={() => closePanel('tripPlanner')}
-      onMinimize={() => toggleMinimize('tripPlanner')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'tripPlanner', position: pos })}
-      onFocus={() => bringToFront('tripPlanner')}
+      defaultSize={{ width: 420, height: 580 }}
     >
       <div className="flex flex-col h-full">
         {/* Day Navigator */}
@@ -377,6 +337,9 @@ export function TripPlannerPanel({
               <span className="text-xs font-medium text-slate-500">
                 {selectedDayPlan?.dayOfWeek}
               </span>
+              {selectedDayWeather && (
+                <WeatherBadge forecast={selectedDayWeather} />
+              )}
               {isToday && (
                 <GlassBadge color="sunset" className="text-xs px-1.5 py-0">
                   TODAY
@@ -407,14 +370,14 @@ export function TripPlannerPanel({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200/50">
+        <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200/50">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setActiveTab(tab.id); }}
               className={`
-                flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5
-                text-xs font-medium transition-all duration-200
+                flex-1 md:flex-auto flex items-center justify-center gap-1.5 px-3 py-3 min-h-[44px]
+                text-xs font-medium transition-all duration-200 whitespace-nowrap
                 ${
                   activeTab === tab.id
                     ? 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50/50'
@@ -459,7 +422,10 @@ export function TripPlannerPanel({
                       Drag activities between Plan A and Plan B to create your custom itinerary
                     </p>
                   </div>
-                  <PlanBuilder dayPlan={selectedDayPlan} locations={locations} />
+                  <PlanBuilder
+                    dayPlan={selectedDayPlan}
+                    locations={locations}
+                  />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -502,6 +468,6 @@ export function TripPlannerPanel({
           {activeTab === 'alerts' && <SafetyPanel />}
         </div>
       </div>
-    </FloatingPanel>
+    </ResponsivePanelWrapper>
   );
 }

@@ -1,17 +1,12 @@
-import { Calendar } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
-import {
-  panelsAtom,
-  closePanelAtom,
-  toggleMinimizeAtom,
-  updatePositionAtom,
-  bringToFrontAtom,
-} from '../../atoms/floatingPanelAtoms';
+import { Calendar } from 'lucide-react';
+
+import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS } from '../../data/tripData';
-import { GlassBadge } from '../ui/GlassPanel';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { FloatingPanel } from '../ui/FloatingPanel';
+import { GlassBadge } from '../ui/GlassPanel';
 
 interface DayItemProps {
   date: string;
@@ -34,9 +29,7 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
       onClick={onClick}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span
-          className={`text-xs font-semibold ${isSelected ? 'text-sunset-100' : 'text-slate-600'}`}
-        >
+        <span className={`text-xs font-semibold ${isSelected ? 'text-sunset-100' : 'text-slate-600'}`}>
           {dayOfWeek}
         </span>
         {isToday && (
@@ -52,7 +45,7 @@ function DayItem({ date, dayOfWeek, title, isToday, isSelected, onClick }: DayIt
         {new Date(date).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
-          year: 'numeric',
+          year: 'numeric'
         })}
       </div>
     </button>
@@ -102,10 +95,10 @@ export function DaysPanel() {
       position={panelState.position}
       size={{ width, height }}
       zIndex={panelState.zIndex}
-      onClose={() => closePanel('days')}
-      onMinimize={() => toggleMinimize('days')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'days', position: pos })}
-      onFocus={() => bringToFront('days')}
+      onClose={() => { closePanel('days'); }}
+      onMinimize={() => { toggleMinimize('days'); }}
+      onPositionChange={(pos) => { updatePosition({ panelId: 'days', position: pos }); }}
+      onFocus={() => { bringToFront('days'); }}
     >
       <div className="p-4 space-y-2 max-h-[450px] overflow-y-auto">
         <div className="mb-3">
@@ -122,7 +115,7 @@ export function DaysPanel() {
             title={day.title}
             isToday={day.id === todayId}
             isSelected={day.id === selectedDayId}
-            onClick={() => handleDayClick(day.id)}
+            onClick={() => { handleDayClick(day.id); }}
           />
         ))}
       </div>

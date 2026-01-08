@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Undo2, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Toast {
   id: string;
@@ -46,11 +46,11 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       });
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [duration, toast.id, onDismiss]);
 
   const handleUndo = async () => {
-    if (!toast.undoAction || isUndoing) return;
+    if (!toast.undoAction || isUndoing) {return;}
 
     setIsUndoing(true);
     try {
@@ -116,7 +116,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
           )}
 
           <button
-            onClick={() => onDismiss(toast.id)}
+            onClick={() => { onDismiss(toast.id); }}
             className="p-1.5 hover:bg-white/20 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Dismiss"
           >

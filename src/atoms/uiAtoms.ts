@@ -1,7 +1,10 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import type { Location } from '../data/tripData';
+
 import { markInteractionAtom } from './onboardingAtoms';
+
+import type { Location } from '../data/tripData';
+import type { TravelMode } from '../hooks/useCommutes';
 
 // Dynamic pin created by AI chat
 export interface DynamicPin {
@@ -41,10 +44,7 @@ const visibleCategoriesStorageAtom = atomWithStorage<string[]>(
   'malaysia-trip-ui-visibleCategories',
   ALL_CATEGORIES
 );
-const sidebarCollapsedStorageAtom = atomWithStorage<boolean>(
-  'malaysia-trip-ui-sidebarCollapsed',
-  false
-);
+const sidebarCollapsedStorageAtom = atomWithStorage<boolean>('malaysia-trip-ui-sidebarCollapsed', false);
 const chatMessagesStorageAtom = atomWithStorage<ChatMessage[]>('malaysia-trip-ui-chatMessages', []);
 
 // Non-persisted state atoms
@@ -63,6 +63,15 @@ export const selectedLocationAtom = atom(
 export const selectedDayIdAtom = atom<string | null>(null);
 export const activeSectionAtom = atom<string>('itinerary');
 export const isAILoadingAtom = atom<boolean>(false);
+
+// Focused activity for map synchronization
+export interface FocusedActivity {
+  activityId: string;
+  locationId: string;
+  lat: number;
+  lng: number;
+}
+export const focusedActivityAtom = atom<FocusedActivity | null>(null);
 export const authModalOpenAtom = atom<boolean>(false);
 export const authModeAtom = atom<'login' | 'signup'>('login');
 export const dynamicPinsAtom = atom<DynamicPin[]>([]);
@@ -100,13 +109,16 @@ export const chatMessagesAtom = atom(
 );
 
 // Action atoms
-export const toggleCategoryAtom = atom(null, (get, set, category: string) => {
-  const current = get(visibleCategoriesAtom);
-  const updated = current.includes(category)
-    ? current.filter((c) => c !== category)
-    : [...current, category];
-  set(visibleCategoriesAtom, updated);
-});
+export const toggleCategoryAtom = atom(
+  null,
+  (get, set, category: string) => {
+    const current = get(visibleCategoriesAtom);
+    const updated = current.includes(category)
+      ? current.filter((c) => c !== category)
+      : [...current, category];
+    set(visibleCategoriesAtom, updated);
+  }
+);
 
 export const addChatMessageAtom = atom(
   null,
@@ -127,9 +139,12 @@ export const addChatMessageAtom = atom(
   }
 );
 
-export const clearChatMessagesAtom = atom(null, (_get, set) => {
-  set(chatMessagesAtom, []);
-});
+export const clearChatMessagesAtom = atom(
+  null,
+  (_get, set) => {
+    set(chatMessagesAtom, []);
+  }
+);
 
 export const addDynamicPinsAtom = atom(
   null,
@@ -145,19 +160,37 @@ export const addDynamicPinsAtom = atom(
   }
 );
 
-export const clearDynamicPinsAtom = atom(null, (_get, set) => {
-  set(dynamicPinsAtom, []);
-  set(newlyAddedPinsAtom, null);
-});
+export const clearDynamicPinsAtom = atom(
+  null,
+  (_get, set) => {
+    set(dynamicPinsAtom, []);
+    set(newlyAddedPinsAtom, null);
+  }
+);
 
-export const removeDynamicPinAtom = atom(null, (get, set, id: string) => {
-  const current = get(dynamicPinsAtom);
-  set(
-    dynamicPinsAtom,
-    current.filter((pin) => pin.id !== id)
-  );
-});
+export const removeDynamicPinAtom = atom(
+  null,
+  (get, set, id: string) => {
+    const current = get(dynamicPinsAtom);
+    set(dynamicPinsAtom, current.filter((pin) => pin.id !== id));
+  }
+);
 
-export const clearNewlyAddedPinsAtom = atom(null, (_get, set) => {
-  set(newlyAddedPinsAtom, null);
-});
+export const clearNewlyAddedPinsAtom = atom(
+  null,
+  (_get, set) => {
+    set(newlyAddedPinsAtom, null);
+  }
+);
+
+// Commute Destination Modal State
+export const addDestinationModalOpenAtom = atom<boolean>(false);
+export const editDestinationModalOpenAtom = atom<boolean>(false);
+export const editingDestinationIdAtom = atom<string | null>(null);
+export const deleteDestinationDialogOpenAtom = atom<boolean>(false);
+export const deletingDestinationIdAtom = atom<string | null>(null);
+
+// Commutes panel state
+export const travelModeAtom = atomWithStorage<TravelMode>('malaysia-trip-ui-travelMode', 'DRIVING');
+export const commutesPanelOpenAtom = atom<boolean>(false);
+export const activeCommuteDestinationAtom = atom<string | null>(null);

@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ChevronUp, Sun, CloudRain, MapPin, Clock, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronUp, Sun, CloudRain, MapPin, Clock, Moon } from 'lucide-react';
+import { useState } from 'react';
+
 import { GlassBadge } from '../ui/GlassPanel';
 
 interface ScheduleItemData {
@@ -135,7 +136,7 @@ export function BottomItineraryBar({
     >
       {/* Expand Toggle */}
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { setExpanded(!expanded); }}
         className="absolute -top-4 left-1/2 -translate-x-1/2 w-11 h-11 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
         aria-label={expanded ? 'Collapse itinerary' : 'Expand itinerary'}
       >

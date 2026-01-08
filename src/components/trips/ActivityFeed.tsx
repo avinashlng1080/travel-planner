@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,8 +13,10 @@ import {
   Trash,
   ExternalLink,
 } from 'lucide-react';
+import { useMemo } from 'react';
+
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
+import { type Id } from '../../../convex/_generated/dataModel';
 import { Avatar } from '../ui/Avatar';
 import { GlassPanel, GlassButton } from '../ui/GlassPanel';
 
@@ -233,13 +234,13 @@ export function ActivityFeed({ tripId, limit = 50, compact = false }: ActivityFe
 
   // Determine display limit based on compact mode
   const displayLimit = useMemo(() => {
-    if (!compact) return limit;
+    if (!compact) {return limit;}
     return 5;
   }, [compact, limit]);
 
   // Filter activities to display limit
   const displayedActivities = useMemo(() => {
-    if (!activities) return [];
+    if (!activities) {return [];}
     return activities.slice(0, displayLimit);
   }, [activities, displayLimit]);
 

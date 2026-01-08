@@ -4,7 +4,7 @@ test.describe('Malaysia Travel Planner Visual Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage to ensure fresh state with chatOpen: true
     await page.goto('http://localhost:3000');
-    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => { localStorage.clear(); });
     await page.reload();
   });
 

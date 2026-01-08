@@ -25,7 +25,7 @@ async function checkTripAccess(
     )
     .unique();
 
-  if (!member || member.status !== "accepted") {
+  if (member?.status !== "accepted") {
     throw new ConvexError("Access denied: You are not a member of this trip");
   }
 
@@ -73,7 +73,7 @@ export const getLocations = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user has access to trip
     await checkTripAccess(ctx, args.tripId, userId);
@@ -124,7 +124,7 @@ export const addLocation = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(
@@ -187,7 +187,7 @@ export const addAISuggestedLocations = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Check user is owner or editor
     const { canEdit } = await checkTripAccess(
@@ -257,7 +257,7 @@ export const removeLocation = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     // Get the location
     const location = await ctx.db.get(args.locationId);
@@ -322,7 +322,7 @@ export const removeMultipleLocations = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError("Not authenticated");
+    if (!userId) {throw new ConvexError("Not authenticated");}
 
     if (args.locationIds.length === 0) {
       return { success: true };

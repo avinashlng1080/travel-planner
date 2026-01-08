@@ -1,16 +1,14 @@
-import { useState, useEffect } from 'react';
-import {
-  DndContext,
-  closestCenter,
-  DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { Calendar, CloudRain, Sun, AlertCircle } from 'lucide-react';
-import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Calendar, AlertCircle, Droplets } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+
 import { DraggableItem } from './DraggableItem';
+import { useWeather } from '../../hooks/useWeather';
+import { WeatherIcon } from '../Weather';
+
+import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 
 interface DayPlanProps {
   dayPlan: DayPlanType;
@@ -39,52 +37,69 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
   );
 
   const currentPlan = selectedPlan === 'A' ? localPlanA : localPlanB;
-  const itemIds = currentPlan.map((item) => item.id);
+
+  // Sort items by order field (undefined orders go last)
+  const sortedItems = useMemo(() => {
+    const sorted = [...currentPlan].sort((a, b) =>
+      (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)
+    );
+    return sorted;
+  }, [currentPlan, dayPlan.date, selectedPlan]);
+
+  const itemIds = sortedItems.map((item) => item.id);
+
+  // Handle drag-and-drop reordering
+  const handleDragEnd = (event: { active: { id: string }; over: { id: string } | null }) => {
+    const { active, over } = event;
+
+    // No-op if dropped outside or on itself
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    // Find indices in the sorted items
+    const oldIndex = sortedItems.findIndex(item => item.id === active.id);
+    const newIndex = sortedItems.findIndex(item => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Create reordered array
+    const reordered = [...sortedItems];
+    const [movedItem] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, movedItem);
+
+    // Update local state immediately for smooth UI
+    const updatedPlan = reordered.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+
+    if (selectedPlan === 'A') {
+      setLocalPlanA(updatedPlan);
+    } else {
+      setLocalPlanB(updatedPlan);
+    }
+
+    // Call the onReorder callback with the new item IDs in order
+    if (onReorder) {
+      onReorder(selectedPlan, updatedPlan.map(item => item.id));
+    }
+  };
 
   const getLocation = (locationId: string) => {
     return locations.find((loc) => loc.id === locationId);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  // Get live weather data
+  const { daily: weatherForecast } = useWeather();
 
-    if (over && active.id !== over.id) {
-      const plan = selectedPlan === 'A' ? localPlanA : localPlanB;
-      const oldIndex = plan.findIndex((item) => item.id === active.id);
-      const newIndex = plan.findIndex((item) => item.id === over.id);
-
-      const reordered = arrayMove(plan, oldIndex, newIndex);
-
-      if (selectedPlan === 'A') {
-        setLocalPlanA(reordered);
-      } else {
-        setLocalPlanB(reordered);
-      }
-
-      if (onReorder) {
-        onReorder(
-          selectedPlan,
-          reordered.map((item) => item.id)
-        );
-      }
-    }
-  };
-
-  const weatherIcon =
-    dayPlan.weatherConsideration === 'outdoor-heavy' ? (
-      <Sun className="w-4 h-4" />
-    ) : dayPlan.weatherConsideration === 'indoor-heavy' ? (
-      <CloudRain className="w-4 h-4" />
-    ) : (
-      <Sun className="w-4 h-4" />
-    );
-
-  const weatherColor =
-    dayPlan.weatherConsideration === 'outdoor-heavy'
-      ? 'text-amber-500'
-      : dayPlan.weatherConsideration === 'indoor-heavy'
-        ? 'text-blue-500'
-        : 'text-slate-500';
+  // Find weather forecast for this specific day
+  const dayWeather = useMemo(() => {
+    if (!weatherForecast.length) {return null;}
+    return weatherForecast.find((f) => f.date === dayPlan.date) || null;
+  }, [weatherForecast, dayPlan.date]);
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -93,27 +108,37 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
           <div className="flex items-center gap-3">
             <Calendar className="w-5 h-5 text-sunset-500" />
             <h3 className="text-xl font-semibold text-slate-900">
-              {dayPlan.dayOfWeek},{' '}
-              {new Date(dayPlan.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-              })}
+              {dayPlan.dayOfWeek}, {new Date(dayPlan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </h3>
           </div>
-          <div className={`flex items-center gap-2 ${weatherColor}`}>
-            {weatherIcon}
-            <span className="text-sm capitalize">
-              {dayPlan.weatherConsideration.replace('-', ' ')}
-            </span>
-          </div>
+          {dayWeather ? (
+            <div className="flex items-center gap-2">
+              <WeatherIcon condition={dayWeather.condition} size={18} />
+              <span className="text-sm font-medium text-slate-700">
+                {Math.round(dayWeather.tempMax)}°
+              </span>
+              {dayWeather.precipitationProbability > 20 && (
+                <span className="flex items-center gap-1 text-sm text-blue-500">
+                  <Droplets size={14} />
+                  {Math.round(dayWeather.precipitationProbability)}%
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-sm text-slate-400">Loading weather...</span>
+          )}
         </div>
         <h4 className="text-lg text-slate-600">{dayPlan.title}</h4>
       </div>
 
       {dayPlan.planB.length > 0 && (
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6" role="tablist" aria-label="Day plan options">
           <button
-            onClick={() => setSelectedPlan('A')}
+            id={`plan-a-tab-${dayPlan.date}`}
+            role="tab"
+            aria-selected={selectedPlan === 'A'}
+            aria-controls={`plan-content-${dayPlan.date}`}
+            onClick={() => { setSelectedPlan('A'); }}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'A'
                 ? 'bg-green-600 text-white shadow-lg shadow-green-900/50'
@@ -123,7 +148,11 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
             Plan A - Main
           </button>
           <button
-            onClick={() => setSelectedPlan('B')}
+            id={`plan-b-tab-${dayPlan.date}`}
+            role="tab"
+            aria-selected={selectedPlan === 'B'}
+            aria-controls={`plan-content-${dayPlan.date}`}
+            onClick={() => { setSelectedPlan('B'); }}
             className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all ${
               selectedPlan === 'B'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
@@ -137,9 +166,14 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3">
-            {currentPlan.length > 0 ? (
-              currentPlan.map((item) => (
+          <div
+            id={`plan-content-${dayPlan.date}`}
+            role="tabpanel"
+            aria-labelledby={`plan-${selectedPlan.toLowerCase()}-tab-${dayPlan.date}`}
+            className="space-y-3"
+          >
+            {sortedItems.length > 0 ? (
+              sortedItems.map((item) => (
                 <DraggableItem
                   key={item.id}
                   item={item}

@@ -280,7 +280,7 @@ export const canAdvanceAtom = atom((get) => {
   const hasToggledPlan = get(hasToggledPlanAtom);
   const config = STEP_CONFIGS.find((c) => c.step === currentStep);
 
-  if (!config?.requiresInteraction) return true;
+  if (!config?.requiresInteraction) {return true;}
 
   switch (currentStep) {
     case 'welcome':

@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { useAtom } from 'jotai';
-import { selectedDayIdAtom } from '../atoms/uiAtoms';
-import { useRouting } from './useRouting';
+import { useMemo } from 'react';
+
+import { useGoogleRouting } from './useGoogleRouting';
 import { api } from '../../convex/_generated/api';
+import { selectedDayIdAtom } from '../atoms/uiAtoms';
+import { sortScheduleItemsForRoute } from '../utils/sortScheduleItems';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface RoutePoint {
@@ -37,12 +40,15 @@ interface DayRouteResult {
 export function useDayRoute(
   tripId: Id<'trips'> | null,
   planId: Id<'tripPlans'> | null,
-  _activePlan: 'A' | 'B' // Prefixed with _ to indicate intentionally unused (reserved for future use)
+  _activePlan: 'A' | 'B'  // Prefixed with _ to indicate intentionally unused (reserved for future use)
 ): DayRouteResult {
   const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   // Fetch trip locations
-  const tripLocations = useQuery(api.tripLocations.getLocations, tripId ? { tripId } : 'skip');
+  const tripLocations = useQuery(
+    api.tripLocations.getLocations,
+    tripId ? { tripId } : 'skip'
+  );
 
   // Fetch schedule items for selected plan
   const scheduleItems = useQuery(
@@ -56,13 +62,13 @@ export function useDayRoute(
 
     if (selectedDayId && scheduleItems && tripLocations) {
       // Filter schedule items by selected day
-      const dayScheduleItems = scheduleItems.filter((item) => item.dayDate === selectedDayId);
+      const dayScheduleItems = scheduleItems.filter(
+        (item) => item.dayDate === selectedDayId
+      );
 
-      // Sort by order (or start time if order is the same)
-      const sortedItems = dayScheduleItems.sort((a, b) => {
-        if (a.order !== b.order) return a.order - b.order;
-        return a.startTime.localeCompare(b.startTime);
-      });
+      // Sort by start time (chronological) for route visualization
+      // This prevents looping/star patterns caused by manual reordering
+      const sortedItems = sortScheduleItemsForRoute(dayScheduleItems);
 
       // Extract waypoints from locations
       for (const item of sortedItems) {
@@ -82,11 +88,14 @@ export function useDayRoute(
     return points;
   }, [selectedDayId, scheduleItems, tripLocations]);
 
-  // Fetch real road route using existing useRouting hook
-  const { coordinates, distance, duration, isLoading, error } = useRouting(
-    waypoints,
-    waypoints.length >= 2
-  );
+  // Fetch real road route using Google Directions API
+  const {
+    coordinates,
+    distance,
+    duration,
+    isLoading,
+    error,
+  } = useGoogleRouting(waypoints, waypoints.length >= 2);
 
   return {
     route: coordinates,

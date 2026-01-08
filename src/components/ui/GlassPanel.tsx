@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
+import { type ReactNode } from 'react';
 
 interface GlassPanelProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   children: ReactNode;

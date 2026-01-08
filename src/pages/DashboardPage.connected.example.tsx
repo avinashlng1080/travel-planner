@@ -10,14 +10,16 @@
  * 3. Update your routing to use this component
  */
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { api } from '../../convex/_generated/api';
-import { TripCard } from '../components/trips/TripCard';
 import { CreateTripCard } from '../components/trips/CreateTripCard';
+import { TripCard } from '../components/trips/TripCard';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 type FilterTab = 'all' | 'my-trips' | 'shared';
@@ -32,25 +34,19 @@ export function DashboardPage() {
   const tripsData = useQuery(api.trips.getMyTrips);
   const deleteTrip = useMutation(api.trips.deleteTrip);
 
-  // Get member counts for each trip
-  // Note: This could be optimized by creating a single query that returns trips with member counts
-  const getTripMembers = (tripId: Id<'trips'>) => {
-    const members = useQuery(api.tripMembers.getMembers, { tripId });
-    return members?.length ?? 1;
-  };
-
   // Transform trips data for TripCard
-  const trips =
-    tripsData?.map((trip) => ({
-      _id: trip._id,
-      name: trip.name,
-      description: trip.description,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      coverImageUrl: trip.coverImageUrl,
-      memberCount: getTripMembers(trip._id), // This will trigger multiple queries - not ideal
-      role: trip.userRole,
-    })) ?? [];
+  // Note: Member counts are hardcoded to 1 for now. To get real counts, create a single
+  // optimized query that returns trips with member counts in one call.
+  const trips = tripsData?.map(trip => ({
+    _id: trip._id,
+    name: trip.name,
+    description: trip.description,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    coverImageUrl: trip.coverImageUrl,
+    memberCount: 1, // TODO: Create optimized query to get real member counts
+    role: trip.userRole,
+  })) ?? [];
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -60,7 +56,7 @@ export function DashboardPage() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleSignOut = async () => {
@@ -70,8 +66,8 @@ export function DashboardPage() {
 
   // Filter trips based on active tab
   const filteredTrips = trips.filter((trip) => {
-    if (activeFilter === 'my-trips') return trip.role === 'owner';
-    if (activeFilter === 'shared') return trip.role !== 'owner';
+    if (activeFilter === 'my-trips') {return trip.role === 'owner';}
+    if (activeFilter === 'shared') {return trip.role !== 'owner';}
     return true;
   });
 
@@ -162,7 +158,7 @@ export function DashboardPage() {
 
               <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => { setShowUserMenu(!showUserMenu); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
                   aria-label="User menu"
                 >
@@ -206,8 +202,12 @@ export function DashboardPage() {
         {/* Page Title and CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">My Trips</h1>
-            <p className="mt-2 text-slate-600">Plan, organize, and share your travel adventures</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
+              My Trips
+            </h1>
+            <p className="mt-2 text-slate-600">
+              Plan, organize, and share your travel adventures
+            </p>
           </div>
 
           {/* Create Trip Button - Desktop */}
@@ -227,19 +227,19 @@ export function DashboardPage() {
             label="All Trips"
             count={trips.length}
             isActive={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
+            onClick={() => { setActiveFilter('all'); }}
           />
           <FilterTab
             label="My Trips"
             count={trips.filter((t) => t.role === 'owner').length}
             isActive={activeFilter === 'my-trips'}
-            onClick={() => setActiveFilter('my-trips')}
+            onClick={() => { setActiveFilter('my-trips'); }}
           />
           <FilterTab
             label="Shared With Me"
             count={trips.filter((t) => t.role !== 'owner').length}
             isActive={activeFilter === 'shared'}
-            onClick={() => setActiveFilter('shared')}
+            onClick={() => { setActiveFilter('shared'); }}
           />
         </div>
 
@@ -300,7 +300,9 @@ function FilterTab({
       {label}
       <span
         className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-          isActive ? 'bg-sunset-100 text-sunset-700' : 'bg-slate-100 text-slate-600'
+          isActive
+            ? 'bg-sunset-100 text-sunset-700'
+            : 'bg-slate-100 text-slate-600'
         }`}
       >
         {count}
@@ -352,8 +354,12 @@ function EmptyState({
         <MapPin className="w-10 h-10 text-sunset-600" />
       </div>
 
-      <h3 className="text-xl font-semibold text-slate-900 mb-2">{message.title}</h3>
-      <p className="text-slate-600 text-center max-w-md mb-6">{message.description}</p>
+      <h3 className="text-xl font-semibold text-slate-900 mb-2">
+        {message.title}
+      </h3>
+      <p className="text-slate-600 text-center max-w-md mb-6">
+        {message.description}
+      </p>
 
       {message.showCTA && (
         <button

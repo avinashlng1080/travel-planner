@@ -26,7 +26,7 @@ export const getMyTrips = query({
     const trips = await Promise.all(
       memberships.map(async (membership) => {
         const trip = await ctx.db.get(membership.tripId);
-        if (!trip) return null;
+        if (!trip) {return null;}
 
         return {
           ...trip,
@@ -231,13 +231,13 @@ export const updateTrip = mutation({
       updatedAt: Date.now(),
     };
 
-    if (args.name !== undefined) updates.name = args.name;
-    if (args.description !== undefined) updates.description = args.description;
-    if (args.startDate !== undefined) updates.startDate = args.startDate;
-    if (args.endDate !== undefined) updates.endDate = args.endDate;
-    if (args.coverImageUrl !== undefined) updates.coverImageUrl = args.coverImageUrl;
-    if (args.homeBase !== undefined) updates.homeBase = args.homeBase;
-    if (args.timezone !== undefined) updates.timezone = args.timezone;
+    if (args.name !== undefined) {updates.name = args.name;}
+    if (args.description !== undefined) {updates.description = args.description;}
+    if (args.startDate !== undefined) {updates.startDate = args.startDate;}
+    if (args.endDate !== undefined) {updates.endDate = args.endDate;}
+    if (args.coverImageUrl !== undefined) {updates.coverImageUrl = args.coverImageUrl;}
+    if (args.homeBase !== undefined) {updates.homeBase = args.homeBase;}
+    if (args.timezone !== undefined) {updates.timezone = args.timezone;}
 
     // Update the trip
     await ctx.db.patch(args.tripId, updates);

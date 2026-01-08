@@ -6,10 +6,12 @@
  * a schedule item.
  */
 
-import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useState } from 'react';
+
 import { ActivityDetailPanel } from './ActivityDetailPanel';
 import { api } from '../../../convex/_generated/api';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 // Example integration in TripViewPage.tsx:
@@ -48,7 +50,7 @@ export function TripViewPageExample({
 
   // Handle delete
   const handleDelete = async () => {
-    if (!selectedActivityId) return;
+    if (!selectedActivityId) {return;}
 
     try {
       await deleteActivity({ itemId: selectedActivityId });
@@ -80,7 +82,7 @@ export function TripViewPageExample({
       {/* Activity Detail Panel */}
       <ActivityDetailPanel
         isOpen={!!selectedActivityId}
-        onClose={() => setSelectedActivityId(null)}
+        onClose={() => { setSelectedActivityId(null); }}
         activity={selectedActivity || null}
         location={
           location

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { useAIChat } from '../../hooks/useAIChat';
-import { ChatMessage } from './ChatMessage';
 import { X, Send, Trash2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
+import { ChatMessage } from './ChatMessage';
+import { useAIChat } from '../../hooks/useAIChat';
 
 export function AIChat() {
   const { messages, loading, sendMessage, clearHistory } = useAIChat();
@@ -15,7 +16,7 @@ export function AIChat() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading) {return;}
     const messageText = input;
     setInput('');
     await sendMessage(messageText);
@@ -24,15 +25,15 @@ export function AIChat() {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      void handleSubmit(e as any);
     }
   };
 
   const suggestedQuestions = [
-    'What should we pack for Batu Caves with our toddler?',
-    'Is Aquaria KLCC stroller-friendly?',
-    'Best toddler-friendly restaurants near our hotel?',
-    'How do we get from M Vertica to KLCC?',
+    "What should we pack for Batu Caves with our toddler?",
+    "Is Aquaria KLCC stroller-friendly?",
+    "Best toddler-friendly restaurants near our hotel?",
+    "How do we get from M Vertica to KLCC?",
   ];
 
   return (
@@ -42,7 +43,17 @@ export function AIChat() {
     >
       <div
         className="flex items-center justify-between p-4 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-t-lg cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => { setIsExpanded(!isExpanded); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={isExpanded ? 'Collapse AI chat' : 'Expand AI chat'}
+        aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
@@ -59,7 +70,7 @@ export function AIChat() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (confirm('Clear all chat history?')) clearHistory();
+                if (confirm('Clear all chat history?')) {clearHistory();}
               }}
               className="p-2 hover:bg-white/10 rounded transition-colors"
               title="Clear chat"
@@ -68,9 +79,7 @@ export function AIChat() {
             </button>
           )}
           <button className="p-2 hover:bg-white/10 rounded transition-colors">
-            <X
-              className={`w-5 h-5 text-white transition-transform ${isExpanded ? '' : 'rotate-45'}`}
-            />
+            <X className={`w-5 h-5 text-white transition-transform ${isExpanded ? '' : 'rotate-45'}`} />
           </button>
         </div>
       </div>
@@ -89,11 +98,13 @@ export function AIChat() {
                 </p>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-3">Try asking:</p>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-3">
+                    Try asking:
+                  </p>
                   {suggestedQuestions.map((question, index) => (
                     <button
                       key={index}
-                      onClick={() => setInput(question)}
+                      onClick={() => { setInput(question); }}
                       className="block w-full text-left p-3 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-900 transition-colors"
                     >
                       {question}
@@ -114,15 +125,9 @@ export function AIChat() {
                     </div>
                     <div className="bg-slate-100 rounded-lg px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                        <div
-                          className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"
-                          style={{ animationDelay: '0.2s' }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"
-                          style={{ animationDelay: '0.4s' }}
-                        ></div>
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                       </div>
                     </div>
                   </div>
@@ -137,7 +142,7 @@ export function AIChat() {
             <form onSubmit={handleSubmit} className="flex items-end gap-2">
               <textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); }}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your Malaysia trip..."
                 className="flex-1 bg-white text-slate-900 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sunset-500 placeholder-slate-500 min-h-[44px] max-h-32"

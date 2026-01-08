@@ -24,7 +24,7 @@ interface TripLocation {
 function buildLegacySystemPrompt(): string {
   const locationSummary = LOCATIONS.map(
     (loc) =>
-      `- ${loc.name} (${loc.category}): ${loc.description}. Toddler rating: ${loc.toddlerRating}/5. ${loc.isIndoor ? "Indoor" : "Outdoor"}.`
+      `- ${loc.name} (${loc.category}): ${loc.description}. Toddler rating: ${String(loc.toddlerRating)}/5. ${loc.isIndoor ? "Indoor" : "Outdoor"}.`
   ).join("\n");
 
   const daySummary = DAILY_PLANS.map(
@@ -41,8 +41,8 @@ TRIP CONTEXT:
 
 TODDLER SCHEDULE:
 - Wake: ${TODDLER_SCHEDULE.wakeTime}
-- Morning nap: ${TODDLER_SCHEDULE.morningNap.start} (${TODDLER_SCHEDULE.morningNap.duration} min)
-- Afternoon nap: ${TODDLER_SCHEDULE.afternoonNap.start} (${TODDLER_SCHEDULE.afternoonNap.duration} min)
+- Morning nap: ${TODDLER_SCHEDULE.morningNap.start} (${String(TODDLER_SCHEDULE.morningNap.duration)} min)
+- Afternoon nap: ${TODDLER_SCHEDULE.afternoonNap.start} (${String(TODDLER_SCHEDULE.afternoonNap.duration)} min)
 - Bedtime: ${TODDLER_SCHEDULE.bedtime}
 - Can sleep in stroller: ${TODDLER_SCHEDULE.canSleepInStroller ? "Yes" : "No"}
 
@@ -55,6 +55,9 @@ ${daySummary}
 WEATHER (Dec-Jan):
 - KL: ${WEATHER_INFO.klWeather.temperature}, ${WEATHER_INFO.klWeather.rainfall}
 - Cameron Highlands: ${WEATHER_INFO.cameronWeather.temperature} (much cooler!)
+- NOTE: The app displays LIVE weather data from Open-Meteo API with flash flood risk alerts.
+  When users ask about weather, remind them to check the weather badge in the Trip Planner.
+  If rain probability is high (>60%), proactively suggest Plan B indoor activities.
 
 SAFETY:
 - Emergency: Police/Ambulance 999
@@ -111,13 +114,13 @@ function buildDynamicSystemPrompt(trip: TripContext, locations: TripLocation[]):
 
 ## Trip Details
 - **Trip Name**: ${trip.name}
-- **Destination**: ${trip.destination || 'Not specified'}
-- **Dates**: ${trip.startDate} to ${trip.endDate} (${dayCount} days)
-- **Travelers**: ${trip.travelerInfo || 'Not specified'}
-- **Interests**: ${trip.interests || 'General sightseeing'}
-- **Home Base**: ${trip.homeBase?.name || 'Not set'}
+- **Destination**: ${trip.destination ?? 'Not specified'}
+- **Dates**: ${trip.startDate} to ${trip.endDate} (${String(dayCount)} days)
+- **Travelers**: ${trip.travelerInfo ?? 'Not specified'}
+- **Interests**: ${trip.interests ?? 'General sightseeing'}
+- **Home Base**: ${trip.homeBase?.name ?? 'Not set'}
 
-## Current Locations (${locations.length})
+## Current Locations (${String(locations.length)})
 ${locationSummary}
 
 ## Your Capabilities
@@ -154,6 +157,7 @@ Use web search for real-time information:
 4. **Toddler considerations**: If travelers include children, prioritize family-friendly options
 5. **Plan B alternatives**: Suggest indoor options for rainy weather
 6. **Be conversational**: Explain your suggestions, don't just list places
+7. **Weather awareness**: The app displays live weather data with forecasts. Remind users to check the weather badge in the Trip Planner for daily conditions. If rain is likely, proactively suggest indoor activities.
 
 ## When User Pastes an Itinerary
 
@@ -175,9 +179,22 @@ const corsHeaders = {
   "Content-Type": "application/json",
 };
 
+// Types for Claude tools
+interface Tool {
+  type?: string;
+  name: string;
+  description?: string;
+  max_uses?: number;
+  input_schema?: {
+    type: string;
+    properties: Record<string, unknown>;
+    required: string[];
+  };
+}
+
 // Define the tools for Claude
-function getTools(tripId?: string) {
-  const baseTools: any[] = [
+function getTools(tripId?: string): Tool[] {
+  const baseTools: Tool[] = [
     {
       type: "web_search_20250305",
       name: "web_search",
@@ -186,7 +203,7 @@ function getTools(tripId?: string) {
   ];
 
   // Legacy tool for Malaysia trip (backward compatibility)
-  if (!tripId) {
+  if (tripId === undefined) {
     baseTools.push({
       name: "suggest_map_pins",
       description: "Suggest locations to add as pins on the user's travel map. Use this whenever recommending specific places to visit.",
@@ -302,7 +319,12 @@ export const chat = httpAction(async (_ctx, request) => {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  const body = await request.json();
+  const body = (await request.json()) as {
+    messages: { role: string; content: string }[];
+    tripId?: string;
+    tripContext?: TripContext;
+    tripLocations?: TripLocation[];
+  };
   const { messages, tripId } = body;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -321,8 +343,8 @@ export const chat = httpAction(async (_ctx, request) => {
       // Fetch trip data using internal query
       // Note: We can't use ctx.runQuery directly in httpAction, so we'll parse from request
       // The frontend should include trip context in the request
-      const tripContext = body.tripContext as TripContext | undefined;
-      const tripLocations = body.tripLocations as TripLocation[] | undefined;
+      const tripContext = body.tripContext;
+      const tripLocations = body.tripLocations;
 
       if (tripContext) {
         systemPrompt = buildDynamicSystemPrompt(tripContext, tripLocations || []);
@@ -330,7 +352,7 @@ export const chat = httpAction(async (_ctx, request) => {
         // Fallback to legacy if no context provided
         systemPrompt = buildLegacySystemPrompt();
       }
-    } catch (error) {
+    } catch (_error) {
       // Fallback to legacy prompt on error
       systemPrompt = buildLegacySystemPrompt();
     }
@@ -352,7 +374,7 @@ export const chat = httpAction(async (_ctx, request) => {
         model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
         system: systemPrompt,
-        messages: messages.map((m: { role: string; content: string }) => ({
+        messages: messages.map((m) => ({
           role: m.role,
           content: m.content,
         })),
@@ -370,9 +392,10 @@ export const chat = httpAction(async (_ctx, request) => {
 
     const data = await response.json();
     return new Response(JSON.stringify(data), { headers: corsHeaders });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ error: `Network error: ${error}` }),
+      JSON.stringify({ error: `Network error: ${errorMessage}` }),
       { status: 500, headers: corsHeaders }
     );
   }

@@ -1,7 +1,9 @@
-import { useEffect, ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
+import { useEffect, type ReactNode } from 'react';
+
 import { statusAtom, startOnboardingAtom, showSkipConfirmAtom } from '@/atoms/onboardingAtoms';
+
 import { OnboardingOverlay } from './OnboardingOverlay';
 
 interface OnboardingProviderProps {
@@ -37,7 +39,7 @@ export function OnboardingProvider({ children, shouldTrigger = false }: Onboardi
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => { window.removeEventListener('keydown', handleKeyDown); };
   }, [status]);
 
   return (
