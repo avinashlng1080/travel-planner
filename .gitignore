@@ -33,3 +33,7 @@ npm-debug.log*
 * 2.*
 * 2
 *copy*
+
+# macOS
+.DS_Store
+**/.DS_Store
