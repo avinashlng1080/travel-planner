@@ -1,11 +1,41 @@
 import { SAFETY_INFO } from '../../data/tripData';
 
 const emergencyContacts = [
-  { name: 'Police', number: '999', icon: 'police', description: 'For emergencies and crime', color: 'blue' },
-  { name: 'Ambulance', number: '999', icon: 'ambulance', description: 'Medical emergencies', color: 'red' },
-  { name: 'Fire Department', number: '994', icon: 'fire', description: 'Fire and rescue', color: 'orange' },
-  { name: 'Tourist Police', number: SAFETY_INFO.emergencyNumbers.tourist_police, icon: 'tourist', description: 'Tourism-related assistance', color: 'cyan' },
-  { name: 'US Embassy', number: SAFETY_INFO.emergencyNumbers.us_embassy, icon: 'embassy', description: 'American citizen services', color: 'purple' },
+  {
+    name: 'Police',
+    number: '999',
+    icon: 'police',
+    description: 'For emergencies and crime',
+    color: 'blue',
+  },
+  {
+    name: 'Ambulance',
+    number: '999',
+    icon: 'ambulance',
+    description: 'Medical emergencies',
+    color: 'red',
+  },
+  {
+    name: 'Fire Department',
+    number: '994',
+    icon: 'fire',
+    description: 'Fire and rescue',
+    color: 'orange',
+  },
+  {
+    name: 'Tourist Police',
+    number: SAFETY_INFO.emergencyNumbers.tourist_police,
+    icon: 'tourist',
+    description: 'Tourism-related assistance',
+    color: 'cyan',
+  },
+  {
+    name: 'US Embassy',
+    number: SAFETY_INFO.emergencyNumbers.us_embassy,
+    icon: 'embassy',
+    description: 'American citizen services',
+    color: 'purple',
+  },
 ];
 
 const hospitals = [
@@ -70,7 +100,9 @@ export default function EmergencyNumbers() {
         <div className="mt-4 bg-red-900/30 rounded-lg p-4">
           <p className="text-sm text-red-100 flex items-start gap-2">
             <span className="flex-shrink-0 mt-0.5">Tip:</span>
-            <span>Tap any number to call directly. Save these numbers in your phone before your trip.</span>
+            <span>
+              Tap any number to call directly. Save these numbers in your phone before your trip.
+            </span>
           </p>
         </div>
       </div>

@@ -72,7 +72,9 @@ function DayPlanItem({ dayOfWeek, title, isToday, isSelected, onClick }: DayPlan
           </GlassBadge>
         )}
       </div>
-      <div className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+      <div
+        className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}
+      >
         {title}
       </div>
     </button>
@@ -98,10 +100,7 @@ function CategoryFilter({ categories, onToggle }: CategoryFilterProps) {
             onChange={() => { onToggle(cat.id); }}
             className="w-4 h-4 rounded border-slate-200 bg-white text-sunset-500 focus:ring-sunset-500/50"
           />
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: cat.color }}
-          />
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
           <span className="text-sm text-slate-600">{cat.name}</span>
         </label>
       ))}
@@ -162,11 +161,7 @@ export function LeftSidebar({
         className="absolute -right-3 top-4 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
         onClick={() => { setCollapsed(!collapsed); }}
       >
-        {collapsed ? (
-          <ChevronRight className="w-4 h-4" />
-        ) : (
-          <ChevronLeft className="w-4 h-4" />
-        )}
+        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
       {!collapsed && (

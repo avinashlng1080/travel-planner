@@ -15,14 +15,7 @@ interface DraggableItemProps {
 }
 
 export function DraggableItem({ item, location, planType, onClick }: DraggableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     data: { planType },
   });

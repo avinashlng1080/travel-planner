@@ -104,13 +104,7 @@ function formatRelativeTime(timestamp: number): string {
 /**
  * Activity item component
  */
-function ActivityItem({
-  activity,
-  isFirst,
-}: {
-  activity: any;
-  isFirst: boolean;
-}) {
+function ActivityItem({ activity, isFirst }: { activity: any; isFirst: boolean }) {
   const Icon = ACTION_ICONS[activity.action] || Clock;
   const colorClass = ACTION_COLORS[activity.action] || 'text-slate-600 bg-slate-50';
 
@@ -150,9 +144,7 @@ function ActivityItem({
                   size="sm"
                   className="w-6 h-6"
                 />
-                <span className="font-medium text-slate-900 text-sm">
-                  {activity.user.name}
-                </span>
+                <span className="font-medium text-slate-900 text-sm">{activity.user.name}</span>
               </>
             )}
             <span className="text-sm text-slate-600">{actionDescription}</span>
@@ -166,9 +158,7 @@ function ActivityItem({
 
         {/* Optional metadata display */}
         {activity.metadata?.description && (
-          <p className="text-sm text-slate-500 mt-1 ml-8">
-            {activity.metadata.description}
-          </p>
+          <p className="text-sm text-slate-500 mt-1 ml-8">{activity.metadata.description}</p>
         )}
 
         {/* Link to affected item if applicable */}
@@ -293,11 +283,7 @@ export function ActivityFeed({ tripId, limit = 50, compact = false }: ActivityFe
       <div className={`space-y-4 ${compact ? 'max-h-[400px] overflow-y-auto' : ''}`}>
         <AnimatePresence mode="popLayout">
           {displayedActivities.map((activity, index) => (
-            <ActivityItem
-              key={activity._id}
-              activity={activity}
-              isFirst={index === 0}
-            />
+            <ActivityItem key={activity._id} activity={activity} isFirst={index === 0} />
           ))}
         </AnimatePresence>
       </div>

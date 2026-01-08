@@ -45,9 +45,7 @@ export function OnboardingProvider({ children, shouldTrigger = false }: Onboardi
   return (
     <>
       {children}
-      <AnimatePresence>
-        {status === 'active' && <OnboardingOverlay />}
-      </AnimatePresence>
+      <AnimatePresence>{status === 'active' && <OnboardingOverlay />}</AnimatePresence>
     </>
   );
 }

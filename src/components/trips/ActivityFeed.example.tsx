@@ -34,9 +34,7 @@ export function ActivityFeedFullPageExample() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Activity</h1>
-        <p className="text-slate-600 mt-2">
-          See what's happening with your trip planning
-        </p>
+        <p className="text-slate-600 mt-2">See what's happening with your trip planning</p>
       </div>
 
       {/* Full Activity Feed */}
@@ -98,11 +96,7 @@ export function ActivityFeedCustomLimitExample() {
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-slate-900">Recent Activity (Last 10)</h2>
 
-      <ActivityFeed
-        tripId={tripId}
-        compact={false}
-        limit={10}
-      />
+      <ActivityFeed tripId={tripId} compact={false} limit={10} />
     </div>
   );
 }

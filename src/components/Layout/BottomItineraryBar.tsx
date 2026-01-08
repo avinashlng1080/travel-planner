@@ -84,9 +84,7 @@ function PlanRow({
 
   return (
     <div className={`flex items-center gap-3 ${!active ? 'opacity-50' : ''}`}>
-      <span
-        className={`px-2 py-0.5 text-xs font-medium rounded ${colorClasses[color]}`}
-      >
+      <span className={`px-2 py-0.5 text-xs font-medium rounded ${colorClasses[color]}`}>
         {label}
       </span>
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -100,9 +98,7 @@ function PlanRow({
                 isActive={active}
                 onClick={() => onLocationClick?.(stop.locationId)}
               />
-              {index < stops.length - 1 && (
-                <span className="text-slate-600">→</span>
-              )}
+              {index < stops.length - 1 && <span className="text-slate-600">→</span>}
             </div>
           ))
         )}
@@ -124,7 +120,8 @@ export function BottomItineraryBar({
   const [expanded, setExpanded] = useState(false);
 
   const WeatherIcon = weatherConsideration === 'outdoor-heavy' ? Sun : CloudRain;
-  const weatherColor = weatherConsideration === 'outdoor-heavy' ? 'text-amber-400' : 'text-blue-400';
+  const weatherColor =
+    weatherConsideration === 'outdoor-heavy' ? 'text-amber-400' : 'text-blue-400';
 
   return (
     <motion.div
