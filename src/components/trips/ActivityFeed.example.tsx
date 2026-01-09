@@ -1,5 +1,5 @@
 import { ActivityFeed } from './ActivityFeed';
-import { Id } from '../../../convex/_generated/dataModel';
+import { type Id } from '../../../convex/_generated/dataModel';
 
 /**
  * Example: Activity Feed in Sidebar (Compact Mode)
@@ -16,7 +16,7 @@ export function ActivityFeedSidebarExample() {
       <h2 className="text-xl font-bold text-slate-900">Trip Overview</h2>
 
       {/* Compact Activity Feed */}
-      <ActivityFeed tripId={tripId} compact={true} />
+      <ActivityFeed tripId={tripId} compact />
     </div>
   );
 }
@@ -34,9 +34,7 @@ export function ActivityFeedFullPageExample() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Activity</h1>
-        <p className="text-slate-600 mt-2">
-          See what's happening with your trip planning
-        </p>
+        <p className="text-slate-600 mt-2">See what's happening with your trip planning</p>
       </div>
 
       {/* Full Activity Feed */}
@@ -75,12 +73,12 @@ export function MultipleActivityFeedsExample() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-4">Malaysia Trip</h2>
-        <ActivityFeed tripId={tripId1} compact={true} />
+        <ActivityFeed tripId={tripId1} compact />
       </div>
 
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-4">Japan Trip</h2>
-        <ActivityFeed tripId={tripId2} compact={true} />
+        <ActivityFeed tripId={tripId2} compact />
       </div>
     </div>
   );
@@ -98,11 +96,7 @@ export function ActivityFeedCustomLimitExample() {
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-slate-900">Recent Activity (Last 10)</h2>
 
-      <ActivityFeed
-        tripId={tripId}
-        compact={false}
-        limit={10}
-      />
+      <ActivityFeed tripId={tripId} compact={false} limit={10} />
     </div>
   );
 }

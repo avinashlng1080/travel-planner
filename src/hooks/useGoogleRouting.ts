@@ -11,8 +11,8 @@
  * - Returns distance and duration metrics
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface RoutePoint {
   lat: number;
@@ -128,7 +128,7 @@ export function useGoogleRouting(waypoints: RoutePoint[], enabled = true): Routi
         };
 
         directionsService.route(request, (response, status) => {
-          if (!mountedRef.current) return;
+          if (!mountedRef.current) {return;}
 
           if (status === 'OK' && response?.routes[0]) {
             const route = response.routes[0];
@@ -143,8 +143,8 @@ export function useGoogleRouting(waypoints: RoutePoint[], enabled = true): Routi
             let totalDistance = 0;
             let totalDuration = 0;
             route.legs.forEach(leg => {
-              totalDistance += leg.distance?.value || 0;
-              totalDuration += leg.duration?.value || 0;
+              totalDistance += leg.distance?.value ?? 0;
+              totalDuration += leg.duration?.value ?? 0;
             });
 
             const routeData: CacheEntry = {
@@ -179,7 +179,7 @@ export function useGoogleRouting(waypoints: RoutePoint[], enabled = true): Routi
           }
         });
       } catch (err) {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current) {return;}
 
         console.error('[useGoogleRouting] Error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch route');
@@ -195,7 +195,7 @@ export function useGoogleRouting(waypoints: RoutePoint[], enabled = true): Routi
 
     // Debounce to avoid too many API calls when waypoints change rapidly
     const timeoutId = setTimeout(fetchRoute, 300);
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [waypoints, enabled, routesLibrary, getCacheKey]);
 
   return {

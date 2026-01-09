@@ -1,8 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { GripVertical } from 'lucide-react';
+
 import { ScheduleItem } from './ScheduleItem';
+
 import type { ScheduleItem as ScheduleItemType, Location } from '../../data/tripData';
 
 interface DraggableItemProps {
@@ -13,14 +15,7 @@ interface DraggableItemProps {
 }
 
 export function DraggableItem({ item, location, planType, onClick }: DraggableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     data: { planType },
   });

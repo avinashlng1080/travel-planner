@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { SAFETY_INFO } from '../../data/tripData';
-import EmergencyNumbers from './EmergencyNumbers';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+
+import EmergencyNumbers from './EmergencyNumbers';
+import { SAFETY_INFO } from '../../data/tripData';
 
 export default function SafetyPanel() {
   const [expandedSection, setExpandedSection] = useState<string | null>('emergency');
@@ -22,7 +23,7 @@ export default function SafetyPanel() {
       {/* Health Tips */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('health')}
+          onClick={() => { toggleSection('health'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -52,7 +53,7 @@ export default function SafetyPanel() {
       {/* Scam Warnings */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('scams')}
+          onClick={() => { toggleSection('scams'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -82,7 +83,7 @@ export default function SafetyPanel() {
       {/* Cultural Etiquette */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('culture')}
+          onClick={() => { toggleSection('culture'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -112,7 +113,7 @@ export default function SafetyPanel() {
       {/* Toddler Safety */}
       <div className="bg-white rounded-lg overflow-hidden shadow-lg">
         <button
-          onClick={() => toggleSection('toddler')}
+          onClick={() => { toggleSection('toddler'); }}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 transition-colors"
         >
           <div className="flex items-center gap-3">
@@ -130,27 +131,44 @@ export default function SafetyPanel() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Hydration:</strong> Carry water bottle at all times. Tropical heat causes rapid dehydration.</span>
+                <span className="text-sm">
+                  <strong>Hydration:</strong> Carry water bottle at all times. Tropical heat causes
+                  rapid dehydration.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Sun Protection:</strong> Apply sunscreen (SPF 30+) every 2 hours. Use hat and lightweight long sleeves.</span>
+                <span className="text-sm">
+                  <strong>Sun Protection:</strong> Apply sunscreen (SPF 30+) every 2 hours. Use hat
+                  and lightweight long sleeves.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Mosquitoes:</strong> Use DEET 20%+ repellent. Dengue fever risk in Malaysia.</span>
+                <span className="text-sm">
+                  <strong>Mosquitoes:</strong> Use DEET 20%+ repellent. Dengue fever risk in
+                  Malaysia.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Food Safety:</strong> Bottled water only. Avoid ice unless from reputable hotels.</span>
+                <span className="text-sm">
+                  <strong>Food Safety:</strong> Bottled water only. Avoid ice unless from reputable
+                  hotels.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Crowds:</strong> Use baby carrier in crowded places. Keep ID on child.</span>
+                <span className="text-sm">
+                  <strong>Crowds:</strong> Use baby carrier in crowded places. Keep ID on child.
+                </span>
               </li>
               <li className="flex items-start gap-3 text-slate-600">
                 <span className="text-pink-400 mt-1 flex-shrink-0">-</span>
-                <span className="text-sm"><strong>Nap Schedule:</strong> Prioritize naps. Overtired toddlers get sick easier.</span>
+                <span className="text-sm">
+                  <strong>Nap Schedule:</strong> Prioritize naps. Overtired toddlers get sick
+                  easier.
+                </span>
               </li>
             </ul>
           </div>

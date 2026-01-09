@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -10,6 +9,10 @@ import {
   Calendar,
   Globe,
 } from 'lucide-react';
+import { useState } from 'react';
+
+import { getTimezoneOptions, getTimezoneAbbr, getGMTOffset } from '@/utils/timezone';
+
 import type {
   ParsedItinerary,
   ParsedLocation,
@@ -17,7 +20,7 @@ import type {
   ConfidenceLevel,
   LocationCategory,
 } from '@/types/itinerary';
-import { getTimezoneOptions, getTimezoneAbbr, getGMTOffset } from '@/utils/timezone';
+
 
 interface ImportPreviewPanelProps {
   data: ParsedItinerary;
@@ -25,7 +28,11 @@ interface ImportPreviewPanelProps {
   onTimezoneChange: (timezone: string) => void;
   onUpdateLocation: (id: string, updates: Partial<ParsedLocation>) => void;
   onDeleteLocation: (id: string) => void;
-  onUpdateActivity: (dayIndex: number, activityId: string, updates: Partial<ParsedActivity>) => void;
+  onUpdateActivity: (
+    dayIndex: number,
+    activityId: string,
+    updates: Partial<ParsedActivity>
+  ) => void;
   onDeleteActivity: (dayIndex: number, activityId: string) => void;
 }
 
@@ -65,7 +72,7 @@ function ConfidenceBadge({ confidence }: { confidence: ConfidenceLevel }) {
 
 // Format date for display
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr  }T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -100,10 +107,7 @@ export function ImportPreviewPanel({
 
   // Calculate totals
   const totalLocations = data.locations.length;
-  const totalActivities = data.days.reduce(
-    (sum, day) => sum + day.activities.length,
-    0
-  );
+  const totalActivities = data.days.reduce((sum, day) => sum + day.activities.length, 0);
   const totalDays = data.days.length;
 
   return (
@@ -142,7 +146,7 @@ export function ImportPreviewPanel({
         </p>
         <select
           value={selectedTimezone || ''}
-          onChange={(e) => onTimezoneChange(e.target.value)}
+          onChange={(e) => { onTimezoneChange(e.target.value); }}
           className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           <option value="">Select timezone...</option>
@@ -154,7 +158,8 @@ export function ImportPreviewPanel({
         </select>
         {selectedTimezone && (
           <p className="mt-2 text-xs text-indigo-600">
-            Times like "16:30" will be stored as {getTimezoneAbbr(selectedTimezone)} (GMT{getGMTOffset(selectedTimezone)})
+            Times like "16:30" will be stored as {getTimezoneAbbr(selectedTimezone)} (GMT
+            {getGMTOffset(selectedTimezone)})
           </p>
         )}
       </div>
@@ -186,7 +191,10 @@ export function ImportPreviewPanel({
           </div>
           <ul className="text-sm text-blue-700 space-y-1">
             {data.suggestions.map((suggestion, i) => (
-              <li key={`suggestion-${i}-${suggestion.slice(0, 30)}`} className="flex items-start gap-2">
+              <li
+                key={`suggestion-${i}-${suggestion.slice(0, 30)}`}
+                className="flex items-start gap-2"
+              >
                 <span className="text-blue-500">•</span>
                 {suggestion}
               </li>
@@ -216,9 +224,7 @@ export function ImportPreviewPanel({
                   {location.category}
                 </span>
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-900 truncate">
-                    {location.name}
-                  </p>
+                  <p className="font-medium text-slate-900 truncate">{location.name}</p>
                   <p className="text-xs text-slate-500">
                     {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                   </p>
@@ -227,7 +233,7 @@ export function ImportPreviewPanel({
               <div className="flex items-center gap-2">
                 <ConfidenceBadge confidence={location.confidence} />
                 <button
-                  onClick={() => onDeleteLocation(location.id)}
+                  onClick={() => { onDeleteLocation(location.id); }}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   aria-label={`Delete ${location.name}`}
                 >
@@ -247,27 +253,20 @@ export function ImportPreviewPanel({
         </h3>
         <div className="space-y-2">
           {data.days.map((day, dayIndex) => (
-            <div
-              key={day.date}
-              className="border border-slate-200 rounded-lg overflow-hidden"
-            >
+            <div key={day.date} className="border border-slate-200 rounded-lg overflow-hidden">
               {/* Day Header */}
               <button
-                onClick={() => toggleDay(dayIndex)}
+                onClick={() => { toggleDay(dayIndex); }}
                 className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 transition-colors"
               >
                 <span className="font-medium text-slate-900">
                   {formatDate(day.date)}
                   {day.title && (
-                    <span className="text-slate-500 font-normal ml-2">
-                      - {day.title}
-                    </span>
+                    <span className="text-slate-500 font-normal ml-2">- {day.title}</span>
                   )}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">
-                    {day.activities.length} activities
-                  </span>
+                  <span className="text-xs text-slate-500">{day.activities.length} activities</span>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transform transition-transform ${
                       expandedDays.has(dayIndex) ? 'rotate-180' : ''
@@ -302,9 +301,7 @@ export function ImportPreviewPanel({
                                 {activity.locationName}
                               </p>
                               {activity.notes && (
-                                <p className="text-xs text-slate-500 truncate">
-                                  {activity.notes}
-                                </p>
+                                <p className="text-xs text-slate-500 truncate">{activity.notes}</p>
                               )}
                             </div>
                           </div>
@@ -315,7 +312,7 @@ export function ImportPreviewPanel({
                               </span>
                             )}
                             <button
-                              onClick={() => onDeleteActivity(dayIndex, activity.id)}
+                              onClick={() => { onDeleteActivity(dayIndex, activity.id); }}
                               className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               aria-label={`Delete ${activity.locationName} activity`}
                             >

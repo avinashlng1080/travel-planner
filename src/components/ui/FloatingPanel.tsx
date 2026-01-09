@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Minus, Minimize2, Square } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import { X, Minus, Minimize2, Square , type LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface FloatingPanelProps {
   id: string;
@@ -34,7 +33,10 @@ export function FloatingPanel({
   children,
 }: FloatingPanelProps) {
   const dragControls = useDragControls();
-  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
   const [isMaximized, setIsMaximized] = useState(false);
 
   // Update window size on resize
@@ -43,7 +45,7 @@ export function FloatingPanel({
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
   // Calculate dimensions based on state
@@ -57,23 +59,31 @@ export function FloatingPanel({
   const maximizedDimensions = {
     x: isMobile ? 0 : NAV_DOCK_WIDTH + MAXIMIZED_PADDING,
     y: isMobile ? 0 : HEADER_HEIGHT + MAXIMIZED_PADDING,
-    width: isMobile ? windowSize.width : windowSize.width - NAV_DOCK_WIDTH - (MAXIMIZED_PADDING * 2),
-    height: isMobile ? windowSize.height : windowSize.height - HEADER_HEIGHT - (MAXIMIZED_PADDING * 2),
+    width: isMobile ? windowSize.width : windowSize.width - NAV_DOCK_WIDTH - MAXIMIZED_PADDING * 2,
+    height: isMobile
+      ? windowSize.height
+      : windowSize.height - HEADER_HEIGHT - MAXIMIZED_PADDING * 2,
   };
 
   // Current dimensions based on state
   const currentX = isMaximized ? maximizedDimensions.x : position.x;
   const currentY = isMaximized ? maximizedDimensions.y : position.y;
   const currentWidth = isMaximized ? maximizedDimensions.width : size.width;
-  const currentHeight = isMinimized ? HEADER_HEIGHT : (isMaximized ? maximizedDimensions.height : size.height);
+  const currentHeight = isMinimized
+    ? HEADER_HEIGHT
+    : isMaximized
+      ? maximizedDimensions.height
+      : size.height;
 
   // Calculate drag constraints to keep panel within viewport
-  const dragConstraints = isMaximized ? { top: 0, left: 0, right: 0, bottom: 0 } : {
-    top: -position.y,
-    left: -position.x,
-    right: windowSize.width - position.x - size.width,
-    bottom: windowSize.height - position.y - currentHeight,
-  };
+  const dragConstraints = isMaximized
+    ? { top: 0, left: 0, right: 0, bottom: 0 }
+    : {
+        top: -position.y,
+        left: -position.x,
+        right: windowSize.width - position.x - size.width,
+        bottom: windowSize.height - position.y - currentHeight,
+      };
 
   const toggleMaximize = () => {
     setIsMaximized(!isMaximized);
@@ -94,7 +104,7 @@ export function FloatingPanel({
           dragElastic={0}
           dragConstraints={dragConstraints}
           onDragEnd={(_event, info) => {
-            if (isMaximized) return;
+            if (isMaximized) {return;}
             const newX = position.x + info.offset.x;
             const newY = position.y + info.offset.y;
 
@@ -123,6 +133,15 @@ export function FloatingPanel({
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}
               onPointerDown={(e) => !isMaximized && dragControls.start(e)}
               onDoubleClick={toggleMaximize}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleMaximize();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={isMaximized ? 'Restore panel' : 'Maximize panel'}
             >
               <div className="flex items-center gap-3 pointer-events-none">
                 <div className="w-8 h-8 bg-gradient-to-r from-sunset-500 to-ocean-600 rounded-lg flex items-center justify-center shadow-lg shadow-sunset-500/30">
@@ -131,7 +150,9 @@ export function FloatingPanel({
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
                   <p className="text-[10px] text-slate-600">
-                    {isMaximized ? 'Double-click to restore' : 'Drag to move • Double-click to maximize'}
+                    {isMaximized
+                      ? 'Double-click to restore'
+                      : 'Drag to move • Double-click to maximize'}
                   </p>
                 </div>
               </div>
@@ -142,7 +163,7 @@ export function FloatingPanel({
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (isMaximized) setIsMaximized(false);
+                    if (isMaximized) {setIsMaximized(false);}
                     onMinimize();
                   }}
                   className="p-2.5 md:p-1.5 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center"
@@ -197,9 +218,7 @@ export function FloatingPanel({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="h-full overflow-auto">
-                    {children}
-                  </div>
+                  <div className="h-full overflow-auto">{children}</div>
                 </motion.div>
               )}
             </AnimatePresence>

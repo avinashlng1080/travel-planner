@@ -8,8 +8,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CloudRain, Droplets, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
-import type { FlashFloodAlert as FlashFloodAlertType, FlashFloodRiskLevel } from '../../types/weather';
+
 import { RISK_LEVEL_STYLES, MALAYSIA_WEATHER_TIPS } from '../../utils/weatherUtils';
+
+import type { FlashFloodAlert as FlashFloodAlertType, FlashFloodRiskLevel } from '../../types/weather';
 
 interface FlashFloodAlertProps {
   alert: FlashFloodAlertType;
@@ -39,7 +41,7 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
           ${styles.bg} ${styles.border}
           hover:brightness-95 transition-all
         `}
-        onClick={() => setIsExpanded(true)}
+        onClick={() => { setIsExpanded(true); }}
         aria-expanded={false}
         aria-controls={alertId}
       >
@@ -80,7 +82,7 @@ export function FlashFloodAlert({ alert, compact = false }: FlashFloodAlertProps
         </span>
         {compact && (
           <button
-            onClick={() => setIsExpanded(false)}
+            onClick={() => { setIsExpanded(false); }}
             className={`p-1.5 rounded-lg hover:bg-white/30 transition-colors ${styles.text}`}
             aria-label="Collapse alert"
           >
@@ -129,7 +131,7 @@ export function MalaysiaWeatherTips() {
   return (
     <div className="rounded-xl border border-slate-200 overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { setExpanded(!expanded); }}
         className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
         aria-expanded={expanded}
         aria-controls={tipsContentId}

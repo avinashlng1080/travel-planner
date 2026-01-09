@@ -5,8 +5,9 @@
  * Plan A: solid green line, Plan B: dashed blue line.
  */
 
-import { useDayRoute } from '../../hooks/useDayRoute';
 import { GoogleRoutingLayer } from './GoogleRoutingLayer';
+import { useDayRoute } from '../../hooks/useDayRoute';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 interface GoogleDayRouteLayerProps {
@@ -33,8 +34,8 @@ export function GoogleDayRouteLayer({ tripId, planId, activePlan }: GoogleDayRou
     return null;
   }
 
-  // Plan A: solid green, Plan B: dashed blue
-  const routeColor = activePlan === 'A' ? '#10B981' : '#3B82F6';
+  // Plan A: solid red, Plan B: dashed sky blue
+  const routeColor = activePlan === 'A' ? '#FF1744' : '#00B0FF';
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
 
   return (
@@ -44,7 +45,7 @@ export function GoogleDayRouteLayer({ tripId, planId, activePlan }: GoogleDayRou
       dashArray={routeDashArray}
       weight={4}
       opacity={0.8}
-      enabled={true}
+      enabled
     />
   );
 }

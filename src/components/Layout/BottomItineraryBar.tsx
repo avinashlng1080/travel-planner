@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ChevronUp, Sun, CloudRain, MapPin, Clock, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronUp, Sun, CloudRain, MapPin, Clock, Moon } from 'lucide-react';
+import { useState } from 'react';
+
 import { GlassBadge } from '../ui/GlassPanel';
 
 interface ScheduleItemData {
@@ -83,9 +84,7 @@ function PlanRow({
 
   return (
     <div className={`flex items-center gap-3 ${!active ? 'opacity-50' : ''}`}>
-      <span
-        className={`px-2 py-0.5 text-xs font-medium rounded ${colorClasses[color]}`}
-      >
+      <span className={`px-2 py-0.5 text-xs font-medium rounded ${colorClasses[color]}`}>
         {label}
       </span>
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -99,9 +98,7 @@ function PlanRow({
                 isActive={active}
                 onClick={() => onLocationClick?.(stop.locationId)}
               />
-              {index < stops.length - 1 && (
-                <span className="text-slate-600">→</span>
-              )}
+              {index < stops.length - 1 && <span className="text-slate-600">→</span>}
             </div>
           ))
         )}
@@ -123,7 +120,8 @@ export function BottomItineraryBar({
   const [expanded, setExpanded] = useState(false);
 
   const WeatherIcon = weatherConsideration === 'outdoor-heavy' ? Sun : CloudRain;
-  const weatherColor = weatherConsideration === 'outdoor-heavy' ? 'text-amber-400' : 'text-blue-400';
+  const weatherColor =
+    weatherConsideration === 'outdoor-heavy' ? 'text-amber-400' : 'text-blue-400';
 
   return (
     <motion.div
@@ -138,7 +136,7 @@ export function BottomItineraryBar({
     >
       {/* Expand Toggle */}
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { setExpanded(!expanded); }}
         className="absolute -top-4 left-1/2 -translate-x-1/2 w-11 h-11 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
         aria-label={expanded ? 'Collapse itinerary' : 'Expand itinerary'}
       >

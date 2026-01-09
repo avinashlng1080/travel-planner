@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Undo2, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Toast {
   id: string;
@@ -36,7 +36,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 100));
+        const newProgress = prev - 100 / (duration / 100);
         if (newProgress <= 0) {
           clearInterval(interval);
           onDismiss(toast.id);
@@ -46,11 +46,11 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       });
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [duration, toast.id, onDismiss]);
 
   const handleUndo = async () => {
-    if (!toast.undoAction || isUndoing) return;
+    if (!toast.undoAction || isUndoing) {return;}
 
     setIsUndoing(true);
     try {
@@ -62,17 +62,14 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
     }
   };
 
-  const bgColor = toast.type === 'error'
-    ? 'bg-red-500/95'
-    : toast.type === 'success'
-    ? 'bg-ocean-600/95'
-    : 'bg-slate-700/95';
+  const bgColor =
+    toast.type === 'error'
+      ? 'bg-red-500/95'
+      : toast.type === 'success'
+        ? 'bg-ocean-600/95'
+        : 'bg-slate-700/95';
 
-  const Icon = toast.type === 'error'
-    ? AlertCircle
-    : toast.type === 'success'
-    ? Sparkles
-    : Check;
+  const Icon = toast.type === 'error' ? AlertCircle : toast.type === 'success' ? Sparkles : Check;
 
   return (
     <motion.div
@@ -88,10 +85,12 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       `}
     >
       <div className="px-4 py-3 flex items-center gap-3">
-        <div className={`
+        <div
+          className={`
           w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
           ${toast.type === 'error' ? 'bg-red-400/30' : 'bg-sunset-500/30'}
-        `}>
+        `}
+        >
           <Icon className="w-4 h-4" />
         </div>
 
@@ -117,7 +116,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
           )}
 
           <button
-            onClick={() => onDismiss(toast.id)}
+            onClick={() => { onDismiss(toast.id); }}
             className="p-1.5 hover:bg-white/20 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Dismiss"
           >

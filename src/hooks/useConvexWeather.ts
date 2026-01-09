@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { useConvex } from 'convex/react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
 import type {
   ProcessedCurrentWeather,
   ProcessedDailyForecast,
@@ -32,7 +33,7 @@ interface GoogleWeatherCurrentResponse {
 
 interface GoogleWeatherForecastResponse {
   data?: {
-    daily: Array<{
+    daily: {
       date: string;
       tempMax: number;
       tempMin: number;
@@ -43,7 +44,7 @@ interface GoogleWeatherForecastResponse {
       description: string;
       sunrise?: string;
       sunset?: string;
-    }>;
+    }[];
   };
   cached?: boolean;
   error?: string;
@@ -268,18 +269,18 @@ function calculateFlashFloodRisk(
  * Process fallback forecast from backend
  */
 function processFallbackForecast(fallback: any): ProcessedDailyForecast[] {
-  if (!fallback?.daily) return createFallbackForecast();
+  if (!fallback?.daily) {return createFallbackForecast();}
 
   return fallback.daily.map((day: any) => ({
     date: day.date,
-    tempMax: day.tempMax || 32,
-    tempMin: day.tempMin || 24,
-    precipitationSum: day.precipitationSum || 0,
-    precipitationProbability: day.precipitationProbability || 30,
-    condition: (day.condition || 'partly-cloudy') as WeatherCondition,
-    weatherCode: day.weatherCode || 801,
-    description: day.description || 'Partly cloudy',
-    flashFloodRisk: (day.flashFloodRisk || 'low') as FlashFloodRiskLevel,
+    tempMax: day.tempMax ?? 32,
+    tempMin: day.tempMin ?? 24,
+    precipitationSum: day.precipitationSum ?? 0,
+    precipitationProbability: day.precipitationProbability ?? 30,
+    condition: (day.condition ?? 'partly-cloudy') as WeatherCondition,
+    weatherCode: day.weatherCode ?? 801,
+    description: day.description ?? 'Partly cloudy',
+    flashFloodRisk: (day.flashFloodRisk ?? 'low') as FlashFloodRiskLevel,
     sunrise: day.sunrise,
     sunset: day.sunset,
   }));
@@ -290,13 +291,13 @@ function processFallbackForecast(fallback: any): ProcessedDailyForecast[] {
  */
 function processFallbackCurrent(fallback: any): ProcessedCurrentWeather {
   return {
-    temperature: fallback?.temperature || 28,
-    humidity: fallback?.humidity || 70,
-    condition: (fallback?.condition || 'partly-cloudy') as WeatherCondition,
-    weatherCode: fallback?.weatherCode || 801,
-    precipitation: fallback?.precipitation || 0,
-    windSpeed: fallback?.windSpeed || 10,
-    description: fallback?.description || 'Partly cloudy',
+    temperature: fallback?.temperature ?? 28,
+    humidity: fallback?.humidity ?? 70,
+    condition: (fallback?.condition ?? 'partly-cloudy') as WeatherCondition,
+    weatherCode: fallback?.weatherCode ?? 801,
+    precipitation: fallback?.precipitation ?? 0,
+    windSpeed: fallback?.windSpeed ?? 10,
+    description: fallback?.description ?? 'Partly cloudy',
     updatedAt: new Date(),
   };
 }

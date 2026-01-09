@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAtom } from 'jotai';
 import { X } from 'lucide-react';
-import { GlassPanel } from '../ui/GlassPanel';
+
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
-import { useAtom } from 'jotai';
 import { authModalOpenAtom, authModeAtom } from '../../atoms/uiAtoms';
+import { GlassPanel } from '../ui/GlassPanel';
 
 export function AuthModal() {
   const [authModalOpen, setAuthModalOpen] = useAtom(authModalOpenAtom);
@@ -48,11 +49,7 @@ export function AuthModal() {
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[61] flex items-center justify-center p-4"
           >
-            <GlassPanel
-              className="w-full max-w-md p-6 relative"
-              initial={false}
-              animate={false}
-            >
+            <GlassPanel className="w-full max-w-md p-6 relative" initial={false} animate={false}>
               {/* Close Button */}
               <button
                 onClick={handleClose}
@@ -90,15 +87,9 @@ export function AuthModal() {
 
               {/* Form */}
               {authMode === 'login' ? (
-                <LoginForm
-                  onSuccess={handleSuccess}
-                  onSwitchToSignup={handleSwitchToSignup}
-                />
+                <LoginForm onSuccess={handleSuccess} onSwitchToSignup={handleSwitchToSignup} />
               ) : (
-                <SignupForm
-                  onSuccess={handleSuccess}
-                  onSwitchToLogin={handleSwitchToLogin}
-                />
+                <SignupForm onSuccess={handleSuccess} onSwitchToLogin={handleSwitchToLogin} />
               )}
             </GlassPanel>
           </motion.div>

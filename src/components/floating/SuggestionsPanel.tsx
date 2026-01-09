@@ -1,12 +1,12 @@
-import { Lightbulb, Sun, Cloud, Clock, MapPin, Info, Zap } from 'lucide-react';
-import { FloatingPanel } from '../ui/FloatingPanel';
 import { useAtom, useSetAtom } from 'jotai';
+import { Lightbulb, Sun, Cloud, Clock, MapPin, Info, Zap , type LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
+
 import { panelsAtom, closePanelAtom, toggleMinimizeAtom, updatePositionAtom, bringToFrontAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom, selectedLocationAtom } from '../../atoms/uiAtoms';
 import { DAILY_PLANS, LOCATIONS } from '../../data/tripData';
-import { LucideIcon } from 'lucide-react';
-import { useMemo } from 'react';
 import { useResponsivePanel } from '../../hooks/useResponsivePanel';
+import { FloatingPanel } from '../ui/FloatingPanel';
 
 interface Suggestion {
   id: string;
@@ -59,7 +59,7 @@ export function SuggestionsPanel() {
           title: 'Indoor-friendly day',
           description: `${selectedDay.title} focuses on indoor activities. Perfect for rainy weather or when the toddler needs AC breaks.`,
         });
-      } else if (selectedDay.weatherConsideration === 'mixed') {
+      } else {
         result.push({
           id: 'weather-mixed',
           type: 'weather',
@@ -245,10 +245,10 @@ export function SuggestionsPanel() {
       position={panelState.position}
       size={{ width, height }}
       zIndex={panelState.zIndex}
-      onClose={() => closePanel('suggestions')}
-      onMinimize={() => toggleMinimize('suggestions')}
-      onPositionChange={(pos) => updatePosition({ panelId: 'suggestions', position: pos })}
-      onFocus={() => bringToFront('suggestions')}
+      onClose={() => { closePanel('suggestions'); }}
+      onMinimize={() => { toggleMinimize('suggestions'); }}
+      onPositionChange={(pos) => { updatePosition({ panelId: 'suggestions', position: pos }); }}
+      onFocus={() => { bringToFront('suggestions'); }}
     >
       <div className="p-5">
         {suggestions.length > 0 ? (

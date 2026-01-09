@@ -11,11 +11,24 @@ export const getAll = query({
 
 // Get locations by category
 export const getByCategory = query({
-  args: { category: v.string() },
+  args: {
+    category: v.union(
+      v.literal("home-base"),
+      v.literal("toddler-friendly"),
+      v.literal("attraction"),
+      v.literal("shopping"),
+      v.literal("restaurant"),
+      v.literal("nature"),
+      v.literal("temple"),
+      v.literal("playground"),
+      v.literal("medical"),
+      v.literal("avoid")
+    )
+  },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("locations")
-      .withIndex("by_category", (q) => q.eq("category", args.category as any))
+      .withIndex("by_category", (q) => q.eq("category", args.category))
       .collect();
   },
 });

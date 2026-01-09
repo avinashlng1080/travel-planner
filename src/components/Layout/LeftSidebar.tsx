@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -10,6 +9,8 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
+import { useState } from 'react';
+
 import { GlassBadge } from '../ui/GlassPanel';
 
 interface SidebarItemProps {
@@ -71,7 +72,9 @@ function DayPlanItem({ dayOfWeek, title, isToday, isSelected, onClick }: DayPlan
           </GlassBadge>
         )}
       </div>
-      <div className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+      <div
+        className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-slate-900'}`}
+      >
         {title}
       </div>
     </button>
@@ -79,7 +82,7 @@ function DayPlanItem({ dayOfWeek, title, isToday, isSelected, onClick }: DayPlan
 }
 
 interface CategoryFilterProps {
-  categories: Array<{ id: string; name: string; color: string; visible: boolean }>;
+  categories: { id: string; name: string; color: string; visible: boolean }[];
   onToggle: (id: string) => void;
 }
 
@@ -94,13 +97,10 @@ function CategoryFilter({ categories, onToggle }: CategoryFilterProps) {
           <input
             type="checkbox"
             checked={cat.visible}
-            onChange={() => onToggle(cat.id)}
+            onChange={() => { onToggle(cat.id); }}
             className="w-4 h-4 rounded border-slate-200 bg-white text-sunset-500 focus:ring-sunset-500/50"
           />
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: cat.color }}
-          />
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
           <span className="text-sm text-slate-600">{cat.name}</span>
         </label>
       ))}
@@ -111,16 +111,16 @@ function CategoryFilter({ categories, onToggle }: CategoryFilterProps) {
 interface LeftSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
-  dayPlans: Array<{
+  dayPlans: {
     id: string;
     date: string;
     dayOfWeek: string;
     title: string;
-  }>;
+  }[];
   selectedDayId?: string;
   onDaySelect: (dayId: string) => void;
   todayId?: string;
-  categories: Array<{ id: string; name: string; color: string; visible: boolean }>;
+  categories: { id: string; name: string; color: string; visible: boolean }[];
   onCategoryToggle: (id: string) => void;
   alertCount?: number;
 }
@@ -159,13 +159,9 @@ export function LeftSidebar({
       {/* Collapse Toggle */}
       <button
         className="absolute -right-3 top-4 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 z-10"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { setCollapsed(!collapsed); }}
       >
-        {collapsed ? (
-          <ChevronRight className="w-4 h-4" />
-        ) : (
-          <ChevronLeft className="w-4 h-4" />
-        )}
+        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
       {!collapsed && (
@@ -176,32 +172,32 @@ export function LeftSidebar({
               icon={MapPin}
               label="Locations"
               active={activeSection === 'locations'}
-              onClick={() => onSectionChange('locations')}
+              onClick={() => { onSectionChange('locations'); }}
             />
             <SidebarItem
               icon={Calendar}
               label="Itinerary"
               active={activeSection === 'itinerary'}
-              onClick={() => onSectionChange('itinerary')}
+              onClick={() => { onSectionChange('itinerary'); }}
             />
             <SidebarItem
               icon={CheckSquare}
               label="Checklists"
               active={activeSection === 'checklists'}
-              onClick={() => onSectionChange('checklists')}
+              onClick={() => { onSectionChange('checklists'); }}
             />
             <SidebarItem
               icon={Lightbulb}
               label="Suggestions"
               active={activeSection === 'suggestions'}
-              onClick={() => onSectionChange('suggestions')}
+              onClick={() => { onSectionChange('suggestions'); }}
             />
             <SidebarItem
               icon={AlertTriangle}
               label="Alerts"
               badge={alertCount}
               active={activeSection === 'alerts'}
-              onClick={() => onSectionChange('alerts')}
+              onClick={() => { onSectionChange('alerts'); }}
             />
           </nav>
 
@@ -211,7 +207,7 @@ export function LeftSidebar({
           <div>
             <button
               className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2"
-              onClick={() => toggleSection('days')}
+              onClick={() => { toggleSection('days'); }}
             >
               Daily Plans
               <ChevronDown
@@ -234,7 +230,7 @@ export function LeftSidebar({
                       title={day.title}
                       isToday={day.id === todayId}
                       isSelected={day.id === selectedDayId}
-                      onClick={() => onDaySelect(day.id)}
+                      onClick={() => { onDaySelect(day.id); }}
                     />
                   ))}
                 </motion.div>
@@ -248,7 +244,7 @@ export function LeftSidebar({
           <div>
             <button
               className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2"
-              onClick={() => toggleSection('categories')}
+              onClick={() => { toggleSection('categories'); }}
             >
               Categories
               <ChevronDown
@@ -275,19 +271,19 @@ export function LeftSidebar({
         <nav className="p-2 space-y-2">
           <button
             className={`w-full p-2 rounded-lg ${activeSection === 'locations' ? 'bg-sunset-500/20 text-sunset-400' : 'text-slate-600 hover:bg-slate-100'}`}
-            onClick={() => onSectionChange('locations')}
+            onClick={() => { onSectionChange('locations'); }}
           >
             <MapPin className="w-5 h-5 mx-auto" />
           </button>
           <button
             className={`w-full p-2 rounded-lg ${activeSection === 'itinerary' ? 'bg-sunset-500/20 text-sunset-400' : 'text-slate-600 hover:bg-slate-100'}`}
-            onClick={() => onSectionChange('itinerary')}
+            onClick={() => { onSectionChange('itinerary'); }}
           >
             <Calendar className="w-5 h-5 mx-auto" />
           </button>
           <button
             className={`w-full p-2 rounded-lg ${activeSection === 'checklists' ? 'bg-sunset-500/20 text-sunset-400' : 'text-slate-600 hover:bg-slate-100'}`}
-            onClick={() => onSectionChange('checklists')}
+            onClick={() => { onSectionChange('checklists'); }}
           >
             <CheckSquare className="w-5 h-5 mx-auto" />
           </button>

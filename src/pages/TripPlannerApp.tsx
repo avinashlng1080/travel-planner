@@ -1,5 +1,6 @@
-import { useMemo, useCallback } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
+import { useMemo, useCallback } from 'react';
+
 import {
   selectedLocationAtom,
   selectedDayIdAtom,
@@ -15,17 +16,17 @@ import {
   clearDynamicPinsAtom,
   clearNewlyAddedPinsAtom,
 } from '../atoms/uiAtoms';
-import { LOCATIONS, DAILY_PLANS, HOME_BASE } from '../data/tripData';
-import { FloatingHeader } from '../components/Layout/FloatingHeader';
-import { NavigationDock } from '../components/Layout/NavigationDock';
-import { MobileNavBar } from '../components/Layout/MobileNavBar';
-import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
-import { AIChatWidget } from '../components/Layout/AIChatWidget';
-import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import {
   ChecklistFloatingPanel,
   FiltersPanel,
 } from '../components/floating';
+import { AIChatWidget } from '../components/Layout/AIChatWidget';
+import { FloatingHeader } from '../components/Layout/FloatingHeader';
+import { MobileNavBar } from '../components/Layout/MobileNavBar';
+import { NavigationDock } from '../components/Layout/NavigationDock';
+import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
+import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
+import { LOCATIONS, DAILY_PLANS, HOME_BASE } from '../data/tripData';
 
 interface TripPlannerAppProps {
   onBack?: () => void;
@@ -74,12 +75,12 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
 
   // Build route for current plan - starting from home base
   const planRoute = useMemo(() => {
-    if (!selectedDayPlan) return [];
+    if (!selectedDayPlan) {return [];}
 
     const scheduleItems = activePlan === 'A' ? selectedDayPlan.planA : selectedDayPlan.planB;
 
     // Start from home base
-    const routePoints: Array<{ lat: number; lng: number }> = [
+    const routePoints: { lat: number; lng: number }[] = [
       { lat: HOME_BASE.lat, lng: HOME_BASE.lng }
     ];
 
@@ -101,7 +102,7 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
 
   // Extract location IDs for Plan A and Plan B for the selected day
   const { planALocationIds, planBLocationIds } = useMemo(() => {
-    if (!selectedDayPlan) return { planALocationIds: [], planBLocationIds: [] };
+    if (!selectedDayPlan) {return { planALocationIds: [], planBLocationIds: [] };}
 
     const planAIds = selectedDayPlan.planA
       .filter((item) => !item.isNapTime)
@@ -230,7 +231,7 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
           location={selectedLocation}
           days={DAILY_PLANS}
           selectedDayId={selectedDayPlan?.id || null}
-          onClose={() => selectLocation(null)}
+          onClose={() => { selectLocation(null); }}
           onAddToPlan={(plan, details) => {
             console.log(`Add ${selectedLocation.name} to Plan ${plan}`, details);
             // TODO: Persist to database/state

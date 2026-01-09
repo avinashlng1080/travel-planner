@@ -192,7 +192,7 @@ export function getFlashFloodRecommendation(level: FlashFloodRiskLevel): string 
  * Get Plan B suggestion when rain is expected
  */
 export function getPlanBSuggestion(level: FlashFloodRiskLevel): string | undefined {
-  if (level === 'low') return undefined;
+  if (level === 'low') {return undefined;}
 
   const suggestions: Record<FlashFloodRiskLevel, string> = {
     moderate: 'Consider indoor alternatives like malls, Aquaria KLCC, or museum visits for afternoon activities.',

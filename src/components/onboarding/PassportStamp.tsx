@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Plane, Home, Compass, Sparkles, Route, Check } from 'lucide-react';
+
 import type { PassportStamp as StampType } from '@/atoms/onboardingAtoms';
 
 interface PassportStampProps {
@@ -28,7 +29,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
  * Individual passport stamp with earn animation.
  * Shows as greyed placeholder until earned.
  */
-export function PassportStamp({ stamp, placeholder, justEarned = false, size = 'md' }: PassportStampProps) {
+export function PassportStamp({
+  stamp,
+  placeholder,
+  justEarned = false,
+  size = 'md',
+}: PassportStampProps) {
   const isEarned = !!stamp;
   const icon = stamp?.icon || placeholder?.icon || 'check';
   const name = stamp?.name || placeholder?.name || '';
@@ -50,16 +56,21 @@ export function PassportStamp({ stamp, placeholder, justEarned = false, size = '
     <motion.div
       initial={justEarned ? { scale: 0, rotate: -180 } : { scale: 1 }}
       animate={justEarned ? { scale: [0, 1.3, 1], rotate: [180, 0] } : { scale: 1 }}
-      transition={justEarned ? { type: 'spring', stiffness: 400, damping: 15, duration: 0.6 } : { duration: 0 }}
+      transition={
+        justEarned
+          ? { type: 'spring', stiffness: 400, damping: 15, duration: 0.6 }
+          : { duration: 0 }
+      }
       className="flex flex-col items-center gap-1"
     >
       <div
         className={`
           ${sizeClasses[size]} rounded-full flex items-center justify-center
           transition-all duration-300
-          ${isEarned
-            ? 'bg-gradient-to-br from-sunset-400 to-ocean-500 shadow-lg shadow-sunset-500/30'
-            : 'bg-slate-200/50 border-2 border-dashed border-slate-300'
+          ${
+            isEarned
+              ? 'bg-gradient-to-br from-sunset-400 to-ocean-500 shadow-lg shadow-sunset-500/30'
+              : 'bg-slate-200/50 border-2 border-dashed border-slate-300'
           }
         `}
       >

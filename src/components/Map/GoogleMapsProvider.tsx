@@ -6,14 +6,14 @@
  */
 
 import { APIProvider } from '@vis.gl/react-google-maps';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 interface GoogleMapsProviderProps {
   children: ReactNode;
 }
 
 export function GoogleMapsProvider({ children }: GoogleMapsProviderProps) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY || import.meta.env.VITE_GOOGLE_MAPS;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 
   if (!apiKey) {
     console.error('[GoogleMapsProvider] Missing VITE_GOOGLE_MAPS_KEY environment variable');

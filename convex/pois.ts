@@ -49,13 +49,13 @@ out center;
 
       // Transform OSM data to POI format
       const pois = data.elements.map((element: any) => {
-        const lat = element.center?.lat || element.lat;
-        const lng = element.center?.lon || element.lon;
+        const lat = element.center?.lat ?? element.lat;
+        const lng = element.center?.lon ?? element.lon;
 
         return {
           osmId: element.id.toString(),
           osmType: element.type,
-          name: element.tags?.name || 'Unnamed',
+          name: element.tags?.name ?? 'Unnamed',
           lat,
           lng,
           category: categorizePOI(element.tags),
@@ -75,7 +75,7 @@ out center;
       return {
         count: validPOIs.length,
         categories: validPOIs.reduce((acc: Record<string, number>, poi: any) => {
-          acc[poi.category] = (acc[poi.category] || 0) + 1;
+          acc[poi.category] = (acc[poi.category] ?? 0) + 1;
           return acc;
         }, {}),
       };
@@ -88,11 +88,11 @@ out center;
 
 // Helper function to categorize POI based on OSM tags
 function categorizePOI(tags: any): string {
-  if (tags.amenity === 'shopping_mall') return 'shopping';
-  if (tags.tourism === 'zoo' || tags.tourism === 'aquarium') return 'zoo';
-  if (tags.tourism === 'museum' || tags.tourism === 'gallery') return 'museum';
-  if (tags.leisure === 'park') return 'park';
-  if (tags.tourism === 'attraction') return 'attraction';
+  if (tags.amenity === 'shopping_mall') {return 'shopping';}
+  if (tags.tourism === 'zoo' || tags.tourism === 'aquarium') {return 'zoo';}
+  if (tags.tourism === 'museum' || tags.tourism === 'gallery') {return 'museum';}
+  if (tags.leisure === 'park') {return 'park';}
+  if (tags.tourism === 'attraction') {return 'attraction';}
   return 'attraction'; // Default fallback
 }
 

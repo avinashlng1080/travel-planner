@@ -14,17 +14,15 @@
  * - Dynamic AI-suggested pins
  */
 
+import { Map, AdvancedMarker, useMap, type MapCameraChangedEvent, type MapMouseEvent } from '@vis.gl/react-google-maps';
+import { useAtomValue } from 'jotai';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Map, AdvancedMarker, useMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
-import type { Location } from '../../data/tripData';
-import type { DynamicPin } from '../../atoms/uiAtoms';
-import type { POIMapBounds } from '../../types/poi';
-import type { Id } from '../../../convex/_generated/dataModel';
-import { GoogleRoutingLayer } from './GoogleRoutingLayer';
+
+import { AddLocationDialog } from './AddLocationDialog';
+import { CommutesRoutingLayer } from './CommutesRoutingLayer';
 import { GoogleDayRouteLayer } from './GoogleDayRouteLayer';
 import { GooglePOILayer } from './GooglePOILayer';
-import { CommutesRoutingLayer } from './CommutesRoutingLayer';
-import type { CommuteResult } from '../../hooks/useCommutes';
+import { GoogleRoutingLayer } from './GoogleRoutingLayer';
 import {
   CATEGORY_COLORS,
   PLAN_A_COLOR,
@@ -32,6 +30,14 @@ import {
   MARKER_ANIMATION_STYLES,
   type PlanIndicator,
 } from './markerUtils';
+import { homeBaseAtom } from '../Floating/SettingsPanel';
+
+import type { Id } from '../../../convex/_generated/dataModel';
+import type { DynamicPin } from '../../atoms/uiAtoms';
+import type { Location } from '../../data/tripData';
+import type { CommuteResult } from '../../hooks/useCommutes';
+import type { POIMapBounds } from '../../types/poi';
+
 
 // Map controller for auto-focusing on selected location
 interface MapControllerProps {
@@ -53,7 +59,7 @@ function MapController({ selectedLocation }: MapControllerProps) {
 
 // Map bounds controller for fitting route waypoints
 interface MapBoundsControllerProps {
-  planRoute: Array<{ lat: number; lng: number }>;
+  planRoute: { lat: number; lng: number }[];
   selectedLocation: Location | null;
 }
 
@@ -97,7 +103,7 @@ function DynamicPinBoundsController({
   const map = useMap();
 
   useEffect(() => {
-    if (!newlyAddedPins || newlyAddedPins.length === 0 || !map) return;
+    if (!newlyAddedPins || newlyAddedPins.length === 0 || !map) {return;}
 
     // For a single pin, pan to it at zoom 14
     if (newlyAddedPins.length === 1) {
@@ -116,7 +122,7 @@ function DynamicPinBoundsController({
       onPinsFocused();
     }, 600);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [newlyAddedPins, map, onFirstPinSelect, onPinsFocused]);
 
   return null;
@@ -132,7 +138,7 @@ function MapBoundsTracker({ onBoundsChange }: MapBoundsTrackerProps) {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map) {return;}
 
     const updateBounds = () => {
       const bounds = map.getBounds();
@@ -153,7 +159,7 @@ function MapBoundsTracker({ onBoundsChange }: MapBoundsTrackerProps) {
         updateBounds();
         initializedRef.current = true;
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [map, onBoundsChange]);
 
@@ -422,8 +428,35 @@ interface LocationMarkerProps {
 }
 
 function LocationMarker({ location, isSelected, planIndicator, onClick }: LocationMarkerProps) {
-  const size = isSelected ? 48 : 40;
-  const color = CATEGORY_COLORS[location.category] || '#64748b';
+  const homeBase = useAtomValue(homeBaseAtom);
+
+  // Check if this location is the home base by comparing coordinates (more reliable than category)
+  const isHomeBase = location.lat === homeBase.lat && location.lng === homeBase.lng;
+  const isImportant = ['toddler-friendly', 'medical', 'attraction'].includes(location.category);
+
+  // Dramatically increased marker sizes
+  let size: number;
+  if (isHomeBase) {
+    size = isSelected ? 80 : 64;
+  } else if (isImportant) {
+    size = isSelected ? 64 : 52;
+  } else {
+    size = isSelected ? 56 : 44;
+  }
+
+  const color = CATEGORY_COLORS[location.category] ?? '#64748b';
+
+  // Z-index hierarchy: home-base > selected > important > standard
+  let zIndex: number;
+  if (isHomeBase) {
+    zIndex = 1000;
+  } else if (isSelected) {
+    zIndex = 500;
+  } else if (isImportant) {
+    zIndex = 200;
+  } else {
+    zIndex = 100;
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -432,11 +465,27 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
     }
   };
 
+  // Dramatic multi-layer shadows
+  let shadowStyle: string;
+  if (isHomeBase) {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 0 20px rgba(255, 69, 0, 0.8)) drop-shadow(0 8px 16px rgba(0,0,0,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.4))'
+      : 'drop-shadow(0 0 12px rgba(255, 69, 0, 0.6)) drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.3))';
+  } else if (isImportant) {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 6px 12px rgba(0,0,0,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.3))'
+      : 'drop-shadow(0 4px 8px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.2))';
+  } else {
+    shadowStyle = isSelected
+      ? 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))'
+      : 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))';
+  }
+
   return (
     <AdvancedMarker
       position={{ lat: location.lat, lng: location.lng }}
       onClick={onClick}
-      zIndex={isSelected ? 100 : 10}
+      zIndex={zIndex}
     >
       <div
         role="button"
@@ -448,15 +497,40 @@ function LocationMarker({ location, isSelected, planIndicator, onClick }: Locati
         style={{
           cursor: 'pointer',
           transform: 'translateY(-50%)',
-          filter: isSelected
-            ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))'
-            : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-          animation: isSelected ? 'pulse 1s ease-in-out infinite' : undefined,
+          filter: shadowStyle,
+          animation: isHomeBase
+            ? 'homeBasePulse 2s ease-in-out infinite'
+            : isSelected
+            ? 'pulse 1s ease-in-out infinite'
+            : undefined,
         }}
       >
         <svg width={size} height={size} viewBox="0 0 40 44">
           {getCategoryMarkerContent(location.category, color, planIndicator)}
         </svg>
+        {/* Always-visible label for home base */}
+        {isHomeBase && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              background: 'rgba(255, 69, 0, 0.95)',
+              color: 'white',
+              padding: '4px 12px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '600',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+              border: '2px solid #FFD700',
+              pointerEvents: 'none',
+            }}
+          >
+            🏠 Home Base
+          </div>
+        )}
       </div>
     </AdvancedMarker>
   );
@@ -545,7 +619,7 @@ interface GoogleFullScreenMapProps {
   selectedLocation: Location | null;
   visibleCategories: string[];
   activePlan: 'A' | 'B';
-  planRoute: Array<{ lat: number; lng: number }>;
+  planRoute: { lat: number; lng: number }[];
   dynamicPins?: DynamicPin[];
   newlyAddedPins?: DynamicPin[] | null;
   planALocationIds?: string[];
@@ -583,7 +657,7 @@ export function GoogleFullScreenMap({
     visibleCategories.includes(loc.category)
   );
 
-  const routeColor = activePlan === 'A' ? '#10B981' : '#6366F1';
+  const routeColor = activePlan === 'A' ? '#FF1744' : '#00B0FF';
   const routeDashArray = activePlan === 'B' ? '10, 10' : undefined;
 
   // Track map bounds for POI loading
@@ -594,9 +668,25 @@ export function GoogleFullScreenMap({
     west: 99.0,
   });
 
+  // Track add location dialog state
+  const [addLocationCoords, setAddLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
+
   const handleBoundsChange = useCallback((bounds: POIMapBounds) => {
     setMapBounds(bounds);
   }, []);
+
+  const handleMapClick = useCallback((event: MapMouseEvent) => {
+    // Only add locations if we have a tripId
+    if (!tripId) {return;}
+
+    // Get click coordinates
+    const lat = event.detail.latLng?.lat;
+    const lng = event.detail.latLng?.lng;
+
+    if (lat !== undefined && lng !== undefined) {
+      setAddLocationCoords({ lat, lng });
+    }
+  }, [tripId]);
 
   const handleCameraChanged = useCallback((ev: MapCameraChangedEvent) => {
     const bounds = ev.map.getBounds();
@@ -630,8 +720,8 @@ export function GoogleFullScreenMap({
         mapId={mapId}
         gestureHandling="greedy"
         disableDefaultUI={false}
-        zoomControl={true}
-        mapTypeControl={true}
+        zoomControl
+        mapTypeControl
         mapTypeControlOptions={{
           position: google.maps.ControlPosition?.TOP_RIGHT,
           style: google.maps.MapTypeControlStyle?.DROPDOWN_MENU,
@@ -640,6 +730,7 @@ export function GoogleFullScreenMap({
         streetViewControl={false}
         style={{ width: '100%', height: '100%' }}
         onCameraChanged={handleCameraChanged}
+        onClick={handleMapClick}
       >
         {/* Map Controllers */}
         <MapController selectedLocation={selectedLocation} />
@@ -675,12 +766,12 @@ export function GoogleFullScreenMap({
         {commutes && (
           <CommutesRoutingLayer
             commutes={commutes}
-            activeDestinationId={activeCommuteDestinationId || null}
+            activeDestinationId={activeCommuteDestinationId ?? null}
           />
         )}
 
         {/* POI Layer */}
-        <GooglePOILayer bounds={mapBounds} visible={true} />
+        <GooglePOILayer bounds={mapBounds} visible />
 
         {/* Location Markers */}
         {filteredLocations.map(location => {
@@ -703,7 +794,7 @@ export function GoogleFullScreenMap({
               location={location}
               isSelected={isSelected}
               planIndicator={planIndicator}
-              onClick={() => onLocationSelect(location)}
+              onClick={() => { onLocationSelect(location); }}
             />
           );
         })}
@@ -717,6 +808,19 @@ export function GoogleFullScreenMap({
           />
         ))}
       </Map>
+
+      {/* Add Location Dialog */}
+      {addLocationCoords && tripId && (
+        <AddLocationDialog
+          tripId={tripId}
+          lat={addLocationCoords.lat}
+          lng={addLocationCoords.lng}
+          onClose={() => { setAddLocationCoords(null); }}
+          onSuccess={() => {
+            // Dialog will close automatically, location will appear on next query refresh
+          }}
+        />
+      )}
     </div>
   );
 }

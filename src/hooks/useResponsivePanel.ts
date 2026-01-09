@@ -21,7 +21,7 @@ export function useResponsivePanel(
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
   const isMobile = windowSize.width < 768;
@@ -33,9 +33,7 @@ export function useResponsivePanel(
       : isTablet
         ? Math.min(windowSize.width - 64, desktopWidth)
         : desktopWidth,
-    height: isMobile
-      ? Math.min(windowSize.height * 0.85, desktopHeight)
-      : desktopHeight,
+    height: isMobile ? Math.min(windowSize.height * 0.85, desktopHeight) : desktopHeight,
     isMobile,
     isTablet,
   };

@@ -1,13 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, User, ChevronDown, LogOut, Settings, Plus } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
 import { api } from '../../convex/_generated/api';
-import { TripCard } from '../components/trips/TripCard';
 import { CreateTripCard } from '../components/trips/CreateTripCard';
 import { CreateTripModal } from '../components/trips/CreateTripModal';
 import { InviteModal } from '../components/trips/InviteModal';
+import { TripCard } from '../components/trips/TripCard';
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 type FilterTab = 'all' | 'my-trips' | 'shared';
@@ -36,7 +38,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleSignOut = async () => {
@@ -46,8 +48,8 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
   // Filter trips based on active tab
   const filteredTrips = (trips || []).filter((trip) => {
-    if (activeFilter === 'my-trips') return trip.userRole === 'owner';
-    if (activeFilter === 'shared') return trip.userRole !== 'owner';
+    if (activeFilter === 'my-trips') {return trip.userRole === 'owner';}
+    if (activeFilter === 'shared') {return trip.userRole !== 'owner';}
     return true;
   });
 
@@ -74,7 +76,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
     const confirmed = window.confirm(
       'Are you sure you want to delete this trip? This action cannot be undone.'
     );
-    if (!confirmed) return;
+    if (!confirmed) {return;}
 
     try {
       await deleteTrip({ tripId });
@@ -134,7 +136,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
               <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => { setShowUserMenu(!showUserMenu); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors"
                   aria-label="User menu"
                 >
@@ -178,12 +180,8 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
         {/* Page Title and CTA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              My Trips
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Plan, organize, and share your travel adventures
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">My Trips</h1>
+            <p className="mt-2 text-slate-600">Plan, organize, and share your travel adventures</p>
           </div>
 
           {/* Create Trip Button - Desktop */}
@@ -199,23 +197,23 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 
         {/* Filter Tabs */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-          <FilterTab
+          <FilterTabButton
             label="All Trips"
             count={trips?.length || 0}
             isActive={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
+            onClick={() => { setActiveFilter('all'); }}
           />
-          <FilterTab
+          <FilterTabButton
             label="My Trips"
             count={trips?.filter((t) => t.userRole === 'owner').length || 0}
             isActive={activeFilter === 'my-trips'}
-            onClick={() => setActiveFilter('my-trips')}
+            onClick={() => { setActiveFilter('my-trips'); }}
           />
-          <FilterTab
+          <FilterTabButton
             label="Shared With Me"
             count={trips?.filter((t) => t.userRole !== 'owner').length || 0}
             isActive={activeFilter === 'shared'}
-            onClick={() => setActiveFilter('shared')}
+            onClick={() => { setActiveFilter('shared'); }}
           />
         </div>
 
@@ -269,15 +267,15 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
       {/* Create Trip Modal */}
       <CreateTripModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        onClose={() => { setShowCreateModal(false); }}
         onSuccess={handleTripCreated}
       />
 
       {/* Invite Modal */}
       {inviteModalTripId && (
         <InviteModal
-          isOpen={true}
-          onClose={() => setInviteModalTripId(null)}
+          isOpen
+          onClose={() => { setInviteModalTripId(null); }}
           tripId={inviteModalTripId}
           tripName={trips?.find(t => t._id === inviteModalTripId)?.name || 'Trip'}
         />
@@ -287,7 +285,7 @@ export function DashboardPage({ onOpenTrip }: DashboardPageProps) {
 }
 
 // Filter Tab Component
-function FilterTab({
+function FilterTabButton({
   label,
   count,
   isActive,
@@ -310,9 +308,7 @@ function FilterTab({
       {label}
       <span
         className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-          isActive
-            ? 'bg-sunset-100 text-sunset-700'
-            : 'bg-slate-100 text-slate-600'
+          isActive ? 'bg-sunset-100 text-sunset-700' : 'bg-slate-100 text-slate-600'
         }`}
       >
         {count}
@@ -364,12 +360,8 @@ function EmptyState({
         <MapPin className="w-10 h-10 text-sunset-600" />
       </div>
 
-      <h3 className="text-xl font-semibold text-slate-900 mb-2">
-        {message.title}
-      </h3>
-      <p className="text-slate-600 text-center max-w-md mb-6">
-        {message.description}
-      </p>
+      <h3 className="text-xl font-semibold text-slate-900 mb-2">{message.title}</h3>
+      <p className="text-slate-600 text-center max-w-md mb-6">{message.description}</p>
 
       {message.showCTA && (
         <button

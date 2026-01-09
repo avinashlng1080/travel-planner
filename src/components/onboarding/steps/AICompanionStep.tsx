@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { Sparkles, MessageCircle, Send, ArrowRight } from 'lucide-react';
 import { useAtom, useSetAtom } from 'jotai';
+import { Sparkles, MessageCircle, Send, ArrowRight } from 'lucide-react';
+
 import { hasInteractedWithChatAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
 /**

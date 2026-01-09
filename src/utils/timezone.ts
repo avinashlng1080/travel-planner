@@ -11,111 +11,111 @@
 /** Mapping of common destinations to IANA timezones */
 const DESTINATION_TIMEZONES: Record<string, string> = {
   // Malaysia
-  'malaysia': 'Asia/Kuala_Lumpur',
+  malaysia: 'Asia/Kuala_Lumpur',
   'kuala lumpur': 'Asia/Kuala_Lumpur',
-  'kl': 'Asia/Kuala_Lumpur',
-  'penang': 'Asia/Kuala_Lumpur',
-  'langkawi': 'Asia/Kuala_Lumpur',
-  'malacca': 'Asia/Kuala_Lumpur',
-  'melaka': 'Asia/Kuala_Lumpur',
-  'johor': 'Asia/Kuala_Lumpur',
-  'sabah': 'Asia/Kuala_Lumpur',
-  'sarawak': 'Asia/Kuala_Lumpur',
-  'borneo': 'Asia/Kuala_Lumpur',
+  kl: 'Asia/Kuala_Lumpur',
+  penang: 'Asia/Kuala_Lumpur',
+  langkawi: 'Asia/Kuala_Lumpur',
+  malacca: 'Asia/Kuala_Lumpur',
+  melaka: 'Asia/Kuala_Lumpur',
+  johor: 'Asia/Kuala_Lumpur',
+  sabah: 'Asia/Kuala_Lumpur',
+  sarawak: 'Asia/Kuala_Lumpur',
+  borneo: 'Asia/Kuala_Lumpur',
 
   // Singapore
-  'singapore': 'Asia/Singapore',
+  singapore: 'Asia/Singapore',
 
   // Thailand
-  'thailand': 'Asia/Bangkok',
-  'bangkok': 'Asia/Bangkok',
-  'phuket': 'Asia/Bangkok',
+  thailand: 'Asia/Bangkok',
+  bangkok: 'Asia/Bangkok',
+  phuket: 'Asia/Bangkok',
   'chiang mai': 'Asia/Bangkok',
-  'pattaya': 'Asia/Bangkok',
+  pattaya: 'Asia/Bangkok',
 
   // Indonesia
-  'indonesia': 'Asia/Jakarta',
-  'jakarta': 'Asia/Jakarta',
-  'bali': 'Asia/Makassar',
-  'denpasar': 'Asia/Makassar',
+  indonesia: 'Asia/Jakarta',
+  jakarta: 'Asia/Jakarta',
+  bali: 'Asia/Makassar',
+  denpasar: 'Asia/Makassar',
 
   // Vietnam
-  'vietnam': 'Asia/Ho_Chi_Minh',
+  vietnam: 'Asia/Ho_Chi_Minh',
   'ho chi minh': 'Asia/Ho_Chi_Minh',
-  'hanoi': 'Asia/Ho_Chi_Minh',
-  'saigon': 'Asia/Ho_Chi_Minh',
+  hanoi: 'Asia/Ho_Chi_Minh',
+  saigon: 'Asia/Ho_Chi_Minh',
 
   // Japan
-  'japan': 'Asia/Tokyo',
-  'tokyo': 'Asia/Tokyo',
-  'osaka': 'Asia/Tokyo',
-  'kyoto': 'Asia/Tokyo',
+  japan: 'Asia/Tokyo',
+  tokyo: 'Asia/Tokyo',
+  osaka: 'Asia/Tokyo',
+  kyoto: 'Asia/Tokyo',
 
   // South Korea
-  'korea': 'Asia/Seoul',
+  korea: 'Asia/Seoul',
   'south korea': 'Asia/Seoul',
-  'seoul': 'Asia/Seoul',
+  seoul: 'Asia/Seoul',
 
   // China
-  'china': 'Asia/Shanghai',
-  'shanghai': 'Asia/Shanghai',
-  'beijing': 'Asia/Shanghai',
+  china: 'Asia/Shanghai',
+  shanghai: 'Asia/Shanghai',
+  beijing: 'Asia/Shanghai',
   'hong kong': 'Asia/Hong_Kong',
-  'macau': 'Asia/Macau',
+  macau: 'Asia/Macau',
 
   // Taiwan
-  'taiwan': 'Asia/Taipei',
-  'taipei': 'Asia/Taipei',
+  taiwan: 'Asia/Taipei',
+  taipei: 'Asia/Taipei',
 
   // Philippines
-  'philippines': 'Asia/Manila',
-  'manila': 'Asia/Manila',
+  philippines: 'Asia/Manila',
+  manila: 'Asia/Manila',
 
   // India
-  'india': 'Asia/Kolkata',
-  'mumbai': 'Asia/Kolkata',
-  'delhi': 'Asia/Kolkata',
-  'bangalore': 'Asia/Kolkata',
+  india: 'Asia/Kolkata',
+  mumbai: 'Asia/Kolkata',
+  delhi: 'Asia/Kolkata',
+  bangalore: 'Asia/Kolkata',
 
   // Australia
-  'australia': 'Australia/Sydney',
-  'sydney': 'Australia/Sydney',
-  'melbourne': 'Australia/Melbourne',
-  'brisbane': 'Australia/Brisbane',
-  'perth': 'Australia/Perth',
+  australia: 'Australia/Sydney',
+  sydney: 'Australia/Sydney',
+  melbourne: 'Australia/Melbourne',
+  brisbane: 'Australia/Brisbane',
+  perth: 'Australia/Perth',
 
   // New Zealand
   'new zealand': 'Pacific/Auckland',
-  'auckland': 'Pacific/Auckland',
+  auckland: 'Pacific/Auckland',
 
   // Europe
-  'uk': 'Europe/London',
-  'london': 'Europe/London',
-  'paris': 'Europe/Paris',
-  'france': 'Europe/Paris',
-  'germany': 'Europe/Berlin',
-  'berlin': 'Europe/Berlin',
-  'spain': 'Europe/Madrid',
-  'madrid': 'Europe/Madrid',
-  'barcelona': 'Europe/Madrid',
-  'italy': 'Europe/Rome',
-  'rome': 'Europe/Rome',
-  'amsterdam': 'Europe/Amsterdam',
-  'netherlands': 'Europe/Amsterdam',
+  uk: 'Europe/London',
+  london: 'Europe/London',
+  paris: 'Europe/Paris',
+  france: 'Europe/Paris',
+  germany: 'Europe/Berlin',
+  berlin: 'Europe/Berlin',
+  spain: 'Europe/Madrid',
+  madrid: 'Europe/Madrid',
+  barcelona: 'Europe/Madrid',
+  italy: 'Europe/Rome',
+  rome: 'Europe/Rome',
+  amsterdam: 'Europe/Amsterdam',
+  netherlands: 'Europe/Amsterdam',
 
   // US
   'new york': 'America/New_York',
-  'nyc': 'America/New_York',
+  nyc: 'America/New_York',
   'los angeles': 'America/Los_Angeles',
-  'la': 'America/Los_Angeles',
+  la: 'America/Los_Angeles',
   'san francisco': 'America/Los_Angeles',
-  'chicago': 'America/Chicago',
-  'miami': 'America/New_York',
-  'hawaii': 'Pacific/Honolulu',
+  chicago: 'America/Chicago',
+  miami: 'America/New_York',
+  hawaii: 'Pacific/Honolulu',
 
   // Middle East
-  'dubai': 'Asia/Dubai',
-  'uae': 'Asia/Dubai',
+  dubai: 'Asia/Dubai',
+  uae: 'Asia/Dubai',
   'abu dhabi': 'Asia/Dubai',
 };
 
@@ -228,16 +228,15 @@ export function detectTimezoneFromDestination(destination: string): string | nul
  */
 export function parseGMTOffset(gmtString: string): string | null {
   // Normalize format
-  const match = gmtString.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/i);
-  if (!match) return null;
+  const match = /GMT([+-])(\d{1,2})(?::(\d{2}))?/i.exec(gmtString);
+  if (!match) {return null;}
 
   const sign = match[1];
   const hours = match[2];
   const minutes = match[3] || '0';
 
-  const key = minutes !== '0'
-    ? `GMT${sign}${hours}:${minutes.padStart(2, '0')}`
-    : `GMT${sign}${hours}`;
+  const key =
+    minutes !== '0' ? `GMT${sign}${hours}:${minutes.padStart(2, '0')}` : `GMT${sign}${hours}`;
 
   return GMT_OFFSET_TO_TIMEZONE[key] || null;
 }
@@ -251,7 +250,7 @@ export function extractTimezoneFromText(text: string): {
   gmtOffset: string | null;
 } {
   // Look for GMT+X pattern
-  const gmtMatch = text.match(/GMT([+-]\d{1,2}(?::\d{2})?)/i);
+  const gmtMatch = /GMT([+-]\d{1,2}(?::\d{2})?)/i.exec(text);
   if (gmtMatch) {
     const gmtOffset = `GMT${gmtMatch[1]}`;
     const timezone = parseGMTOffset(gmtOffset);
@@ -273,11 +272,11 @@ export function getGMTOffset(timezone: string): string {
       timeZoneName: 'shortOffset',
     });
     const parts = formatter.formatToParts(now);
-    const tzPart = parts.find(p => p.type === 'timeZoneName');
+    const tzPart = parts.find((p) => p.type === 'timeZoneName');
     if (tzPart) {
       // Extract offset from "GMT+8" format
-      const match = tzPart.value.match(/GMT([+-]\d+)/);
-      if (match) return match[1];
+      const match = /GMT([+-]\d+)/.exec(tzPart.value);
+      if (match) {return match[1];}
     }
   } catch {
     // Fallback
@@ -333,11 +332,7 @@ export function formatTimeWithTimezone(
  * Convert a time string between timezones.
  * Simple hour-based conversion (doesn't handle DST perfectly).
  */
-export function convertTimeBetweenTimezones(
-  time: string,
-  fromTz: string,
-  toTz: string
-): string {
+export function convertTimeBetweenTimezones(time: string, fromTz: string, toTz: string): string {
   const fromOffset = parseInt(getGMTOffset(fromTz), 10);
   const toOffset = parseInt(getGMTOffset(toTz), 10);
   const diff = toOffset - fromOffset;
@@ -346,8 +341,8 @@ export function convertTimeBetweenTimezones(
   let newHours = hours + diff;
 
   // Wrap around
-  if (newHours < 0) newHours += 24;
-  if (newHours >= 24) newHours -= 24;
+  if (newHours < 0) {newHours += 24;}
+  if (newHours >= 24) {newHours -= 24;}
 
   return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
@@ -355,7 +350,7 @@ export function convertTimeBetweenTimezones(
 /**
  * Get common timezone options for a dropdown.
  */
-export function getTimezoneOptions(): Array<{ value: string; label: string; offset: string }> {
+export function getTimezoneOptions(): { value: string; label: string; offset: string }[] {
   return [
     { value: 'Asia/Kuala_Lumpur', label: 'Malaysia (MYT)', offset: 'GMT+8' },
     { value: 'Asia/Singapore', label: 'Singapore (SGT)', offset: 'GMT+8' },

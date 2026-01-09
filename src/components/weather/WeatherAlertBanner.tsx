@@ -1,6 +1,8 @@
-import { AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, X } from 'lucide-react';
+
 import { GlassBadge } from '../ui/GlassPanel';
+
 import type { FlashFloodAlert, FlashFloodRiskLevel } from '../../types/weather';
 
 interface WeatherAlertBannerProps {

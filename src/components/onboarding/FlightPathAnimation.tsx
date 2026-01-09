@@ -168,9 +168,7 @@ export function FlightPathAnimation({ onComplete, duration = 3 }: FlightPathAnim
         <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">
           Welcome to Malaysia
         </h2>
-        <p className="text-ocean-200 text-sm md:text-base">
-          Your family adventure begins...
-        </p>
+        <p className="text-ocean-200 text-sm md:text-base">Your family adventure begins...</p>
       </motion.div>
     </div>
   );

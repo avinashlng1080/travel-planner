@@ -29,7 +29,7 @@ export const getWithSchedule = query({
       .withIndex("by_planId", (q) => q.eq("planId", args.planId))
       .unique();
 
-    if (!dayPlan) return null;
+    if (!dayPlan) {return null;}
 
     const scheduleItems = await ctx.db
       .query("scheduleItems")

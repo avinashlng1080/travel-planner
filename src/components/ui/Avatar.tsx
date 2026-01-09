@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface AvatarProps {
   name: string;
@@ -38,6 +39,8 @@ const getAvatarGradient = (name: string): string => {
  * Avatar component with image support and gradient initials fallback
  */
 export function Avatar({ name, imageUrl, size = 'md', className = '' }: AvatarProps) {
+  const [imageError, setImageError] = useState(false);
+
   const sizeClasses = {
     sm: 'w-8 h-8 text-xs',
     md: 'w-10 h-10 text-sm',
@@ -64,18 +67,18 @@ export function Avatar({ name, imageUrl, size = 'md', className = '' }: AvatarPr
       animate={{ scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      {imageUrl ? (
+      {imageUrl && !imageError ? (
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
         <img
           src={imageUrl}
           alt={name}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            // Fallback to initials if image fails to load
-            e.currentTarget.style.display = 'none';
-          }}
+          onError={() => { setImageError(true); }}
         />
       ) : (
-        <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}>
+        <div
+          className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}
+        >
           {initials}
         </div>
       )}

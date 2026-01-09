@@ -6,26 +6,33 @@
  * a schedule item.
  */
 
-import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useState } from 'react';
+
 import { ActivityDetailPanel } from './ActivityDetailPanel';
 import { api } from '../../../convex/_generated/api';
+
 import type { Id } from '../../../convex/_generated/dataModel';
 
 // Example integration in TripViewPage.tsx:
 
-export function TripViewPageExample({ planId, userRole }: {
+export function TripViewPageExample({
+  planId,
+  userRole,
+}: {
   planId: Id<'tripPlans'>;
   userRole: 'owner' | 'editor' | 'commenter' | 'viewer';
 }) {
   // State for selected activity
-  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(null);
+  const [selectedActivityId, setSelectedActivityId] = useState<Id<'tripScheduleItems'> | null>(
+    null
+  );
 
   // Fetch all schedule items for the plan
   const scheduleItems = useQuery(api.tripScheduleItems.getScheduleItems, { planId });
 
   // Find the selected activity from the schedule items
-  const selectedActivity = scheduleItems?.find(item => item._id === selectedActivityId) || null;
+  const selectedActivity = scheduleItems?.find((item) => item._id === selectedActivityId) || null;
 
   // Location is already included in the schedule item response from Convex
   const location = selectedActivity?.location || undefined;
@@ -43,7 +50,7 @@ export function TripViewPageExample({ planId, userRole }: {
 
   // Handle delete
   const handleDelete = async () => {
-    if (!selectedActivityId) return;
+    if (!selectedActivityId) {return;}
 
     try {
       await deleteActivity({ itemId: selectedActivityId });
@@ -75,14 +82,18 @@ export function TripViewPageExample({ planId, userRole }: {
       {/* Activity Detail Panel */}
       <ActivityDetailPanel
         isOpen={!!selectedActivityId}
-        onClose={() => setSelectedActivityId(null)}
+        onClose={() => { setSelectedActivityId(null); }}
         activity={selectedActivity || null}
-        location={location ? {
-          name: location.name,
-          lat: location.lat,
-          lng: location.lng,
-          category: location.category,
-        } : undefined}
+        location={
+          location
+            ? {
+                name: location.name,
+                lat: location.lat,
+                lng: location.lng,
+                category: location.category,
+              }
+            : undefined
+        }
         userRole={userRole}
         onEdit={handleEdit}
         onDelete={handleDelete}
