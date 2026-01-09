@@ -93,42 +93,42 @@ export function getWeatherDescription(code: number): string {
 /**
  * Calculate flash flood risk level based on precipitation data
  *
- * Malaysian monsoon context (Dec-Jan is monsoon season on west coast):
- * - Severe: >50mm precipitation OR thunderstorm codes (95-99)
- * - High: >30mm OR >80% probability
- * - Moderate: >15mm OR >50% probability
- * - Low: Otherwise
+ * IMPORTANT: This is informational only. Always check MET Malaysia (@metmalaysia)
+ * for official weather warnings and InfoBanjir for flood alerts.
+ *
+ * Realistic thresholds for Malaysian tropical climate:
+ * - Brief afternoon thunderstorms (20-30mm) are NORMAL in KL and rarely cause floods
+ * - Flash floods typically require sustained heavy rainfall (>60mm in 1-3 hours)
+ * - The SMART Tunnel handles most stormwater in KL city center
+ *
+ * Risk levels (using AND logic - both conditions must be met):
+ * - Severe: >80mm precipitation AND >85% probability (actual flood risk)
+ * - High: >50mm AND >75% probability (significant rainfall)
+ * - Moderate: >30mm AND >60% probability (plan indoor backup)
+ * - Low: Normal tropical weather
  */
 export function calculateFlashFloodRisk(
   precipitationSum: number,
   precipitationProbability: number,
-  weatherCode: number
+  _weatherCode: number // Weather code no longer triggers auto-severe
 ): FlashFloodRiskLevel {
-  // Thunderstorm codes always severe
-  if ([95, 96, 99].includes(weatherCode)) {
+  // Severe: Requires BOTH heavy precipitation AND high probability
+  // This indicates sustained heavy rainfall that could actually cause flooding
+  if (precipitationSum > 80 && precipitationProbability > 85) {
     return 'severe';
   }
 
-  // Heavy rain codes with high precipitation
-  if ([65, 67, 82].includes(weatherCode) && precipitationSum > 30) {
-    return 'severe';
-  }
-
-  // Severe: >50mm precipitation OR >90% probability with rain
-  if (precipitationSum > 50 || (precipitationProbability > 90 && precipitationSum > 20)) {
-    return 'severe';
-  }
-
-  // High: >30mm OR >80% probability
-  if (precipitationSum > 30 || precipitationProbability > 80) {
+  // High: Significant rainfall expected with high confidence
+  if (precipitationSum > 50 && precipitationProbability > 75) {
     return 'high';
   }
 
-  // Moderate: >15mm OR >50% probability
-  if (precipitationSum > 15 || precipitationProbability > 50) {
+  // Moderate: Notable rain expected - worth having indoor backup plans
+  if (precipitationSum > 30 && precipitationProbability > 60) {
     return 'moderate';
   }
 
+  // Low: Normal tropical weather - brief showers are common and manageable
   return 'low';
 }
 
@@ -147,43 +147,43 @@ export const RISK_LEVEL_STYLES: Record<FlashFloodRiskLevel, {
     border: 'border-green-200',
     text: 'text-green-800',
     icon: 'text-green-500',
-    label: 'Low Risk',
+    label: 'Clear/Light',
   },
   moderate: {
     bg: 'bg-yellow-50',
     border: 'border-yellow-200',
     text: 'text-yellow-800',
     icon: 'text-yellow-500',
-    label: 'Moderate Risk',
+    label: 'Rainy',
   },
   high: {
     bg: 'bg-orange-50',
     border: 'border-orange-200',
     text: 'text-orange-800',
     icon: 'text-orange-500',
-    label: 'High Risk',
+    label: 'Heavy Rain',
   },
   severe: {
     bg: 'bg-red-50',
     border: 'border-red-200',
     text: 'text-red-800',
     icon: 'text-red-500',
-    label: 'Severe Risk',
+    label: 'Very Heavy',
   },
 };
 
 /**
- * Get flash flood recommendation based on risk level
+ * Get weather recommendation based on risk level
  */
 export function getFlashFloodRecommendation(level: FlashFloodRiskLevel): string {
   const recommendations: Record<FlashFloodRiskLevel, string> = {
-    low: 'Great day for outdoor activities! Stay hydrated and bring sunscreen.',
+    low: 'Typical tropical weather. Brief afternoon showers possible - carry an umbrella just in case.',
     moderate:
-      'Rain expected. Carry an umbrella and plan indoor backup activities for the afternoon.',
+      'Heavier rain expected. Have indoor backup plans ready (malls, Aquaria KLCC, museums).',
     high:
-      'Heavy rain likely. Consider switching to Plan B with indoor activities. Avoid underpasses and low-lying areas.',
+      'Significant rainfall forecast. Recommend indoor activities. Check MET Malaysia for updates.',
     severe:
-      'Severe weather alert! Stay indoors. Avoid all outdoor activities, underpasses, and flooded roads. Monitor official MET Malaysia alerts.',
+      'Heavy sustained rainfall expected. Stay flexible with plans and monitor MET Malaysia (@metmalaysia) for official alerts.',
   };
   return recommendations[level];
 }
@@ -195,8 +195,8 @@ export function getPlanBSuggestion(level: FlashFloodRiskLevel): string | undefin
   if (level === 'low') {return undefined;}
 
   const suggestions: Record<FlashFloodRiskLevel, string> = {
-    moderate: 'Consider indoor alternatives like malls, Aquaria KLCC, or museum visits for afternoon activities.',
-    high: 'Strongly recommend Plan B (indoor): Suria KLCC, Pavilion KL, or indoor playgrounds for your toddler.',
+    moderate: 'Good day to have Plan B ready: malls, Aquaria KLCC, or museum visits if rain persists.',
+    high: 'Consider Plan B (indoor): Suria KLCC, Pavilion KL, or indoor playgrounds for your toddler.',
     severe: 'Use Plan B only: Stay at accommodations or nearby malls. Avoid travel until weather improves.',
     low: '', // Won't be used
   };
@@ -237,16 +237,16 @@ export function generateFlashFloodAlert(
 
   const titles: Record<FlashFloodRiskLevel, string> = {
     low: '',
-    moderate: 'Rain Advisory',
-    high: 'Heavy Rain Warning',
-    severe: 'Flash Flood Warning',
+    moderate: 'Rain Expected',
+    high: 'Heavy Rain Expected',
+    severe: 'Very Heavy Rain Expected',
   };
 
   const messages: Record<FlashFloodRiskLevel, string> = {
     low: '',
-    moderate: `Light to moderate rain expected on ${affectedDays.join(', ')}. Plan indoor backup activities.`,
-    high: `Heavy rainfall expected on ${affectedDays.join(', ')}. Flash flooding possible in low-lying areas.`,
-    severe: `Severe weather alert for ${affectedDays.join(', ')}. High risk of flash flooding and thunderstorms.`,
+    moderate: `Rain likely on ${affectedDays.join(', ')}. Consider having indoor backup plans.`,
+    high: `Significant rainfall expected on ${affectedDays.join(', ')}. Indoor activities recommended.`,
+    severe: `Very heavy rainfall forecast for ${affectedDays.join(', ')}. Check MET Malaysia for official updates.`,
   };
 
   return {
