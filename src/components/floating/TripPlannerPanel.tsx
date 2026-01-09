@@ -1,11 +1,13 @@
 import { useQuery, useMutation } from 'convex/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAtom } from 'jotai';
-import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns , type LucideIcon } from 'lucide-react';
+import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns, Moon, ArrowRight, type LucideIcon } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 
 import { api } from '../../../convex/_generated/api';
 import { panelsAtom } from '../../atoms/floatingPanelAtoms';
 import { selectedDayIdAtom } from '../../atoms/uiAtoms';
+import { useEnergyTheme } from '../../hooks/useEnergyTheme';
 import { useWeather } from '../../hooks/useWeather';
 import { sortScheduleItems } from '../../utils/sortScheduleItems';
 import { DayPlan } from '../Itinerary/DayPlan';
@@ -52,6 +54,9 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   const [panels] = useAtom(panelsAtom);
   const [selectedDayId, selectDay] = useAtom(selectedDayIdAtom);
   const [activeTab, setActiveTab] = useState<TabId>('itinerary');
+
+  // Get energy theme for visual styling
+  const energyTheme = useEnergyTheme();
 
   // Get weather data (defaults to Kuala Lumpur)
   const { daily: weatherForecast } = useWeather();
@@ -314,16 +319,63 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
     }
   };
 
+  // Get theme-specific energy icon
+  const EnergyIcon = energyTheme.icon === 'zap' ? Zap : energyTheme.icon === 'moon' ? Moon : Sun;
+
   return (
     <ResponsivePanelWrapper
       panelId="tripPlanner"
       title="Trip Planner"
       icon={Map}
       defaultSize={{ width: 420, height: 580 }}
+      className={`transition-all duration-500 ${
+        energyTheme.level === 'low'
+          ? 'ring-2 ring-blue-200/50'
+          : energyTheme.level === 'high'
+          ? 'ring-2 ring-sunset-200/50'
+          : ''
+      }`}
     >
-      <div className="flex flex-col h-full">
+      <div className={`flex flex-col h-full transition-colors duration-500 ${
+        energyTheme.level === 'low'
+          ? 'bg-gradient-to-b from-blue-50/30 to-slate-50/30'
+          : energyTheme.level === 'high'
+          ? 'bg-gradient-to-b from-sunset-50/20 to-ocean-50/10'
+          : ''
+      }`}>
+        {/* Plan B Mode Banner */}
+        <AnimatePresence>
+          {energyTheme.suggestPlanB && energyTheme.message && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-gradient-to-r from-blue-50 via-blue-100/50 to-slate-50 border-b border-blue-200/50 px-4 py-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Moon className="w-3.5 h-3.5 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-semibold text-blue-800">Plan B Mode</span>
+                    <ArrowRight className="w-3 h-3 text-blue-500" />
+                    <span className="text-xs text-blue-600 truncate">{energyTheme.message}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Day Navigator */}
-        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200/50">
+        <div className={`flex items-center justify-between px-4 py-3 border-b transition-colors duration-500 ${
+          energyTheme.level === 'low'
+            ? 'bg-gradient-to-r from-blue-50 to-slate-50 border-blue-200/50'
+            : energyTheme.level === 'high'
+            ? 'bg-gradient-to-r from-sunset-50 to-ocean-50 border-sunset-200/50'
+            : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200/50'
+        }`}>
           <button
             onClick={goToPrevDay}
             disabled={currentDayIndex === 0}
@@ -345,6 +397,17 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
                   TODAY
                 </GlassBadge>
               )}
+              {/* Energy level badge */}
+              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0 rounded-full text-[10px] font-medium transition-all duration-500 ${
+                energyTheme.level === 'low'
+                  ? 'bg-blue-100 text-blue-700'
+                  : energyTheme.level === 'high'
+                  ? 'bg-sunset-100 text-sunset-700'
+                  : 'bg-slate-100 text-slate-600'
+              }`}>
+                <EnergyIcon className="w-2.5 h-2.5" />
+                {energyTheme.label}
+              </span>
             </div>
             <h3 className="text-sm font-semibold text-slate-900 truncate">
               {selectedDayPlan?.title || 'Select a day'}
@@ -370,7 +433,13 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
         </div>
 
         {/* Tabs */}
-        <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200/50">
+        <div className={`flex overflow-x-auto scrollbar-hide border-b transition-colors duration-500 ${
+          energyTheme.level === 'low'
+            ? 'border-blue-200/50'
+            : energyTheme.level === 'high'
+            ? 'border-sunset-200/50'
+            : 'border-slate-200/50'
+        }`}>
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -380,7 +449,11 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
                 text-xs font-medium transition-all duration-200 whitespace-nowrap
                 ${
                   activeTab === tab.id
-                    ? 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50/50'
+                    ? energyTheme.level === 'low'
+                      ? 'text-blue-600 border-b-2 border-blue-500 bg-blue-50/50'
+                      : energyTheme.level === 'high'
+                      ? 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50'
+                      : 'text-sunset-600 border-b-2 border-sunset-500 bg-sunset-50/50'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }
               `}

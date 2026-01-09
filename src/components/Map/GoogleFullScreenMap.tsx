@@ -721,6 +721,9 @@ export function GoogleFullScreenMap({
         gestureHandling="greedy"
         disableDefaultUI={false}
         zoomControl
+        zoomControlOptions={{
+          position: google.maps.ControlPosition?.LEFT_BOTTOM,
+        }}
         mapTypeControl
         mapTypeControlOptions={{
           position: google.maps.ControlPosition?.TOP_RIGHT,

@@ -1,9 +1,10 @@
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useSetAtom } from 'jotai';
-import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft, Activity } from 'lucide-react';
+import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft, Zap, Sun, Moon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
+import { useEnergyTheme } from '../../hooks/useEnergyTheme';
 import { UserContextPanel } from '../floating/UserContextPanel';
 import { GlassBadge } from '../ui/GlassPanel';
 
@@ -30,6 +31,10 @@ export function FloatingHeader({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showContextPanel, setShowContextPanel] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const energyTheme = useEnergyTheme();
+
+  // Get the energy icon component
+  const EnergyIcon = energyTheme.icon === 'zap' ? Zap : energyTheme.icon === 'moon' ? Moon : Sun;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -48,7 +53,13 @@ export function FloatingHeader({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 safe-area-inset-x safe-area-inset-top">
+    <header className={`fixed top-0 left-0 right-0 z-50 h-14 backdrop-blur-xl border-b safe-area-inset-x safe-area-inset-top transition-colors duration-500 ${
+      energyTheme.level === 'low'
+        ? 'bg-gradient-to-r from-slate-50/90 via-blue-50/80 to-slate-50/90 border-blue-200/50'
+        : energyTheme.level === 'high'
+        ? 'bg-gradient-to-r from-white/90 via-sunset-50/50 to-white/90 border-sunset-200/50'
+        : 'bg-white/80 border-slate-200/50'
+    }`}>
       <div className="h-full flex items-center justify-between px-4">
         {/* Left: Back Button, Logo and Trip Name */}
         <div className="flex items-center gap-4">
@@ -91,11 +102,15 @@ export function FloatingHeader({
           </div>
 
           {/* Plan A/B Toggle */}
-          <div className="flex items-center gap-1 bg-white/60 rounded-lg p-1">
+          <div className={`flex items-center gap-1 rounded-lg p-1 transition-colors duration-300 ${
+            energyTheme.suggestPlanB ? 'bg-blue-50/80 ring-1 ring-blue-200' : 'bg-white/60'
+          }`}>
             <button
               className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
                 activePlan === 'A'
                   ? 'bg-ocean-600 text-white shadow-lg shadow-ocean-600/30'
+                  : energyTheme.suggestPlanB
+                  ? 'text-slate-400'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => { onPlanChange('A'); }}
@@ -103,26 +118,52 @@ export function FloatingHeader({
               Plan A
             </button>
             <button
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
+              className={`relative px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
                 activePlan === 'B'
-                  ? 'bg-sunset-500 text-white shadow-lg shadow-sunset-500/30'
+                  ? energyTheme.suggestPlanB
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                    : 'bg-sunset-500 text-white shadow-lg shadow-sunset-500/30'
+                  : energyTheme.suggestPlanB
+                  ? 'text-blue-600 font-semibold hover:bg-blue-100'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => { onPlanChange('B'); }}
             >
               Plan B
+              {/* Pulse indicator when Plan B is suggested but not active */}
+              {energyTheme.suggestPlanB && activePlan !== 'B' && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Right: User Context, Settings, and User Menu */}
         <div className="flex items-center gap-2">
+          {/* Energy Context Button with indicator */}
           <button
             onClick={() => { setShowContextPanel(!showContextPanel); }}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
+            className={`relative p-2 rounded-lg transition-all duration-300 min-w-[44px] min-h-[44px] flex items-center gap-1.5 ${
+              energyTheme.level === 'low'
+                ? 'text-blue-600 hover:bg-blue-100/50 bg-blue-50/50'
+                : energyTheme.level === 'high'
+                ? 'text-sunset-600 hover:bg-sunset-100/50 bg-sunset-50/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+            }`}
             aria-label="User context"
           >
-            <Activity className="w-5 h-5" />
+            <EnergyIcon className="w-5 h-5" />
+            {/* Show label on larger screens */}
+            <span className={`hidden lg:block text-xs font-medium ${
+              energyTheme.level === 'low' ? 'text-blue-700' :
+              energyTheme.level === 'high' ? 'text-sunset-700' : 'text-slate-600'
+            }`}>
+              {energyTheme.label}
+            </span>
+            {/* Pulse indicator when suggesting Plan B */}
+            {energyTheme.suggestPlanB && (
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
+            )}
           </button>
 
           <button
