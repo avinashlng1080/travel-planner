@@ -260,6 +260,9 @@ export function generateFlashFloodAlert(
 }
 
 /**
+ * @deprecated Use getWeatherTipsForClimate() for location-agnostic tips.
+ * Kept for legacy sample Malaysia trip compatibility.
+ *
  * Malaysian-specific weather tips
  */
 export const MALAYSIA_WEATHER_TIPS = {
@@ -289,6 +292,120 @@ export const MALAYSIA_WEATHER_TIPS = {
     putrajaya: 'Avoid walking long exposed lakeside paths in thunderstorms.',
   },
 };
+
+/**
+ * Climate type definitions for location-agnostic weather tips.
+ */
+export type ClimateType =
+  | 'tropical'
+  | 'subtropical'
+  | 'mediterranean'
+  | 'continental'
+  | 'temperate'
+  | 'arid'
+  | 'arctic'
+  | 'monsoon';
+
+/**
+ * Get weather tips appropriate for a climate type.
+ * Used for location-agnostic travel planning.
+ *
+ * @param climate - Climate type or description string
+ * @returns Array of relevant weather tips
+ */
+export function getWeatherTipsForClimate(climate: string): string[] {
+  const normalizedClimate = climate.toLowerCase();
+
+  // Tropical/Monsoon climates
+  if (normalizedClimate.includes('tropical') || normalizedClimate.includes('monsoon')) {
+    return [
+      'Brief afternoon rain showers are common - carry a compact umbrella',
+      'Stay hydrated and take breaks in air-conditioned spaces',
+      'Plan outdoor activities for morning when it is typically cooler and drier',
+      'Thunderstorms can be intense but usually pass within 30-60 minutes',
+      'Lightweight, breathable clothing is essential',
+    ];
+  }
+
+  // Hot/Arid climates
+  if (normalizedClimate.includes('arid') || normalizedClimate.includes('desert') || normalizedClimate.includes('dry')) {
+    return [
+      'Stay hydrated - carry water at all times',
+      'Avoid outdoor activities during peak heat (11am-3pm)',
+      'Wear sun protection: hat, sunglasses, and sunscreen',
+      'Temperatures can drop significantly at night',
+      'Lightweight, loose-fitting clothing helps stay cool',
+    ];
+  }
+
+  // Mediterranean climates
+  if (normalizedClimate.includes('mediterranean')) {
+    return [
+      'Summers are warm and dry - stay hydrated',
+      'Winters can bring rain - pack a light jacket',
+      'Spring and fall offer the most pleasant weather',
+      'Sea breezes can make coastal areas cooler',
+      'Sunscreen is essential year-round',
+    ];
+  }
+
+  // Cold/Continental climates
+  if (normalizedClimate.includes('continental') || normalizedClimate.includes('cold') || normalizedClimate.includes('arctic')) {
+    return [
+      'Layer clothing for variable temperatures',
+      'Check forecasts for sudden weather changes',
+      'Pack warm layers even in milder months',
+      'Icy conditions may affect walking - wear appropriate footwear',
+      'Shorter daylight hours in winter - plan accordingly',
+    ];
+  }
+
+  // Temperate climates
+  if (normalizedClimate.includes('temperate') || normalizedClimate.includes('moderate')) {
+    return [
+      'Weather can be changeable - pack layers',
+      'A light rain jacket is useful year-round',
+      'Spring and fall offer pleasant temperatures',
+      'Check local forecasts for day-to-day variations',
+      'Sun protection is still important on clear days',
+    ];
+  }
+
+  // Subtropical climates
+  if (normalizedClimate.includes('subtropical')) {
+    return [
+      'Summers are hot and humid - stay hydrated',
+      'Afternoon thunderstorms are common in summer',
+      'Winters are mild but can have cool snaps',
+      'Hurricane/typhoon season varies by region - check advisories',
+      'Light, breathable clothing works best',
+    ];
+  }
+
+  // Default generic tips
+  return [
+    'Check the local weather forecast before outdoor activities',
+    'Pack layers to adapt to changing conditions',
+    'Stay hydrated regardless of temperature',
+    'Have indoor backup plans for rainy days',
+    'Sun protection is important in most climates',
+  ];
+}
+
+/**
+ * Get general travel safety tips for weather-related situations.
+ * These are location-agnostic and apply universally.
+ */
+export function getGeneralWeatherSafetyTips(): string[] {
+  return [
+    'Check local weather forecasts daily and plan accordingly',
+    'Have both indoor and outdoor activity options ready',
+    'Keep emergency contacts and hotel info accessible',
+    'Download offline maps in case of connectivity issues',
+    'Carry basic weather protection (umbrella, sun protection)',
+    'Know the location of nearby shelters during severe weather',
+  ];
+}
 
 /**
  * Get day of week from date string

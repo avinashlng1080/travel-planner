@@ -6,7 +6,10 @@
  * - Converting between timezone formats
  * - Formatting times with timezone indicators
  * - Parsing GMT offset strings from TripIt
+ * - Parsing destination strings into city/country/code
  */
+
+import type { ParsedDestination } from '@/types/destinationContext';
 
 /** Mapping of common destinations to IANA timezones */
 const DESTINATION_TIMEZONES: Record<string, string> = {
@@ -117,6 +120,155 @@ const DESTINATION_TIMEZONES: Record<string, string> = {
   dubai: 'Asia/Dubai',
   uae: 'Asia/Dubai',
   'abu dhabi': 'Asia/Dubai',
+};
+
+/** ISO 3166-1 alpha-2 country codes */
+const COUNTRY_CODES: Record<string, string> = {
+  malaysia: 'MY',
+  japan: 'JP',
+  singapore: 'SG',
+  thailand: 'TH',
+  indonesia: 'ID',
+  vietnam: 'VN',
+  'south korea': 'KR',
+  korea: 'KR',
+  china: 'CN',
+  taiwan: 'TW',
+  philippines: 'PH',
+  india: 'IN',
+  australia: 'AU',
+  'new zealand': 'NZ',
+  uk: 'GB',
+  'united kingdom': 'GB',
+  france: 'FR',
+  germany: 'DE',
+  spain: 'ES',
+  italy: 'IT',
+  netherlands: 'NL',
+  usa: 'US',
+  'united states': 'US',
+  uae: 'AE',
+  'united arab emirates': 'AE',
+  'hong kong': 'HK',
+  macau: 'MO',
+};
+
+/** City to country mapping for inferring country from city-only input */
+const CITY_TO_COUNTRY: Record<string, { country: string; code: string }> = {
+  // Malaysia
+  'kuala lumpur': { country: 'Malaysia', code: 'MY' },
+  kl: { country: 'Malaysia', code: 'MY' },
+  penang: { country: 'Malaysia', code: 'MY' },
+  langkawi: { country: 'Malaysia', code: 'MY' },
+  malacca: { country: 'Malaysia', code: 'MY' },
+  melaka: { country: 'Malaysia', code: 'MY' },
+  johor: { country: 'Malaysia', code: 'MY' },
+  sabah: { country: 'Malaysia', code: 'MY' },
+  sarawak: { country: 'Malaysia', code: 'MY' },
+  borneo: { country: 'Malaysia', code: 'MY' },
+
+  // Singapore
+  singapore: { country: 'Singapore', code: 'SG' },
+
+  // Thailand
+  bangkok: { country: 'Thailand', code: 'TH' },
+  phuket: { country: 'Thailand', code: 'TH' },
+  'chiang mai': { country: 'Thailand', code: 'TH' },
+  pattaya: { country: 'Thailand', code: 'TH' },
+
+  // Indonesia
+  jakarta: { country: 'Indonesia', code: 'ID' },
+  bali: { country: 'Indonesia', code: 'ID' },
+  denpasar: { country: 'Indonesia', code: 'ID' },
+
+  // Vietnam
+  'ho chi minh': { country: 'Vietnam', code: 'VN' },
+  hanoi: { country: 'Vietnam', code: 'VN' },
+  saigon: { country: 'Vietnam', code: 'VN' },
+
+  // Japan
+  tokyo: { country: 'Japan', code: 'JP' },
+  osaka: { country: 'Japan', code: 'JP' },
+  kyoto: { country: 'Japan', code: 'JP' },
+
+  // South Korea
+  seoul: { country: 'South Korea', code: 'KR' },
+
+  // China
+  shanghai: { country: 'China', code: 'CN' },
+  beijing: { country: 'China', code: 'CN' },
+  'hong kong': { country: 'Hong Kong', code: 'HK' },
+  macau: { country: 'Macau', code: 'MO' },
+
+  // Taiwan
+  taipei: { country: 'Taiwan', code: 'TW' },
+
+  // Philippines
+  manila: { country: 'Philippines', code: 'PH' },
+
+  // India
+  mumbai: { country: 'India', code: 'IN' },
+  delhi: { country: 'India', code: 'IN' },
+  bangalore: { country: 'India', code: 'IN' },
+
+  // Australia
+  sydney: { country: 'Australia', code: 'AU' },
+  melbourne: { country: 'Australia', code: 'AU' },
+  brisbane: { country: 'Australia', code: 'AU' },
+  perth: { country: 'Australia', code: 'AU' },
+
+  // New Zealand
+  auckland: { country: 'New Zealand', code: 'NZ' },
+
+  // Europe
+  london: { country: 'United Kingdom', code: 'GB' },
+  paris: { country: 'France', code: 'FR' },
+  berlin: { country: 'Germany', code: 'DE' },
+  madrid: { country: 'Spain', code: 'ES' },
+  barcelona: { country: 'Spain', code: 'ES' },
+  rome: { country: 'Italy', code: 'IT' },
+  amsterdam: { country: 'Netherlands', code: 'NL' },
+
+  // US
+  'new york': { country: 'United States', code: 'US' },
+  nyc: { country: 'United States', code: 'US' },
+  'los angeles': { country: 'United States', code: 'US' },
+  la: { country: 'United States', code: 'US' },
+  'san francisco': { country: 'United States', code: 'US' },
+  chicago: { country: 'United States', code: 'US' },
+  miami: { country: 'United States', code: 'US' },
+  hawaii: { country: 'United States', code: 'US' },
+
+  // Middle East
+  dubai: { country: 'United Arab Emirates', code: 'AE' },
+  'abu dhabi': { country: 'United Arab Emirates', code: 'AE' },
+};
+
+/** Country name normalization for proper casing */
+const COUNTRY_PROPER_NAMES: Record<string, string> = {
+  MY: 'Malaysia',
+  JP: 'Japan',
+  SG: 'Singapore',
+  TH: 'Thailand',
+  ID: 'Indonesia',
+  VN: 'Vietnam',
+  KR: 'South Korea',
+  CN: 'China',
+  TW: 'Taiwan',
+  PH: 'Philippines',
+  IN: 'India',
+  AU: 'Australia',
+  NZ: 'New Zealand',
+  GB: 'United Kingdom',
+  FR: 'France',
+  DE: 'Germany',
+  ES: 'Spain',
+  IT: 'Italy',
+  NL: 'Netherlands',
+  US: 'United States',
+  AE: 'United Arab Emirates',
+  HK: 'Hong Kong',
+  MO: 'Macau',
 };
 
 /** GMT offset to IANA timezone mapping (approximate) */
@@ -387,4 +539,108 @@ export function getUserTimezone(): string {
   } catch {
     return 'UTC';
   }
+}
+
+/**
+ * Capitalize the first letter of each word in a string.
+ */
+function toTitleCase(str: string): string {
+  return str
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
+ * Parse a destination string into city, country, and country code.
+ *
+ * Handles various input formats:
+ * - "Tokyo, Japan" -> { city: "Tokyo", country: "Japan", countryCode: "JP" }
+ * - "Kuala Lumpur, Malaysia" -> { city: "Kuala Lumpur", country: "Malaysia", countryCode: "MY" }
+ * - "New York, USA" -> { city: "New York", country: "United States", countryCode: "US" }
+ * - "Tokyo" (city only) -> { city: "Tokyo", country: "Japan", countryCode: "JP" }
+ * - "Malaysia" (country only) -> { city: "Malaysia", country: "Malaysia", countryCode: "MY" }
+ *
+ * @param destination - The destination string to parse
+ * @returns ParsedDestination with city, country, and ISO 3166-1 alpha-2 country code
+ */
+export function parseDestinationCountry(destination: string): ParsedDestination {
+  const normalized = destination.toLowerCase().trim();
+
+  // Try to parse "City, Country" format
+  const commaIndex = destination.indexOf(',');
+  if (commaIndex !== -1) {
+    const cityPart = destination.slice(0, commaIndex).trim();
+    const countryPart = destination.slice(commaIndex + 1).trim();
+    const normalizedCountry = countryPart.toLowerCase();
+
+    // Look up the country code
+    const countryCode = COUNTRY_CODES[normalizedCountry];
+    if (countryCode) {
+      return {
+        city: cityPart,
+        country: COUNTRY_PROPER_NAMES[countryCode] || toTitleCase(countryPart),
+        countryCode,
+      };
+    }
+
+    // If country not found in mapping, return with proper casing
+    return {
+      city: cityPart,
+      country: toTitleCase(countryPart),
+      countryCode: countryPart.toUpperCase().slice(0, 2), // Fallback: first 2 chars
+    };
+  }
+
+  // Single word input - could be city or country
+  // First, check if it's a known city
+  const cityInfo = CITY_TO_COUNTRY[normalized];
+  if (cityInfo) {
+    return {
+      city: toTitleCase(destination),
+      country: cityInfo.country,
+      countryCode: cityInfo.code,
+    };
+  }
+
+  // Check if it's a known country
+  const countryCode = COUNTRY_CODES[normalized];
+  if (countryCode) {
+    const properCountryName = COUNTRY_PROPER_NAMES[countryCode] || toTitleCase(destination);
+    return {
+      city: properCountryName, // Use country name as city for country-only input
+      country: properCountryName,
+      countryCode,
+    };
+  }
+
+  // Try partial matching in CITY_TO_COUNTRY
+  for (const [cityKey, info] of Object.entries(CITY_TO_COUNTRY)) {
+    if (normalized.includes(cityKey) || cityKey.includes(normalized)) {
+      return {
+        city: toTitleCase(destination),
+        country: info.country,
+        countryCode: info.code,
+      };
+    }
+  }
+
+  // Try partial matching in COUNTRY_CODES
+  for (const [countryKey, code] of Object.entries(COUNTRY_CODES)) {
+    if (normalized.includes(countryKey) || countryKey.includes(normalized)) {
+      const properName = COUNTRY_PROPER_NAMES[code] || toTitleCase(countryKey);
+      return {
+        city: toTitleCase(destination),
+        country: properName,
+        countryCode: code,
+      };
+    }
+  }
+
+  // Fallback: return the input as both city and country with unknown code
+  return {
+    city: toTitleCase(destination),
+    country: toTitleCase(destination),
+    countryCode: 'XX', // Unknown country code
+  };
 }
