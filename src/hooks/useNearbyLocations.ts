@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
 import { useAtom } from 'jotai';
+import { useMemo } from 'react';
+
 import { userContextAtom } from '@/atoms/userContextAtoms';
-import { LOCATIONS, Location } from '@/data/tripData';
+import { LOCATIONS, type Location } from '@/data/tripData';
 
 interface NearbyLocation extends Location {
   distanceKm: number;

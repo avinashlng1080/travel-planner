@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
 import { Battery, BatteryLow, BatteryMedium, Baby, Thermometer, MapPin, X } from 'lucide-react';
+
 import {
   userContextAtom,
   updateEnergyLevelAtom,
@@ -104,7 +105,7 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 ].map(({ value, icon: Icon, label, color }) => (
                   <button
                     key={value}
-                    onClick={() => updateEnergy(value as 'high' | 'medium' | 'low')}
+                    onClick={() => { updateEnergy(value as 'high' | 'medium' | 'low'); }}
                     className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-colors flex flex-col items-center gap-1 ${
                       userContext.energyLevel === value
                         ? `bg-${color}-100 text-${color}-700 ring-2 ring-${color}-500`
@@ -134,7 +135,7 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                   <button
                     key={value}
                     onClick={() =>
-                      updateMood(value as 'happy' | 'tired' | 'fussy' | 'sleeping')
+                      { updateMood(value as 'happy' | 'tired' | 'fussy' | 'sleeping'); }
                     }
                     className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                       userContext.toddlerMood === value
@@ -163,7 +164,7 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                   <button
                     key={value}
                     onClick={() =>
-                      updateHealth(value as 'good' | 'mild_sickness' | 'needs_rest')
+                      { updateHealth(value as 'good' | 'mild_sickness' | 'needs_rest'); }
                     }
                     className={`flex-1 py-2 px-2 rounded-lg text-xs font-medium transition-colors ${
                       userContext.healthStatus === value

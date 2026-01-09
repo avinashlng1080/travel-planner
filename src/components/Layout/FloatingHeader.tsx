@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { useSetAtom } from 'jotai';
 import { MapPin, Calendar, Settings, User, ChevronDown, LogOut, ArrowLeft, Activity } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
-import { GlassBadge } from '../ui/GlassPanel';
 import { UserContextPanel } from '../floating/UserContextPanel';
+import { GlassBadge } from '../ui/GlassPanel';
 
 interface FloatingHeaderProps {
   currentDay: number;
@@ -118,7 +118,7 @@ export function FloatingHeader({
         {/* Right: User Context, Settings, and User Menu */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowContextPanel(!showContextPanel)}
+            onClick={() => { setShowContextPanel(!showContextPanel); }}
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
             aria-label="User context"
           >
@@ -164,7 +164,7 @@ export function FloatingHeader({
       </div>
 
       {/* User Context Panel */}
-      <UserContextPanel isOpen={showContextPanel} onClose={() => setShowContextPanel(false)} />
+      <UserContextPanel isOpen={showContextPanel} onClose={() => { setShowContextPanel(false); }} />
     </header>
   );
 }

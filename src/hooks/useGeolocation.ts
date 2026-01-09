@@ -1,11 +1,12 @@
-import { useEffect, useCallback, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
+import { useEffect, useCallback, useRef } from 'react';
+
 import {
   userContextAtom,
   updateLocationAtom,
   setLocationPermissionAtom,
   toggleLocationTrackingAtom,
-  UserLocation,
+  type UserLocation,
 } from '@/atoms/userContextAtoms';
 
 interface UseGeolocationOptions {
@@ -145,7 +146,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           updateLocation(location);
           resolve(location);
         },
-        () => resolve(null),
+        () => { resolve(null); },
         { enableHighAccuracy, maximumAge, timeout }
       );
     });
@@ -154,7 +155,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   // Calculate distance to a location (in km)
   const getDistanceTo = useCallback(
     (targetLat: number, targetLng: number): number | null => {
-      if (!userContext.currentLocation) return null;
+      if (!userContext.currentLocation) {return null;}
 
       const R = 6371; // Earth's radius in km
       const dLat = toRad(targetLat - userContext.currentLocation.lat);
