@@ -16,7 +16,6 @@ import {
   travelModeAtom,
   commutesPanelOpenAtom,
   activeCommuteDestinationAtom,
-  selectedDayIdAtom
 } from '../atoms/uiAtoms';
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
@@ -71,7 +70,6 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [travelMode, setTravelMode] = useAtom(travelModeAtom);
   const [commutesPanelOpen, setCommutesPanelOpen] = useAtom(commutesPanelOpenAtom);
   const [activeCommuteDestination, setActiveCommuteDestination] = useAtom(activeCommuteDestinationAtom);
-  const [selectedDayId] = useAtom(selectedDayIdAtom);
 
   // Map sync state
   const setFocusedActivity = useSetAtom(focusedActivityAtom);

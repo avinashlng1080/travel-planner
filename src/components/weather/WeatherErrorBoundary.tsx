@@ -46,7 +46,7 @@ export class WeatherErrorBoundary extends Component<Props, State> {
 /**
  * Inline error fallback for badges and compact components
  */
-export function WeatherErrorFallbackInline({ error }: { error: Error | null }) {
+export function WeatherErrorFallbackInline({ error: _error }: { error: Error | null }) {
   return (
     <div
       role="alert"

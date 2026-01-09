@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from 'convex/react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { Map, ChevronLeft, ChevronRight, MapPin, Lightbulb, AlertTriangle, Sun, Cloud, Clock, Info, Zap, Columns , type LucideIcon } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -13,7 +13,7 @@ import { PlanBuilder } from '../Itinerary/PlanBuilder';
 import SafetyPanel from '../Safety/SafetyPanel';
 import { GlassBadge } from '../ui/GlassPanel';
 import { ResponsivePanelWrapper } from '../ui/ResponsivePanelWrapper';
-import { WeatherBadge } from '../Weather';
+import { WeatherBadge } from '../weather';
 
 import type { Id } from '../../../convex/_generated/dataModel';
 import type { DayPlan as DayPlanType, ScheduleItem as ScheduleItemType } from '../../data/tripData';
@@ -204,7 +204,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   };
 
   // Itinerary handlers
-  const handleReorder = async (plan: 'A' | 'B', itemIds: string[]) => {
+  const handleReorder = async (_plan: 'A' | 'B', itemIds: string[]) => {
     if (!selectedPlanId || !selectedDayPlan) {return;}
 
     try {

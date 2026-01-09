@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAtom, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { Menu, X, Map, CheckSquare, Filter, Users, Cloud } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 

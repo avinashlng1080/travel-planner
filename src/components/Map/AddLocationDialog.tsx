@@ -1,5 +1,5 @@
 import { useMutation } from 'convex/react';
-import { MapPin, X, Home, Camera, ShoppingBag, UtensilsCrossed, Trees, Church, Baby, Plus } from 'lucide-react';
+import { X, Home, Camera, ShoppingBag, UtensilsCrossed, Trees, Church, Baby, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { api } from '../../../convex/_generated/api';

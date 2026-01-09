@@ -17,6 +17,6 @@ export function sortScheduleItems(items: ScheduleItemType[]): ScheduleItemType[]
  * This is used for route visualization to ensure logical travel progression
  * without backtracking caused by manual reordering
  */
-export function sortScheduleItemsForRoute(items: ScheduleItemType[]): ScheduleItemType[] {
+export function sortScheduleItemsForRoute<T extends { startTime: string }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.startTime.localeCompare(b.startTime));
 }

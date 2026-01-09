@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { useWeather } from '../../hooks/useWeather';
 import { AddToPlanModal } from '../ui/AddToPlanModal';
 import { GlassBadge, GlassButton, GlassCard } from '../ui/GlassPanel';
-import { WeatherCard } from '../Weather';
+import { WeatherCard } from '../weather';
 
 import type { Location, DayPlan } from '../../data/tripData';
 

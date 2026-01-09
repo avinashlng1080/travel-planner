@@ -30,7 +30,7 @@ import {
   MARKER_ANIMATION_STYLES,
   type PlanIndicator,
 } from './markerUtils';
-import { homeBaseAtom } from '../Floating/SettingsPanel';
+import { homeBaseAtom } from '../floating/SettingsPanel';
 
 import type { Id } from '../../../convex/_generated/dataModel';
 import type { DynamicPin } from '../../atoms/uiAtoms';
