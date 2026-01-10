@@ -81,6 +81,7 @@ export function GlassButton({
   size = 'md',
   onClick,
   disabled = false,
+  type = 'button',
 }: {
   children: ReactNode;
   className?: string;
@@ -88,6 +89,7 @@ export function GlassButton({
   size?: 'sm' | 'md' | 'lg';
   onClick?: () => void;
   disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }) {
   const variantClasses = {
     default: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
@@ -118,6 +120,7 @@ export function GlassButton({
         disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
+      type={type}
       onClick={onClick}
       disabled={disabled}
       whileHover={!disabled ? { scale: 1.02 } : undefined}

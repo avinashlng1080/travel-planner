@@ -21,6 +21,7 @@ interface ResponsivePanelWrapperProps {
   icon: LucideIcon;
   defaultSize: { width: number; height: number };
   children: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -36,6 +37,7 @@ export function ResponsivePanelWrapper({
   icon,
   defaultSize,
   children,
+  className,
 }: ResponsivePanelWrapperProps) {
   const [panels] = useAtom(panelsAtom);
   const [activeMobileModal] = useAtom(activeMobileModalAtom);
@@ -81,6 +83,7 @@ export function ResponsivePanelWrapper({
       onMinimize={() => { toggleMinimize(panelId); }}
       onPositionChange={(pos) => { updatePosition({ panelId, position: pos }); }}
       onFocus={() => { bringToFront(panelId); }}
+      className={className}
     >
       {children}
     </FloatingPanel>

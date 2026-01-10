@@ -9,13 +9,29 @@ An AI-powered travel planning application for families with toddlers. Features i
 
 ## ✨ Features
 
-- 🗺️ **Interactive Google Maps** - Real-time routing with custom category markers
-- 🤖 **AI Assistant** - Claude-powered travel advice with web search
-- 📅 **Plan A/B Per Day** - Main itinerary + backup alternatives
-- 👶 **Toddler-Focused** - Safety ratings, nap time blocking, warnings
-- 🔄 **Drag & Drop** - Reorder activities with smooth animations
-- 🌤️ **Weather Integration** - Real-time forecasts and alerts
-- 🚗 **Commute Planning** - Distance calculations and route optimization
+### Core Planning
+- 🗺️ **Interactive Google Maps** - Real-time routing with custom category markers and visual hierarchy
+- 🤖 **AI Assistant** - Claude-powered travel advice with web search and map pin suggestions
+- 📅 **Plan A/B Per Day** - Main itinerary + backup alternatives with visual route differentiation
+- 👶 **Toddler-Focused** - Safety ratings, nap time blocking, warnings, and mood tracking
+- 🔄 **Drag & Drop** - Reorder activities with smooth animations and hybrid time-based sorting
+
+### Smart Context & Adaptation
+- 🎨 **Adaptive UI Theme** - Energy-based visual feedback that shifts colors based on user/toddler status
+- 💪 **User Context Tracking** - Real-time energy level, toddler mood, and health monitoring with Plan B mode
+- 🌍 **Location-Agnostic** - AI-generated destination context (emergency numbers, safety tips, cultural etiquette) for any country
+- 📍 **POI Discovery** - Contextual points of interest with emoji markers and viewport-based loading
+
+### Weather & Safety
+- 🌤️ **Weather Integration** - 7-day forecasts from Open-Meteo API with 15-minute auto-refresh
+- 🌊 **Flash Flood Alerts** - Risk calculation (Low/Moderate/High/Severe) with Plan B suggestions
+- 🏥 **Safety Panel** - Emergency numbers, health tips, scam warnings, and cultural guidance
+
+### Navigation & Commutes
+- 🚗 **Commute Planning** - Multi-destination route visualization with travel mode selection
+- 🛤️ **Day-by-Day Routes** - Visual route rendering per selected day (Plan A solid, Plan B dashed)
+
+### User Experience
 - 📱 **Mobile Responsive** - FAB navigation, safe areas, touch-optimized
 - 🎯 **Onboarding Tutorial** - Interactive guide for first-time users
 - 🌐 **Real-time Collaboration** - Share trips with family members
@@ -78,6 +94,7 @@ travel-planner/
 │   ├── atoms/             # Jotai state management
 │   │   ├── uiAtoms.ts     # UI state (chat, categories, plans)
 │   │   ├── floatingPanelAtoms.ts  # Panel z-index/position
+│   │   ├── userContextAtoms.ts    # Energy, mood, health tracking + theme
 │   │   └── onboardingAtoms.ts     # Tutorial state
 │   ├── components/        # 80+ React components
 │   │   ├── Map/          # Google Maps integration
@@ -93,10 +110,13 @@ travel-planner/
 │   │   └── ui/           # Base components (FAB, Modal, etc.)
 │   ├── data/
 │   │   └── tripData.ts   # Sample location data
-│   ├── hooks/            # 14 custom React hooks
+│   ├── hooks/            # 18+ custom React hooks
 │   │   ├── useGoogleRouting.ts   # Route calculations
 │   │   ├── useCommutes.ts        # Commute planning
 │   │   ├── useWeather.ts         # Weather integration
+│   │   ├── useEnergyTheme.ts     # Adaptive UI theme based on energy
+│   │   ├── useDestinationContext.ts  # AI-generated country info
+│   │   ├── useGeolocation.ts     # Live location tracking
 │   │   └── useIsMobile.ts        # Responsive detection
 │   ├── pages/            # 7 page components
 │   │   ├── TripViewPage.tsx      # Main planning view
@@ -115,11 +135,11 @@ travel-planner/
 │   ├── trips.ts          # Trip CRUD operations
 │   ├── weather.ts        # Weather API integration
 │   ├── commutes.ts       # Distance calculations
+│   ├── destinationContexts.ts  # AI-generated country context
 │   └── auth.config.ts    # Authentication setup
 ├── Configuration
 │   ├── vercel.json       # Vercel deployment config
 │   ├── tailwind.config.js # Custom color themes
-│   ├── playwright.config.ts # E2E testing
 │   ├── CLAUDE.md         # Development philosophy
 │   ├── PRD.md            # Product requirements
 │   └── .env.example      # Environment template
@@ -143,7 +163,6 @@ travel-planner/
 - **AI:** Anthropic Claude API (via Convex HTTP actions)
 
 ### Development
-- **Testing:** Playwright 1.57
 - **Linting:** ESLint 9.39 (strict, zero-warnings)
 - **Type Checking:** TypeScript strict mode
 
@@ -174,8 +193,18 @@ bg-white/95 backdrop-blur-xl border border-slate-200/50
 ```
 
 ### Plan A/B System
-- **Plan A:** Primary itinerary (solid green route)
-- **Plan B:** Backup/rainy day alternative (dashed blue route)
+- **Plan A:** Primary itinerary (solid red route #FF1744)
+- **Plan B:** Backup/rainy day alternative (dashed sky blue route #00B0FF)
+- Auto-suggests Plan B when energy is low, toddler is tired/fussy, or weather is poor
+
+### Energy-Based Theme System
+| Energy Level | Theme Colors | Suggested Mode |
+|--------------|--------------|----------------|
+| High | Vibrant sunset/ocean | Plan A |
+| Medium | Balanced colors | Plan A |
+| Low | Calm slate/blue | Plan B |
+
+The UI dynamically shifts colors based on user energy, toddler mood, and health status with smooth 500ms transitions.
 
 ### Responsive Design
 - **Desktop:** Floating panels with drag positioning
@@ -193,19 +222,20 @@ bg-white/95 backdrop-blur-xl border border-slate-200/50
 npm run dev          # Start Vite dev server (http://localhost:3000)
 npm run build        # Production build to dist/
 npm run lint         # Run ESLint (zero-warnings enforced)
+npm run lint:fix     # Auto-fix ESLint issues
 npm run type-check   # TypeScript compilation check
 npx convex dev       # Start Convex backend locally
 npx convex deploy    # Deploy Convex to cloud
-npx playwright test  # Run E2E tests
 ```
 
 ## 🗄️ Database Schema
 
-Convex provides 28 tables including:
+Convex provides 30+ tables including:
 - **Auth:** users, authSessions, authAccounts
 - **Trips:** trips, tripMembers, locations
 - **Planning:** dayPlans, tripScheduleItems, activities
 - **Weather:** weatherCache, weatherAlerts
+- **Context:** destinationContexts (AI-generated country info cache)
 - **Collaboration:** comments, notifications
 
 ## 🌐 Deployment

@@ -16,6 +16,7 @@ export interface CommuteResult {
   distance?: string;
   duration?: string;
   durationValue?: number; // in seconds
+  path?: google.maps.LatLngLiteral[]; // Route geometry for polyline rendering
   isLoading: boolean;
   error: string | null;
 }

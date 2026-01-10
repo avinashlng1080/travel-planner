@@ -28,6 +28,15 @@ export interface Location {
   entranceFee?: string;
   openingHours: string;
   planIds: string[];
+
+  // TravelMateAI extensions (optional for backward compatibility)
+  strollerAccessibility?: 'full' | 'partial' | 'none';
+  budgetTier?: 'budget' | 'mid' | 'premium';
+  toddlerFoodAvailable?: boolean;
+  airConditioned?: boolean;
+  crowdLevel?: { weekday: number; weekend: number }; // 1-5 scale
+  nearestClinic?: string;
+  nearestPharmacy?: string;
 }
 
 export type LocationCategory =

@@ -259,7 +259,7 @@ export const bringToFrontAtom = atom(
 );
 
 // Mobile-specific state atoms
-export const isMobileViewAtom = atom<boolean>((get) => {
+export const isMobileViewAtom = atom<boolean>(() => {
   if (typeof window === 'undefined') {return false;}
   return window.innerWidth < 768; // Tailwind md breakpoint
 });

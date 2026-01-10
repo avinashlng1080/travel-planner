@@ -193,12 +193,20 @@ export function usePlacesAutocomplete(
 
         placesService.getDetails(request, (place, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            // Validate that geometry exists - without it, we can't place the location on the map
+            if (!place.geometry?.location) {
+              console.error('[usePlacesAutocomplete] Place has no geometry:', place.place_id);
+              setError('Selected place has no location data');
+              resolve(null);
+              return;
+            }
+
             const details: PlaceDetails = {
               placeId: place.place_id!,
               name: place.name || '',
               address: place.formatted_address || '',
-              lat: place.geometry?.location?.lat() || 0,
-              lng: place.geometry?.location?.lng() || 0,
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
               types: place.types || [],
             };
 

@@ -14,6 +14,7 @@ import type * as checklists from "../checklists.js";
 import type * as claude from "../claude.js";
 import type * as commuteDestinations from "../commuteDestinations.js";
 import type * as dayPlans from "../dayPlans.js";
+import type * as destinationContexts from "../destinationContexts.js";
 import type * as distanceMatrix from "../distanceMatrix.js";
 import type * as http from "../http.js";
 import type * as locations from "../locations.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   claude: typeof claude;
   commuteDestinations: typeof commuteDestinations;
   dayPlans: typeof dayPlans;
+  destinationContexts: typeof destinationContexts;
   distanceMatrix: typeof distanceMatrix;
   http: typeof http;
   locations: typeof locations;

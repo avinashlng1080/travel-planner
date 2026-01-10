@@ -93,42 +93,42 @@ export function getWeatherDescription(code: number): string {
 /**
  * Calculate flash flood risk level based on precipitation data
  *
- * Malaysian monsoon context (Dec-Jan is monsoon season on west coast):
- * - Severe: >50mm precipitation OR thunderstorm codes (95-99)
- * - High: >30mm OR >80% probability
- * - Moderate: >15mm OR >50% probability
- * - Low: Otherwise
+ * IMPORTANT: This is informational only. Always check MET Malaysia (@metmalaysia)
+ * for official weather warnings and InfoBanjir for flood alerts.
+ *
+ * Realistic thresholds for Malaysian tropical climate:
+ * - Brief afternoon thunderstorms (20-30mm) are NORMAL in KL and rarely cause floods
+ * - Flash floods typically require sustained heavy rainfall (>60mm in 1-3 hours)
+ * - The SMART Tunnel handles most stormwater in KL city center
+ *
+ * Risk levels (using AND logic - both conditions must be met):
+ * - Severe: >80mm precipitation AND >85% probability (actual flood risk)
+ * - High: >50mm AND >75% probability (significant rainfall)
+ * - Moderate: >30mm AND >60% probability (plan indoor backup)
+ * - Low: Normal tropical weather
  */
 export function calculateFlashFloodRisk(
   precipitationSum: number,
   precipitationProbability: number,
-  weatherCode: number
+  _weatherCode: number // Weather code no longer triggers auto-severe
 ): FlashFloodRiskLevel {
-  // Thunderstorm codes always severe
-  if ([95, 96, 99].includes(weatherCode)) {
+  // Severe: Requires BOTH heavy precipitation AND high probability
+  // This indicates sustained heavy rainfall that could actually cause flooding
+  if (precipitationSum > 80 && precipitationProbability > 85) {
     return 'severe';
   }
 
-  // Heavy rain codes with high precipitation
-  if ([65, 67, 82].includes(weatherCode) && precipitationSum > 30) {
-    return 'severe';
-  }
-
-  // Severe: >50mm precipitation OR >90% probability with rain
-  if (precipitationSum > 50 || (precipitationProbability > 90 && precipitationSum > 20)) {
-    return 'severe';
-  }
-
-  // High: >30mm OR >80% probability
-  if (precipitationSum > 30 || precipitationProbability > 80) {
+  // High: Significant rainfall expected with high confidence
+  if (precipitationSum > 50 && precipitationProbability > 75) {
     return 'high';
   }
 
-  // Moderate: >15mm OR >50% probability
-  if (precipitationSum > 15 || precipitationProbability > 50) {
+  // Moderate: Notable rain expected - worth having indoor backup plans
+  if (precipitationSum > 30 && precipitationProbability > 60) {
     return 'moderate';
   }
 
+  // Low: Normal tropical weather - brief showers are common and manageable
   return 'low';
 }
 
@@ -147,43 +147,43 @@ export const RISK_LEVEL_STYLES: Record<FlashFloodRiskLevel, {
     border: 'border-green-200',
     text: 'text-green-800',
     icon: 'text-green-500',
-    label: 'Low Risk',
+    label: 'Clear/Light',
   },
   moderate: {
     bg: 'bg-yellow-50',
     border: 'border-yellow-200',
     text: 'text-yellow-800',
     icon: 'text-yellow-500',
-    label: 'Moderate Risk',
+    label: 'Rainy',
   },
   high: {
     bg: 'bg-orange-50',
     border: 'border-orange-200',
     text: 'text-orange-800',
     icon: 'text-orange-500',
-    label: 'High Risk',
+    label: 'Heavy Rain',
   },
   severe: {
     bg: 'bg-red-50',
     border: 'border-red-200',
     text: 'text-red-800',
     icon: 'text-red-500',
-    label: 'Severe Risk',
+    label: 'Very Heavy',
   },
 };
 
 /**
- * Get flash flood recommendation based on risk level
+ * Get weather recommendation based on risk level
  */
 export function getFlashFloodRecommendation(level: FlashFloodRiskLevel): string {
   const recommendations: Record<FlashFloodRiskLevel, string> = {
-    low: 'Great day for outdoor activities! Stay hydrated and bring sunscreen.',
+    low: 'Typical tropical weather. Brief afternoon showers possible - carry an umbrella just in case.',
     moderate:
-      'Rain expected. Carry an umbrella and plan indoor backup activities for the afternoon.',
+      'Heavier rain expected. Have indoor backup plans ready (malls, Aquaria KLCC, museums).',
     high:
-      'Heavy rain likely. Consider switching to Plan B with indoor activities. Avoid underpasses and low-lying areas.',
+      'Significant rainfall forecast. Recommend indoor activities. Check MET Malaysia for updates.',
     severe:
-      'Severe weather alert! Stay indoors. Avoid all outdoor activities, underpasses, and flooded roads. Monitor official MET Malaysia alerts.',
+      'Heavy sustained rainfall expected. Stay flexible with plans and monitor MET Malaysia (@metmalaysia) for official alerts.',
   };
   return recommendations[level];
 }
@@ -195,8 +195,8 @@ export function getPlanBSuggestion(level: FlashFloodRiskLevel): string | undefin
   if (level === 'low') {return undefined;}
 
   const suggestions: Record<FlashFloodRiskLevel, string> = {
-    moderate: 'Consider indoor alternatives like malls, Aquaria KLCC, or museum visits for afternoon activities.',
-    high: 'Strongly recommend Plan B (indoor): Suria KLCC, Pavilion KL, or indoor playgrounds for your toddler.',
+    moderate: 'Good day to have Plan B ready: malls, Aquaria KLCC, or museum visits if rain persists.',
+    high: 'Consider Plan B (indoor): Suria KLCC, Pavilion KL, or indoor playgrounds for your toddler.',
     severe: 'Use Plan B only: Stay at accommodations or nearby malls. Avoid travel until weather improves.',
     low: '', // Won't be used
   };
@@ -237,16 +237,16 @@ export function generateFlashFloodAlert(
 
   const titles: Record<FlashFloodRiskLevel, string> = {
     low: '',
-    moderate: 'Rain Advisory',
-    high: 'Heavy Rain Warning',
-    severe: 'Flash Flood Warning',
+    moderate: 'Rain Expected',
+    high: 'Heavy Rain Expected',
+    severe: 'Very Heavy Rain Expected',
   };
 
   const messages: Record<FlashFloodRiskLevel, string> = {
     low: '',
-    moderate: `Light to moderate rain expected on ${affectedDays.join(', ')}. Plan indoor backup activities.`,
-    high: `Heavy rainfall expected on ${affectedDays.join(', ')}. Flash flooding possible in low-lying areas.`,
-    severe: `Severe weather alert for ${affectedDays.join(', ')}. High risk of flash flooding and thunderstorms.`,
+    moderate: `Rain likely on ${affectedDays.join(', ')}. Consider having indoor backup plans.`,
+    high: `Significant rainfall expected on ${affectedDays.join(', ')}. Indoor activities recommended.`,
+    severe: `Very heavy rainfall forecast for ${affectedDays.join(', ')}. Check MET Malaysia for official updates.`,
   };
 
   return {
@@ -260,6 +260,9 @@ export function generateFlashFloodAlert(
 }
 
 /**
+ * @deprecated Use getWeatherTipsForClimate() for location-agnostic tips.
+ * Kept for legacy sample Malaysia trip compatibility.
+ *
  * Malaysian-specific weather tips
  */
 export const MALAYSIA_WEATHER_TIPS = {
@@ -289,6 +292,120 @@ export const MALAYSIA_WEATHER_TIPS = {
     putrajaya: 'Avoid walking long exposed lakeside paths in thunderstorms.',
   },
 };
+
+/**
+ * Climate type definitions for location-agnostic weather tips.
+ */
+export type ClimateType =
+  | 'tropical'
+  | 'subtropical'
+  | 'mediterranean'
+  | 'continental'
+  | 'temperate'
+  | 'arid'
+  | 'arctic'
+  | 'monsoon';
+
+/**
+ * Get weather tips appropriate for a climate type.
+ * Used for location-agnostic travel planning.
+ *
+ * @param climate - Climate type or description string
+ * @returns Array of relevant weather tips
+ */
+export function getWeatherTipsForClimate(climate: string): string[] {
+  const normalizedClimate = climate.toLowerCase();
+
+  // Tropical/Monsoon climates
+  if (normalizedClimate.includes('tropical') || normalizedClimate.includes('monsoon')) {
+    return [
+      'Brief afternoon rain showers are common - carry a compact umbrella',
+      'Stay hydrated and take breaks in air-conditioned spaces',
+      'Plan outdoor activities for morning when it is typically cooler and drier',
+      'Thunderstorms can be intense but usually pass within 30-60 minutes',
+      'Lightweight, breathable clothing is essential',
+    ];
+  }
+
+  // Hot/Arid climates
+  if (normalizedClimate.includes('arid') || normalizedClimate.includes('desert') || normalizedClimate.includes('dry')) {
+    return [
+      'Stay hydrated - carry water at all times',
+      'Avoid outdoor activities during peak heat (11am-3pm)',
+      'Wear sun protection: hat, sunglasses, and sunscreen',
+      'Temperatures can drop significantly at night',
+      'Lightweight, loose-fitting clothing helps stay cool',
+    ];
+  }
+
+  // Mediterranean climates
+  if (normalizedClimate.includes('mediterranean')) {
+    return [
+      'Summers are warm and dry - stay hydrated',
+      'Winters can bring rain - pack a light jacket',
+      'Spring and fall offer the most pleasant weather',
+      'Sea breezes can make coastal areas cooler',
+      'Sunscreen is essential year-round',
+    ];
+  }
+
+  // Cold/Continental climates
+  if (normalizedClimate.includes('continental') || normalizedClimate.includes('cold') || normalizedClimate.includes('arctic')) {
+    return [
+      'Layer clothing for variable temperatures',
+      'Check forecasts for sudden weather changes',
+      'Pack warm layers even in milder months',
+      'Icy conditions may affect walking - wear appropriate footwear',
+      'Shorter daylight hours in winter - plan accordingly',
+    ];
+  }
+
+  // Temperate climates
+  if (normalizedClimate.includes('temperate') || normalizedClimate.includes('moderate')) {
+    return [
+      'Weather can be changeable - pack layers',
+      'A light rain jacket is useful year-round',
+      'Spring and fall offer pleasant temperatures',
+      'Check local forecasts for day-to-day variations',
+      'Sun protection is still important on clear days',
+    ];
+  }
+
+  // Subtropical climates
+  if (normalizedClimate.includes('subtropical')) {
+    return [
+      'Summers are hot and humid - stay hydrated',
+      'Afternoon thunderstorms are common in summer',
+      'Winters are mild but can have cool snaps',
+      'Hurricane/typhoon season varies by region - check advisories',
+      'Light, breathable clothing works best',
+    ];
+  }
+
+  // Default generic tips
+  return [
+    'Check the local weather forecast before outdoor activities',
+    'Pack layers to adapt to changing conditions',
+    'Stay hydrated regardless of temperature',
+    'Have indoor backup plans for rainy days',
+    'Sun protection is important in most climates',
+  ];
+}
+
+/**
+ * Get general travel safety tips for weather-related situations.
+ * These are location-agnostic and apply universally.
+ */
+export function getGeneralWeatherSafetyTips(): string[] {
+  return [
+    'Check local weather forecasts daily and plan accordingly',
+    'Have both indoor and outdoor activity options ready',
+    'Keep emergency contacts and hotel info accessible',
+    'Download offline maps in case of connectivity issues',
+    'Carry basic weather protection (umbrella, sun protection)',
+    'Know the location of nearby shelters during severe weather',
+  ];
+}
 
 /**
  * Get day of week from date string

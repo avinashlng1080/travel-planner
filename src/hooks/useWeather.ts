@@ -134,7 +134,7 @@ export function useWeather(enabled = true): UseWeatherResult {
 
   // Fetch weather data from API
   const fetchWeather = useCallback(
-    async (lat: number, lng: number, forceRefresh) => {
+    async (lat: number, lng: number, forceRefresh: boolean = false) => {
       const cacheKey = getCacheKey(lat, lng);
 
       // Check cache first (unless forcing refresh)

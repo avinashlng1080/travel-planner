@@ -16,6 +16,7 @@ interface FloatingPanelProps {
   onPositionChange: (pos: { x: number; y: number }) => void;
   onFocus: () => void;
   children: React.ReactNode;
+  className?: string;
 }
 
 export function FloatingPanel({
@@ -31,6 +32,7 @@ export function FloatingPanel({
   onPositionChange,
   onFocus,
   children,
+  className = '',
 }: FloatingPanelProps) {
   const dragControls = useDragControls();
   const [windowSize, setWindowSize] = useState({
@@ -127,7 +129,7 @@ export function FloatingPanel({
           transition={{ duration: 0.2, ease: 'easeOut' }}
           onClick={onFocus}
         >
-          <div className="bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
+          <div className={`bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col ${className}`}>
             {/* Draggable Header - triggers drag on parent */}
             <div
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-sunset-500/10 to-ocean-600/10 border-b border-slate-200/50 select-none ${isMaximized ? 'cursor-default' : 'cursor-move'}`}

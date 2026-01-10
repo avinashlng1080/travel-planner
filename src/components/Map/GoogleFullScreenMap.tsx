@@ -30,7 +30,7 @@ import {
   MARKER_ANIMATION_STYLES,
   type PlanIndicator,
 } from './markerUtils';
-import { homeBaseAtom } from '../Floating/SettingsPanel';
+import { homeBaseAtom } from '../floating/SettingsPanel';
 
 import type { Id } from '../../../convex/_generated/dataModel';
 import type { DynamicPin } from '../../atoms/uiAtoms';
@@ -721,6 +721,9 @@ export function GoogleFullScreenMap({
         gestureHandling="greedy"
         disableDefaultUI={false}
         zoomControl
+        zoomControlOptions={{
+          position: google.maps.ControlPosition?.LEFT_BOTTOM,
+        }}
         mapTypeControl
         mapTypeControlOptions={{
           position: google.maps.ControlPosition?.TOP_RIGHT,

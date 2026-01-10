@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { DraggableItem } from './DraggableItem';
 import { useWeather } from '../../hooks/useWeather';
-import { WeatherIcon } from '../Weather';
+import { WeatherIcon } from '../weather';
 
 import type { DayPlan as DayPlanType, Location } from '../../data/tripData';
 
@@ -49,7 +49,7 @@ export function DayPlan({ dayPlan, locations = [], onReorder, onActivityClick }:
   const itemIds = sortedItems.map((item) => item.id);
 
   // Handle drag-and-drop reordering
-  const handleDragEnd = (event: { active: { id: string }; over: { id: string } | null }) => {
+  const handleDragEnd = (event: { active: { id: string | number }; over: { id: string | number } | null }) => {
     const { active, over } = event;
 
     // No-op if dropped outside or on itself
