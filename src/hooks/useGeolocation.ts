@@ -8,6 +8,7 @@ import {
   toggleLocationTrackingAtom,
   type UserLocation,
 } from '@/atoms/userContextAtoms';
+import { calculateDistance } from '@/utils/geo';
 
 interface UseGeolocationOptions {
   enableHighAccuracy?: boolean;
@@ -72,11 +73,21 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           { enableHighAccuracy, maximumAge, timeout }
         );
       });
-    } catch {
+    } catch (error) {
+      console.error('[useGeolocation] Permission request failed:', error);
       setPermission('unavailable');
       return false;
     }
   }, [isSupported, enableHighAccuracy, maximumAge, timeout, setPermission, updateLocation]);
+
+  // Stop tracking (defined first to avoid circular dependency)
+  const stopTracking = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    setTracking(false);
+  }, [setTracking]);
 
   // Start continuous tracking
   const startTracking = useCallback(() => {
@@ -98,10 +109,14 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         });
       },
       (error) => {
-        console.error('[useGeolocation] Watch error:', error);
+        console.error('[useGeolocation] Watch error:', error.code, error.message);
         if (error.code === error.PERMISSION_DENIED) {
           setPermission('denied');
           stopTracking();
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          console.warn('[useGeolocation] Position unavailable - GPS signal may be weak');
+        } else if (error.code === error.TIMEOUT) {
+          console.warn('[useGeolocation] Position request timed out');
         }
       },
       { enableHighAccuracy, maximumAge, timeout }
@@ -117,16 +132,8 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     updateLocation,
     setPermission,
     setTracking,
+    stopTracking,
   ]);
-
-  // Stop tracking
-  const stopTracking = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    setTracking(false);
-  }, [setTracking]);
 
   // Get current position once
   const getCurrentPosition = useCallback(async (): Promise<UserLocation | null> => {
@@ -146,7 +153,10 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           updateLocation(location);
           resolve(location);
         },
-        () => { resolve(null); },
+        (error) => {
+          console.error('[useGeolocation] getCurrentPosition failed:', error.code, error.message);
+          resolve(null);
+        },
         { enableHighAccuracy, maximumAge, timeout }
       );
     });
@@ -155,19 +165,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   // Calculate distance to a location (in km)
   const getDistanceTo = useCallback(
     (targetLat: number, targetLng: number): number | null => {
-      if (!userContext.currentLocation) {return null;}
+      if (!userContext.currentLocation) {
+        return null;
+      }
 
-      const R = 6371; // Earth's radius in km
-      const dLat = toRad(targetLat - userContext.currentLocation.lat);
-      const dLng = toRad(targetLng - userContext.currentLocation.lng);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(userContext.currentLocation.lat)) *
-          Math.cos(toRad(targetLat)) *
-          Math.sin(dLng / 2) *
-          Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
+      return calculateDistance(
+        userContext.currentLocation.lat,
+        userContext.currentLocation.lng,
+        targetLat,
+        targetLng
+      );
     },
     [userContext.currentLocation]
   );
@@ -192,8 +199,4 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     getCurrentPosition,
     getDistanceTo,
   };
-}
-
-function toRad(deg: number): number {
-  return deg * (Math.PI / 180);
 }

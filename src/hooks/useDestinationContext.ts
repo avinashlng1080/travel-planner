@@ -70,8 +70,9 @@ export function useDestinationContext(
       const parsed = parseDestinationCountry(trip.destination);
       setCountryCode(parsed.countryCode);
       setCountryName(parsed.country);
-    } catch {
-      setError('Could not parse destination');
+    } catch (error) {
+      console.error('[useDestinationContext] Failed to parse destination:', trip.destination, error);
+      setError(`Could not parse destination: "${trip.destination}"`);
       setCountryCode(null);
       setCountryName(null);
     }
@@ -79,6 +80,8 @@ export function useDestinationContext(
 
   // Load context when country code changes
   useEffect(() => {
+    let cancelled = false;
+
     if (!countryCode || !countryName) {
       return;
     }
@@ -98,15 +101,23 @@ export function useDestinationContext(
 
       generateContext({ countryCode, countryName })
         .then((generated) => {
-          setContext(generated as DestinationContext);
-          setIsLoading(false);
+          if (!cancelled) {
+            setContext(generated as DestinationContext);
+            setIsLoading(false);
+          }
         })
         .catch((err) => {
-          console.error('Failed to generate destination context:', err);
-          setError(err instanceof Error ? err.message : 'Failed to generate context');
-          setIsLoading(false);
+          if (!cancelled) {
+            console.error('Failed to generate destination context:', err);
+            setError(err instanceof Error ? err.message : 'Failed to generate context');
+            setIsLoading(false);
+          }
         });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [countryCode, countryName, cachedContext, generateContext]);
 
   // Manual refresh function
@@ -167,6 +178,8 @@ export function useDestinationContextByCountry(
 
   // Load context when country code changes
   useEffect(() => {
+    let cancelled = false;
+
     if (!countryCode || !countryName) {
       setContext(null);
       return;
@@ -187,15 +200,23 @@ export function useDestinationContextByCountry(
 
       generateContext({ countryCode, countryName })
         .then((generated) => {
-          setContext(generated as DestinationContext);
-          setIsLoading(false);
+          if (!cancelled) {
+            setContext(generated as DestinationContext);
+            setIsLoading(false);
+          }
         })
         .catch((err) => {
-          console.error('Failed to generate destination context:', err);
-          setError(err instanceof Error ? err.message : 'Failed to generate context');
-          setIsLoading(false);
+          if (!cancelled) {
+            console.error('Failed to generate destination context:', err);
+            setError(err instanceof Error ? err.message : 'Failed to generate context');
+            setIsLoading(false);
+          }
         });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [countryCode, countryName, cachedContext, generateContext]);
 
   // Manual refresh function

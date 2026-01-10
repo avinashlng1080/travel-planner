@@ -153,38 +153,44 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 <Battery className="w-4 h-4" />
                 Your Energy Level
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="group" aria-label="Energy level selection">
                 <button
                   onClick={() => { updateEnergy('high'); }}
+                  aria-label="Set energy level to high"
+                  aria-pressed={userContext.energyLevel === 'high'}
                   className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-300 flex flex-col items-center gap-1 ${
                     userContext.energyLevel === 'high'
                       ? 'bg-gradient-to-br from-green-100 to-emerald-100 text-green-700 ring-2 ring-green-500 shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <Battery className="w-4 h-4" />
+                  <Battery className="w-4 h-4" aria-hidden="true" />
                   High
                 </button>
                 <button
                   onClick={() => { updateEnergy('medium'); }}
+                  aria-label="Set energy level to medium"
+                  aria-pressed={userContext.energyLevel === 'medium'}
                   className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-300 flex flex-col items-center gap-1 ${
                     userContext.energyLevel === 'medium'
                       ? 'bg-gradient-to-br from-yellow-100 to-amber-100 text-yellow-700 ring-2 ring-yellow-500 shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <BatteryMedium className="w-4 h-4" />
+                  <BatteryMedium className="w-4 h-4" aria-hidden="true" />
                   Medium
                 </button>
                 <button
                   onClick={() => { updateEnergy('low'); }}
+                  aria-label="Set energy level to low"
+                  aria-pressed={userContext.energyLevel === 'low'}
                   className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-medium transition-all duration-300 flex flex-col items-center gap-1 ${
                     userContext.energyLevel === 'low'
                       ? 'bg-gradient-to-br from-blue-100 to-slate-100 text-blue-700 ring-2 ring-blue-500 shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  <BatteryLow className="w-4 h-4" />
+                  <BatteryLow className="w-4 h-4" aria-hidden="true" />
                   Low
                 </button>
               </div>
