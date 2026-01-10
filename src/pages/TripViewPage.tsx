@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from 'convex/react';
 import { useAtom, useSetAtom } from 'jotai';
 import { MapPin, Navigation } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { api } from '../../convex/_generated/api';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
@@ -23,6 +23,7 @@ import { FloatingHeader } from '../components/Layout/FloatingHeader';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
 import { NavigationDock } from '../components/Layout/NavigationDock';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
+import { AddPlaceFAB } from '../components/Map/AddPlaceFAB';
 import { GoogleFullScreenMap } from '../components/Map/GoogleFullScreenMap';
 import { OnboardingOverlay } from '../components/onboarding/OnboardingOverlay';
 import { ActivityDetailPanel } from '../components/trips/ActivityDetailPanel';
@@ -34,6 +35,7 @@ import { EditActivityModal } from '../components/trips/EditActivityModal';
 import EditDestinationModal from '../components/trips/EditDestinationModal';
 import { EditTripModal } from '../components/trips/EditTripModal';
 import { ImportItineraryModal } from '../components/trips/ImportItineraryModal';
+import { FAB } from '../components/ui/FAB';
 import { WeatherIndicator } from '../components/weather';
 import { useCommutes, type CommuteDestination } from '../hooks/useCommutes';
 
@@ -81,6 +83,33 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
   const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Add Place instruction state
+  const [showAddPlaceInstruction, setShowAddPlaceInstruction] = useState(false);
+  const addPlaceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (addPlaceTimerRef.current) {
+        clearTimeout(addPlaceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handler for showing Add Place instruction (with proper cleanup)
+  const handleShowAddPlaceInstruction = useCallback(() => {
+    // Clear existing timer
+    if (addPlaceTimerRef.current) {
+      clearTimeout(addPlaceTimerRef.current);
+    }
+
+    setShowAddPlaceInstruction(true);
+    addPlaceTimerRef.current = setTimeout(() => {
+      setShowAddPlaceInstruction(false);
+      addPlaceTimerRef.current = null;
+    }, 5000);
+  }, []);
 
   // Mutations
   const deleteScheduleItem = useMutation(api.tripScheduleItems.deleteScheduleItem);
@@ -411,6 +440,34 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
       {/* Mobile Navigation Bar */}
       <MobileNavBar />
+
+      {/* Mobile FAB */}
+      <FAB onAddPlace={handleShowAddPlaceInstruction} />
+
+      {/* Desktop Add Place FAB */}
+      <AddPlaceFAB
+        onClick={handleShowAddPlaceInstruction}
+        isActive={showAddPlaceInstruction}
+      />
+
+      {/* Add Place Instruction Overlay */}
+      {showAddPlaceInstruction && (
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-top-4 duration-300"
+          role="alert"
+          aria-live="polite"
+        >
+          <div className="bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl px-6 py-4 shadow-xl flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-sunset-500 to-ocean-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-900">Click anywhere on the map</p>
+              <p className="text-xs text-slate-500">to add a new location to your trip</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Onboarding Overlay - renders when onboarding is active */}
       <OnboardingOverlay />

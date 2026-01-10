@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSetAtom } from 'jotai';
-import { Menu, X, Map, CheckSquare, Filter, Users, Cloud } from 'lucide-react';
+import { Menu, X, Map, CheckSquare, Filter, Users, Cloud, MapPin } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 import { openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
@@ -8,18 +8,24 @@ import { openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 import type { LucideIcon } from 'lucide-react';
 
 interface MenuItem {
-  id: PanelId;
+  id: PanelId | 'addPlace';
   icon: LucideIcon;
   label: string;
+  isSpecial?: boolean;
 }
 
 const MENU_ITEMS: MenuItem[] = [
+  { id: 'addPlace', icon: MapPin, label: 'Add Place', isSpecial: true },
   { id: 'tripPlanner', icon: Map, label: 'Planner' },
   { id: 'checklist', icon: CheckSquare, label: 'Checklist' },
   { id: 'filters', icon: Filter, label: 'Filters' },
   { id: 'collaboration', icon: Users, label: 'Collaborate' },
   { id: 'weather', icon: Cloud, label: 'Weather' },
 ];
+
+interface FABProps {
+  onAddPlace?: () => void;
+}
 
 /**
  * Floating Action Button for mobile navigation
@@ -30,7 +36,7 @@ const MENU_ITEMS: MenuItem[] = [
  * - Safe area positioning
  * - Hidden on desktop (md:hidden)
  */
-export function FAB() {
+export function FAB({ onAddPlace }: FABProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const openPanel = useSetAtom(openPanelAtom);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -71,8 +77,12 @@ export function FAB() {
     return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isExpanded]);
 
-  const handleMenuItemClick = (panelId: PanelId) => {
-    openPanel(panelId);
+  const handleMenuItemClick = (item: MenuItem) => {
+    if (item.isSpecial && item.id === 'addPlace') {
+      onAddPlace?.();
+    } else {
+      openPanel(item.id as PanelId);
+    }
     setIsExpanded(false);
   };
 
@@ -118,7 +128,7 @@ export function FAB() {
                 <motion.button
                   key={item.id}
                   role="menuitem"
-                  onClick={() => { handleMenuItemClick(item.id); }}
+                  onClick={() => { handleMenuItemClick(item); }}
                   className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white border border-slate-200/50 hover:bg-slate-50 active:scale-95 transition-all min-h-[88px] min-w-[88px] focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2"
                   aria-label={`Open ${item.label} panel`}
                   initial={{ opacity: 0, y: 20, scale: 0.8 }}
