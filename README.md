@@ -140,7 +140,6 @@ travel-planner/
 ├── Configuration
 │   ├── vercel.json       # Vercel deployment config
 │   ├── tailwind.config.js # Custom color themes
-│   ├── playwright.config.ts # E2E testing
 │   ├── CLAUDE.md         # Development philosophy
 │   ├── PRD.md            # Product requirements
 │   └── .env.example      # Environment template
@@ -164,10 +163,7 @@ travel-planner/
 - **AI:** Anthropic Claude API (via Convex HTTP actions)
 
 ### Development
-- **E2E Testing:** Playwright 1.57
-- **Unit Testing:** Vitest 3.1
 - **Linting:** ESLint 9.39 (strict, zero-warnings)
-- **Formatting:** Prettier 3.5 with pre-commit hooks
 - **Type Checking:** TypeScript strict mode
 
 ## 🎨 Key Patterns
@@ -227,13 +223,9 @@ npm run dev          # Start Vite dev server (http://localhost:3000)
 npm run build        # Production build to dist/
 npm run lint         # Run ESLint (zero-warnings enforced)
 npm run lint:fix     # Auto-fix ESLint issues
-npm run format       # Format code with Prettier
 npm run type-check   # TypeScript compilation check
-npm run test         # Run Vitest unit tests
-npm run test:watch   # Run tests in watch mode
 npx convex dev       # Start Convex backend locally
 npx convex deploy    # Deploy Convex to cloud
-npx playwright test  # Run E2E tests
 ```
 
 ## 🗄️ Database Schema
