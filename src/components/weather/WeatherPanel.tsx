@@ -56,6 +56,19 @@ export function WeatherPanel({ className = '' }: WeatherPanelProps) {
     setLocation(newLocation);
   };
 
+  // Handle case when no location is set
+  if (!location) {
+    return (
+      <div className={`flex flex-col h-full items-center justify-center text-center p-6 ${className}`}>
+        <MapPin className="w-10 h-10 text-slate-300 mb-3" />
+        <p className="text-slate-600 font-medium mb-1">No weather location set</p>
+        <p className="text-sm text-slate-500">
+          Set your home base or add a location to see weather information
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Current Weather Section */}

@@ -6,13 +6,16 @@ interface FlightPathAnimationProps {
   onComplete?: () => void;
   /** Duration of the flight animation in seconds */
   duration?: number;
+  /** Destination name to display during animation */
+  destination?: string;
 }
 
 /**
  * Animated flight path that traces from top of screen to a destination.
  * The airplane follows a curved SVG path with a trailing dashed line.
  */
-export function FlightPathAnimation({ onComplete, duration = 3 }: FlightPathAnimationProps) {
+export function FlightPathAnimation({ onComplete, duration = 3, destination }: FlightPathAnimationProps) {
+  const displayDestination = destination || 'your destination';
   const prefersReducedMotion = useReducedMotion();
 
   // Simplified animation for reduced motion preference
@@ -27,7 +30,7 @@ export function FlightPathAnimation({ onComplete, duration = 3 }: FlightPathAnim
       >
         <div className="flex flex-col items-center gap-4">
           <Plane className="w-16 h-16 text-sunset-500" />
-          <p className="text-white text-lg font-display">Arriving in Malaysia...</p>
+          <p className="text-white text-lg font-display">Arriving in {displayDestination}...</p>
         </div>
       </motion.div>
     );
@@ -166,7 +169,7 @@ export function FlightPathAnimation({ onComplete, duration = 3 }: FlightPathAnim
         className="absolute bottom-[25%] left-1/2 -translate-x-1/2 text-center"
       >
         <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">
-          Welcome to Malaysia
+          Welcome to {displayDestination}
         </h2>
         <p className="text-ocean-200 text-sm md:text-base">Your family adventure begins...</p>
       </motion.div>

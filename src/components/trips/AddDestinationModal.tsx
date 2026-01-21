@@ -86,9 +86,7 @@ export default function AddDestinationModal({
     search,
     getPlaceDetails,
     clearPredictions,
-  } = usePlacesAutocomplete({
-    componentRestrictions: { country: 'MY' }, // Malaysia
-  });
+  } = usePlacesAutocomplete({});
 
   // Convex mutation
   const addDestination = useMutation(api.commuteDestinations.addDestination);

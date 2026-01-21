@@ -66,6 +66,9 @@ export function useWeather(enabled = true): UseWeatherResult {
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
 
+  // Check if location is available
+  const hasLocation = location !== null;
+
   // Cache for API responses
   const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
 
@@ -198,7 +201,7 @@ export function useWeather(enabled = true): UseWeatherResult {
           isLoading: false,
           error: null,
           lastFetch: new Date(),
-          location: { lat, lng, name: location.name },
+          location: { lat, lng, name: location?.name ?? 'Unknown' },
         });
 
         if (import.meta.env.DEV) {
@@ -215,17 +218,19 @@ export function useWeather(enabled = true): UseWeatherResult {
         setIsLoading(false);
       }
     },
-    [location.name, setLastWeatherData]
+    [location?.name, setLastWeatherData]
   );
 
   // Manual refresh function
   const refresh = useCallback(() => {
-    fetchWeather(location.lat, location.lng, true);
-  }, [fetchWeather, location.lat, location.lng]);
+    if (location) {
+      fetchWeather(location.lat, location.lng, true);
+    }
+  }, [fetchWeather, location]);
 
   // Set location function
   const setLocation = useCallback(
-    (newLocation: WeatherLocation) => {
+    (newLocation: WeatherLocation | null) => {
       setLocationAtom(newLocation);
     },
     [setLocationAtom]
@@ -233,7 +238,7 @@ export function useWeather(enabled = true): UseWeatherResult {
 
   // Initial fetch and location change handling (debounced)
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !hasLocation || !location) {
       return;
     }
 
@@ -242,11 +247,11 @@ export function useWeather(enabled = true): UseWeatherResult {
     }, DEBOUNCE_DELAY);
 
     return () => { clearTimeout(timeoutId); };
-  }, [enabled, location.lat, location.lng, fetchWeather]);
+  }, [enabled, hasLocation, location, fetchWeather]);
 
   // Auto-refresh interval
   useEffect(() => {
-    if (!enabled || !autoRefresh) {
+    if (!enabled || !autoRefresh || !hasLocation || !location) {
       return;
     }
 
@@ -255,7 +260,7 @@ export function useWeather(enabled = true): UseWeatherResult {
     }, REFRESH_INTERVAL);
 
     return () => { clearInterval(intervalId); };
-  }, [enabled, autoRefresh, location.lat, location.lng, fetchWeather]);
+  }, [enabled, autoRefresh, hasLocation, location, fetchWeather]);
 
   return {
     current,

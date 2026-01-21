@@ -112,13 +112,13 @@ export interface WeatherState {
   isLoading: boolean;
   error: string | null;
   lastFetch: Date | null;
-  location: WeatherLocation;
+  location: WeatherLocation | null;
 }
 
 // Weather hook return type
 export interface UseWeatherResult extends WeatherState {
   refresh: () => void;
-  setLocation: (location: WeatherLocation) => void;
+  setLocation: (location: WeatherLocation | null) => void;
 }
 
 // Malaysian locations for weather monitoring

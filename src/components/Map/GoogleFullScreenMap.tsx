@@ -755,7 +755,7 @@ export function GoogleFullScreenMap({
       <style>{MARKER_ANIMATION_STYLES}</style>
 
       <Map
-        defaultCenter={defaultCenter ?? { lat: 3.1089, lng: 101.7279 }}
+        defaultCenter={defaultCenter}
         defaultZoom={13}
         mapId={mapId}
         gestureHandling="greedy"
