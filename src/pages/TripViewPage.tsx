@@ -86,6 +86,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
   const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDestinationError, setDeleteDestinationError] = useState<string | null>(null);
 
   // Add Place instruction state
   const [showAddPlaceInstruction, setShowAddPlaceInstruction] = useState(false);
@@ -316,16 +317,26 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     if (!deletingDestinationId) {return;}
 
     setIsDeleting(true);
+    setDeleteDestinationError(null);
     try {
       await deleteDestination({ destinationId: deletingDestinationId as Id<'commuteDestinations'> });
-      // Close dialog and reset state
+      // Close dialog and reset state only on success
       setDeleteDestinationDialogOpen(false);
       setDeletingDestinationId(null);
     } catch (error) {
       console.error('Failed to delete destination:', error);
+      // Keep dialog open and show error
+      setDeleteDestinationError('Failed to delete destination. Please try again.');
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Handler for closing delete dialog
+  const handleCloseDeleteDialog = () => {
+    setDeleteDestinationDialogOpen(false);
+    setDeletingDestinationId(null);
+    setDeleteDestinationError(null);
   };
 
   return (
@@ -612,13 +623,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Delete Destination Dialog */}
       <DeleteDestinationDialog
         isOpen={deleteDestinationDialogOpen}
-        onClose={() => {
-          setDeleteDestinationDialogOpen(false);
-          setDeletingDestinationId(null);
-        }}
+        onClose={handleCloseDeleteDialog}
         destinationName={deletingDestination?.name || 'this destination'}
         onConfirm={handleDeleteDestination}
         isDeleting={isDeleting}
+        error={deleteDestinationError}
       />
     </div>
   );

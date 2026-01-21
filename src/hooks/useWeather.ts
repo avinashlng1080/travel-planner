@@ -167,7 +167,7 @@ export function useWeather(enabled = true): UseWeatherResult {
           hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,rain,showers',
           daily:
             'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset',
-          timezone: 'Asia/Kuala_Lumpur',
+          timezone: 'auto',
           forecast_days: '7',
         });
 
@@ -221,11 +221,16 @@ export function useWeather(enabled = true): UseWeatherResult {
     [location?.name, setLastWeatherData]
   );
 
-  // Manual refresh function
-  const refresh = useCallback(() => {
-    if (location) {
-      fetchWeather(location.lat, location.lng, true);
+  // Manual refresh function - returns true if refresh was triggered
+  const refresh = useCallback((): boolean => {
+    if (!location) {
+      if (import.meta.env.DEV) {
+        console.warn('[useWeather] Refresh called but no location is set');
+      }
+      return false;
     }
+    fetchWeather(location.lat, location.lng, true);
+    return true;
   }, [fetchWeather, location]);
 
   // Set location function

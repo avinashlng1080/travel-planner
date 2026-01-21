@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
 import { Route, ToggleLeft, ArrowLeftRight, ArrowRight } from 'lucide-react';
 
-import { hasToggledPlanAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import { hasToggledPlanAtom, advanceToNextStepAtom, getFallbackMessage, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
@@ -48,7 +48,7 @@ export function PlanToggleStep() {
                 Plan A & Plan B
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                {FALLBACK_MESSAGES.plans}
+                {getFallbackMessage('plans')}
               </p>
             </div>
           </div>

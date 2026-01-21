@@ -5,11 +5,11 @@
  * - Current conditions
  * - 7-day forecast with flash flood risk
  * - Flash flood alerts
- * - Malaysian weather tips
+ * - Weather tips
  */
 
 import { motion } from 'framer-motion';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import {
   RefreshCw,
   MapPin,
@@ -22,15 +22,11 @@ import {
 
 import { FlashFloodAlert, MalaysiaWeatherTips } from './FlashFloodAlert';
 import { WeatherIcon } from './WeatherIcon';
-import {
-  formatTemperatureAtom,
-  setWeatherLocationAtom,
-} from '../../atoms/weatherAtoms';
+import { formatTemperatureAtom } from '../../atoms/weatherAtoms';
 import { useWeather } from '../../hooks/useWeather';
-import { MALAYSIA_WEATHER_LOCATIONS } from '../../types/weather';
 import { RISK_LEVEL_STYLES } from '../../utils/weatherUtils';
 
-import type { ProcessedDailyForecast, WeatherLocation } from '../../types/weather';
+import type { ProcessedDailyForecast } from '../../types/weather';
 
 
 interface WeatherPanelProps {
@@ -39,7 +35,6 @@ interface WeatherPanelProps {
 
 export function WeatherPanel({ className = '' }: WeatherPanelProps) {
   const formatTemperature = useAtomValue(formatTemperatureAtom);
-  const setLocation = useSetAtom(setWeatherLocationAtom);
 
   const {
     current,
@@ -51,10 +46,6 @@ export function WeatherPanel({ className = '' }: WeatherPanelProps) {
     location,
     refresh,
   } = useWeather();
-
-  const handleLocationChange = (newLocation: WeatherLocation) => {
-    setLocation(newLocation);
-  };
 
   // Handle case when no location is set
   if (!location) {
@@ -73,30 +64,13 @@ export function WeatherPanel({ className = '' }: WeatherPanelProps) {
     <div className={`flex flex-col h-full ${className}`}>
       {/* Current Weather Section */}
       <div className="px-4 py-4 border-b border-slate-200/50">
-        {/* Location Selector */}
+        {/* Location Display */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-slate-400" aria-hidden="true" />
-            <label htmlFor="weather-location-select" className="sr-only">
-              Select weather location
-            </label>
-            <select
-              id="weather-location-select"
-              value={`${location.lat},${location.lng}`}
-              onChange={(e) => {
-                const loc = MALAYSIA_WEATHER_LOCATIONS.find(
-                  (l) => `${l.lat},${l.lng}` === e.target.value
-                );
-                if (loc) {handleLocationChange(loc);}
-              }}
-              className="text-sm font-medium text-slate-700 bg-transparent border-none cursor-pointer hover:text-slate-900 focus:outline-none focus:ring-0"
-            >
-              {MALAYSIA_WEATHER_LOCATIONS.map((loc) => (
-                <option key={`${loc.lat},${loc.lng}`} value={`${loc.lat},${loc.lng}`}>
-                  {loc.name}
-                </option>
-              ))}
-            </select>
+            <span className="text-sm font-medium text-slate-700">
+              {location.name}
+            </span>
           </div>
           <button
             onClick={refresh}

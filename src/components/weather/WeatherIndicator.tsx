@@ -13,7 +13,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { RefreshCw, CloudOff } from 'lucide-react';
+import { RefreshCw, CloudOff, MapPin } from 'lucide-react';
 
 import { AnimatedWeatherIcon } from './WeatherIcon';
 import { openPanelAtom } from '../../atoms/floatingPanelAtoms';
@@ -44,7 +44,7 @@ export function WeatherIndicator() {
   const formatTemperature = useAtomValue(formatTemperatureAtom);
   const openPanel = useSetAtom(openPanelAtom);
 
-  const { current, flashFloodAlert, isLoading, error, refresh } = useWeather();
+  const { current, flashFloodAlert, isLoading, error, refresh, location } = useWeather();
 
   // Determine risk level from flash flood alert
   const riskLevel: FlashFloodRiskLevel = flashFloodAlert?.level || 'low';
@@ -63,6 +63,9 @@ export function WeatherIndicator() {
   if (!isVisible) {
     return null;
   }
+
+  // Show "no location" state when weather location isn't configured
+  const noLocation = !location;
 
   return (
     <AnimatePresence>
@@ -104,15 +107,23 @@ export function WeatherIndicator() {
           )}
 
           {/* Error State */}
-          {error && !current && (
+          {error && !current && !noLocation && (
             <div className="flex items-center gap-2">
               <CloudOff className="w-5 h-5 text-slate-400" />
               <span className="text-sm text-slate-500">Offline</span>
             </div>
           )}
 
+          {/* No Location State */}
+          {noLocation && !isLoading && (
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-slate-400" />
+              <span className="text-sm text-slate-500">Set location</span>
+            </div>
+          )}
+
           {/* Weather Display */}
-          {current && (
+          {current && !noLocation && (
             <>
               <AnimatedWeatherIcon condition={current.condition} size={22} />
               <span className="font-semibold text-slate-900 text-sm">
