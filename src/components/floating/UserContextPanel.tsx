@@ -213,7 +213,7 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 <Baby className="w-4 h-4" />
                 Toddler's Mood
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Toddler mood selection">
                 {[
                   { value: 'happy', emoji: '\uD83D\uDE0A', label: 'Happy', activeClass: 'bg-gradient-to-br from-pink-100 to-rose-100 text-pink-700 ring-2 ring-pink-500' },
                   { value: 'tired', emoji: '\uD83D\uDE34', label: 'Tired', activeClass: 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 ring-2 ring-blue-500' },
@@ -225,6 +225,8 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                     onClick={() =>
                       { updateMood(value as 'happy' | 'tired' | 'fussy' | 'sleeping'); }
                     }
+                    aria-pressed={userContext.toddlerMood === value}
+                    aria-label={`Set toddler mood to ${label}`}
                     className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-300 shadow-sm ${
                       userContext.toddlerMood === value
                         ? activeClass
@@ -243,9 +245,11 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 <Thermometer className="w-4 h-4" />
                 Health Status
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="group" aria-label="Health status selection">
                 <button
                   onClick={() => { updateHealth('good'); }}
+                  aria-pressed={userContext.healthStatus === 'good'}
+                  aria-label="Set health status to feeling good"
                   className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-medium transition-all duration-300 ${
                     userContext.healthStatus === 'good'
                       ? 'bg-gradient-to-br from-green-100 to-emerald-100 text-green-700 ring-2 ring-green-500 shadow-sm'
@@ -256,6 +260,8 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 </button>
                 <button
                   onClick={() => { updateHealth('mild_sickness'); }}
+                  aria-pressed={userContext.healthStatus === 'mild_sickness'}
+                  aria-label="Set health status to mild sickness"
                   className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-medium transition-all duration-300 ${
                     userContext.healthStatus === 'mild_sickness'
                       ? 'bg-gradient-to-br from-yellow-100 to-amber-100 text-yellow-700 ring-2 ring-yellow-500 shadow-sm'
@@ -266,6 +272,8 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 </button>
                 <button
                   onClick={() => { updateHealth('needs_rest'); }}
+                  aria-pressed={userContext.healthStatus === 'needs_rest'}
+                  aria-label="Set health status to need rest"
                   className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-medium transition-all duration-300 ${
                     userContext.healthStatus === 'needs_rest'
                       ? 'bg-gradient-to-br from-red-100 to-rose-100 text-red-700 ring-2 ring-red-500 shadow-sm'

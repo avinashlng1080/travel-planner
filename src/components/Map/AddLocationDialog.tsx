@@ -51,6 +51,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const predictionsRef = useRef<HTMLDivElement>(null);
+  const userHasTypedRef = useRef(false);
 
   // Hooks
   const addLocation = useMutation(api.tripLocations.addLocation);
@@ -76,7 +77,8 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
   useEffect(() => {
     const fetchLocationName = async () => {
       const result = await reverseGeocode(lat, lng);
-      if (result && !name) {
+      // Only set values if user hasn't started typing (prevents overwriting user input)
+      if (result && !userHasTypedRef.current) {
         setName(result.name);
         setSearchQuery(result.name);
         setAddress(result.address);
@@ -85,8 +87,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
     };
 
     fetchLocationName();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng]);
+  }, [lat, lng, reverseGeocode]);
 
   // Focus input on mount
   useEffect(() => {
@@ -137,6 +138,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
   }, [selectedIndex]);
 
   const handleSearchChange = (value: string) => {
+    userHasTypedRef.current = true;
     setSearchQuery(value);
     setName(value);
     // Reset selected place flag when user types

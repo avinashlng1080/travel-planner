@@ -567,6 +567,11 @@ function toTitleCase(str: string): string {
 export function parseDestinationCountry(destination: string): ParsedDestination {
   const normalized = destination.toLowerCase().trim();
 
+  // Handle empty/whitespace inputs early
+  if (!normalized) {
+    return { city: '', country: '', countryCode: 'XX' };
+  }
+
   // Try to parse "City, Country" format
   const commaIndex = destination.indexOf(',');
   if (commaIndex !== -1) {
@@ -574,7 +579,7 @@ export function parseDestinationCountry(destination: string): ParsedDestination 
     const countryPart = destination.slice(commaIndex + 1).trim();
     const normalizedCountry = countryPart.toLowerCase();
 
-    // Look up the country code
+    // Look up the country code by name
     const countryCode = COUNTRY_CODES[normalizedCountry];
     if (countryCode) {
       return {
@@ -582,6 +587,18 @@ export function parseDestinationCountry(destination: string): ParsedDestination 
         country: COUNTRY_PROPER_NAMES[countryCode] || toTitleCase(countryPart),
         countryCode,
       };
+    }
+
+    // Accept ISO alpha-2 codes directly (e.g., "City, US", "City, JP")
+    if (countryPart.length === 2) {
+      const alpha2 = countryPart.toUpperCase();
+      if (COUNTRY_PROPER_NAMES[alpha2]) {
+        return {
+          city: cityPart,
+          country: COUNTRY_PROPER_NAMES[alpha2],
+          countryCode: alpha2,
+        };
+      }
     }
 
     // If country not found in mapping, return with proper casing and unknown code
@@ -614,26 +631,28 @@ export function parseDestinationCountry(destination: string): ParsedDestination 
     };
   }
 
-  // Try partial matching in CITY_TO_COUNTRY
-  for (const [cityKey, info] of Object.entries(CITY_TO_COUNTRY)) {
-    if (normalized.includes(cityKey) || cityKey.includes(normalized)) {
-      return {
-        city: toTitleCase(destination),
-        country: info.country,
-        countryCode: info.code,
-      };
+  // Try partial matching in CITY_TO_COUNTRY (skip if input is too short to avoid false matches)
+  if (normalized.length >= 2) {
+    for (const [cityKey, info] of Object.entries(CITY_TO_COUNTRY)) {
+      if (normalized.includes(cityKey) || cityKey.includes(normalized)) {
+        return {
+          city: toTitleCase(destination),
+          country: info.country,
+          countryCode: info.code,
+        };
+      }
     }
-  }
 
-  // Try partial matching in COUNTRY_CODES
-  for (const [countryKey, code] of Object.entries(COUNTRY_CODES)) {
-    if (normalized.includes(countryKey) || countryKey.includes(normalized)) {
-      const properName = COUNTRY_PROPER_NAMES[code] || toTitleCase(countryKey);
-      return {
-        city: toTitleCase(destination),
-        country: properName,
-        countryCode: code,
-      };
+    // Try partial matching in COUNTRY_CODES
+    for (const [countryKey, code] of Object.entries(COUNTRY_CODES)) {
+      if (normalized.includes(countryKey) || countryKey.includes(normalized)) {
+        const properName = COUNTRY_PROPER_NAMES[code] || toTitleCase(countryKey);
+        return {
+          city: toTitleCase(destination),
+          country: properName,
+          countryCode: code,
+        };
+      }
     }
   }
 
