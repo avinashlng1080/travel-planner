@@ -333,6 +333,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         selectedPlanId={selectedPlanId}
         commutes={commuteResults}
         activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
+        defaultCenter={trip.homeBase ? { lat: trip.homeBase.lat, lng: trip.homeBase.lng } : undefined}
         onLocationSelect={(location) => { setSelectedLocation(location); }}
       />
 
