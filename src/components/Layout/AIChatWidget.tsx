@@ -328,9 +328,14 @@ export function AIChatWidget({
   if (!isOpen) {
     return (
       <motion.button
-        className={`fixed z-50 w-16 h-16 bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sunset-500/40 ${
-          isMobile ? 'right-4 bottom-20' : 'right-6 bottom-6'
-        }`}
+        className="fixed z-50 w-16 h-16 bg-gradient-to-br from-sunset-500 via-sunset-600 to-ocean-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sunset-500/40"
+        style={{
+          // Safe area support for iOS devices
+          // Mobile: 80px up (clears 64px nav bar + 16px spacing)
+          // Desktop: 24px up from bottom
+          right: isMobile ? 16 : 24,
+          bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isMobile ? 80 : 24}px)`,
+        }}
         onClick={() => { setIsOpen(true); }}
         whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.95 }}
@@ -365,7 +370,8 @@ export function AIChatWidget({
         width: currentWidth,
         height: currentHeight,
         right: isMaximized ? PADDING : (isMobile ? 16 : 24),
-        bottom: isMaximized ? PADDING + MOBILE_NAV_HEIGHT : (isMobile ? 80 : 24),
+        // Safe area support for iOS devices
+        bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isMaximized ? PADDING + MOBILE_NAV_HEIGHT : (isMobile ? 80 : 24)}px)`,
       }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
     >

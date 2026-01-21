@@ -71,7 +71,13 @@ export function WeatherIndicator() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="fixed bottom-24 right-4 z-40"
+        className="fixed right-4 z-40"
+        style={{
+          // Desktop: 24px above chat widget (which is at bottom-6 = 24px)
+          // Mobile: Account for 64px nav bar + chat widget + spacing
+          // Using calc with safe-area-inset-bottom for iOS notch support
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 112px)',
+        }}
       >
         <motion.button
           onClick={handleClick}

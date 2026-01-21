@@ -88,12 +88,12 @@ export function useSwipeGesture(options: SwipeGestureOptions): void {
 
     const target = elementRef?.current || document;
 
-    target.addEventListener('touchstart', handleTouchStart, { passive: true });
-    target.addEventListener('touchend', handleTouchEnd, { passive: false });
+    target.addEventListener('touchstart', handleTouchStart as EventListener, { passive: true });
+    target.addEventListener('touchend', handleTouchEnd as EventListener, { passive: false });
 
     return () => {
-      target.removeEventListener('touchstart', handleTouchStart);
-      target.removeEventListener('touchend', handleTouchEnd);
+      target.removeEventListener('touchstart', handleTouchStart as EventListener);
+      target.removeEventListener('touchend', handleTouchEnd as EventListener);
     };
   }, [
     onSwipeDown,

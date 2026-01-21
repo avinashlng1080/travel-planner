@@ -342,6 +342,13 @@ export default defineSchema({
     .index("by_trip", ["tripId"])
     .index("by_trip_and_time", ["tripId", "createdAt"]),
 
+  // Destination Contexts - Cached AI-generated destination info for location-agnostic planning
+  destinationContexts: defineTable({
+    countryCode: v.string(),
+    context: v.any(), // DestinationContext object
+    generatedAt: v.number(),
+  }).index("by_countryCode", ["countryCode"]),
+
   // Commute Destinations - Saved commute destinations for a trip
   commuteDestinations: defineTable({
     tripId: v.id("trips"),
