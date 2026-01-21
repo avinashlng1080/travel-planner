@@ -63,7 +63,7 @@ export function AddLocationDialog({ tripId, lat, lng, onClose, onSuccess }: AddL
     getPlaceDetails,
     clearPredictions,
   } = usePlacesAutocomplete({
-    componentRestrictions: { country: 'MY' }, // Malaysia
+    // No country restriction - supports location-agnostic destination system
   });
 
   const {

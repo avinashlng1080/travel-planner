@@ -11,6 +11,81 @@ import { internal } from "./_generated/api";
  * 3. Caching it for future use
  */
 
+/** Expected structure for destination context */
+interface DestinationContextSchema {
+  country: { name: string; code: string; timezone: string };
+  emergency: { police: string; ambulance: string; fire: string };
+  safety: { healthTips: string[]; culturalEtiquette: string[] };
+  weather: { climate: string; packingTips: string[] };
+  currency: { code: string; symbol: string };
+}
+
+/**
+ * Runtime validation for destination context structure.
+ * Ensures AI-generated JSON matches expected schema before persisting.
+ */
+function validateDestinationContext(data: unknown): DestinationContextSchema {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid context: expected an object');
+  }
+
+  const ctx = data as Record<string, unknown>;
+
+  // Validate country
+  if (!ctx.country || typeof ctx.country !== 'object') {
+    throw new Error('Invalid context: missing or invalid country field');
+  }
+  const country = ctx.country as Record<string, unknown>;
+  if (typeof country.name !== 'string' || typeof country.code !== 'string' || typeof country.timezone !== 'string') {
+    throw new Error('Invalid context: country must have name, code, and timezone strings');
+  }
+
+  // Validate emergency
+  if (!ctx.emergency || typeof ctx.emergency !== 'object') {
+    throw new Error('Invalid context: missing or invalid emergency field');
+  }
+  const emergency = ctx.emergency as Record<string, unknown>;
+  if (typeof emergency.police !== 'string' || typeof emergency.ambulance !== 'string' || typeof emergency.fire !== 'string') {
+    throw new Error('Invalid context: emergency must have police, ambulance, and fire strings');
+  }
+
+  // Validate safety
+  if (!ctx.safety || typeof ctx.safety !== 'object') {
+    throw new Error('Invalid context: missing or invalid safety field');
+  }
+  const safety = ctx.safety as Record<string, unknown>;
+  if (!Array.isArray(safety.healthTips) || !Array.isArray(safety.culturalEtiquette)) {
+    throw new Error('Invalid context: safety must have healthTips and culturalEtiquette arrays');
+  }
+  if (!safety.healthTips.every((tip: unknown) => typeof tip === 'string') ||
+      !safety.culturalEtiquette.every((tip: unknown) => typeof tip === 'string')) {
+    throw new Error('Invalid context: safety tips must be string arrays');
+  }
+
+  // Validate weather
+  if (!ctx.weather || typeof ctx.weather !== 'object') {
+    throw new Error('Invalid context: missing or invalid weather field');
+  }
+  const weather = ctx.weather as Record<string, unknown>;
+  if (typeof weather.climate !== 'string' || !Array.isArray(weather.packingTips)) {
+    throw new Error('Invalid context: weather must have climate string and packingTips array');
+  }
+  if (!weather.packingTips.every((tip: unknown) => typeof tip === 'string')) {
+    throw new Error('Invalid context: packingTips must be a string array');
+  }
+
+  // Validate currency
+  if (!ctx.currency || typeof ctx.currency !== 'object') {
+    throw new Error('Invalid context: missing or invalid currency field');
+  }
+  const currency = ctx.currency as Record<string, unknown>;
+  if (typeof currency.code !== 'string' || typeof currency.symbol !== 'string') {
+    throw new Error('Invalid context: currency must have code and symbol strings');
+  }
+
+  return data as DestinationContextSchema;
+}
+
 /**
  * Get cached destination context by country code.
  * Returns null if not found or expired.
@@ -149,7 +224,10 @@ Be accurate and practical. Focus on information travelers actually need.`;
       }
 
       // Parse the JSON response
-      const context = JSON.parse(content);
+      const rawContext = JSON.parse(content);
+
+      // Validate the response structure before saving
+      const context = validateDestinationContext(rawContext);
 
       // Save to database
       await ctx.runMutation(internal.destinationContexts.saveContext, {

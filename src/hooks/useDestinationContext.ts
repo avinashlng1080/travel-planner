@@ -9,10 +9,11 @@
  * - Checks cached context in Convex
  * - Triggers AI generation if not cached
  * - Returns loading/error states
+ * - Race condition protection for async operations
  */
 
 import { useQuery, useAction } from 'convex/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import type { DestinationContext } from '../types/destinationContext';
@@ -28,25 +29,19 @@ interface UseDestinationContextResult {
 }
 
 /**
- * Hook to get destination context for a trip.
- *
- * @param tripId - The trip ID to get context for, or null
- * @returns Destination context with loading/error states
+ * Internal shared hook for destination context logic.
+ * Consolidates common code between useDestinationContext and useDestinationContextByCountry.
  */
-export function useDestinationContext(
-  tripId: Id<"trips"> | null
+function useDestinationContextInternal(
+  countryCode: string | null,
+  countryName: string | null
 ): UseDestinationContextResult {
   const [context, setContext] = useState<DestinationContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [countryCode, setCountryCode] = useState<string | null>(null);
-  const [countryName, setCountryName] = useState<string | null>(null);
 
-  // Get the trip data
-  const trip = useQuery(
-    api.trips.getTrip,
-    tripId ? { tripId } : "skip"
-  );
+  // Ref to track the current request for race condition protection
+  const currentRequestRef = useRef<number>(0);
 
   // Get cached context by country code
   const cachedContext = useQuery(
@@ -57,32 +52,13 @@ export function useDestinationContext(
   // Action to generate context if not cached
   const generateContext = useAction(api.destinationContexts.generateContext);
 
-  // Parse destination when trip changes
-  useEffect(() => {
-    if (!trip?.destination) {
-      setCountryCode(null);
-      setCountryName(null);
-      setContext(null);
-      return;
-    }
-
-    try {
-      const parsed = parseDestinationCountry(trip.destination);
-      setCountryCode(parsed.countryCode);
-      setCountryName(parsed.country);
-    } catch (error) {
-      console.error('[useDestinationContext] Failed to parse destination:', trip.destination, error);
-      setError(`Could not parse destination: "${trip.destination}"`);
-      setCountryCode(null);
-      setCountryName(null);
-    }
-  }, [trip?.destination]);
-
   // Load context when country code changes
   useEffect(() => {
-    let cancelled = false;
+    // Increment request ID to invalidate any in-flight requests
+    const requestId = ++currentRequestRef.current;
 
     if (!countryCode || !countryName) {
+      setContext(null);
       return;
     }
 
@@ -101,13 +77,15 @@ export function useDestinationContext(
 
       generateContext({ countryCode, countryName })
         .then((generated) => {
-          if (!cancelled) {
+          // Only update state if this is still the current request
+          if (requestId === currentRequestRef.current) {
             setContext(generated as DestinationContext);
             setIsLoading(false);
           }
         })
         .catch((err) => {
-          if (!cancelled) {
+          // Only update state if this is still the current request
+          if (requestId === currentRequestRef.current) {
             console.error('Failed to generate destination context:', err);
             setError(err instanceof Error ? err.message : 'Failed to generate context');
             setIsLoading(false);
@@ -115,39 +93,100 @@ export function useDestinationContext(
         });
     }
 
+    // Cleanup: invalidate this request on unmount or dependency change
     return () => {
-      cancelled = true;
+      // No need to explicitly cancel - the requestId check handles it
     };
   }, [countryCode, countryName, cachedContext, generateContext]);
 
-  // Manual refresh function
+  // Manual refresh function with race condition protection
   const refresh = useCallback(() => {
     if (!countryCode || !countryName) {
       return;
     }
+
+    // Increment request ID to invalidate any in-flight requests
+    const requestId = ++currentRequestRef.current;
 
     setIsLoading(true);
     setError(null);
 
     generateContext({ countryCode, countryName })
       .then((generated) => {
-        setContext(generated as DestinationContext);
-        setIsLoading(false);
+        // Only update state if this is still the current request
+        if (requestId === currentRequestRef.current) {
+          setContext(generated as DestinationContext);
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
-        console.error('Failed to refresh destination context:', err);
-        setError(err instanceof Error ? err.message : 'Failed to refresh context');
-        setIsLoading(false);
+        // Only update state if this is still the current request
+        if (requestId === currentRequestRef.current) {
+          console.error('Failed to refresh destination context:', err);
+          setError(err instanceof Error ? err.message : 'Failed to refresh context');
+          setIsLoading(false);
+        }
       });
   }, [countryCode, countryName, generateContext]);
 
   return {
     context,
-    isLoading: isLoading || cachedContext === undefined,
+    isLoading: isLoading || (countryCode !== null && cachedContext === undefined),
     error,
     countryCode,
     countryName,
     refresh,
+  };
+}
+
+/**
+ * Hook to get destination context for a trip.
+ *
+ * @param tripId - The trip ID to get context for, or null
+ * @returns Destination context with loading/error states
+ */
+export function useDestinationContext(
+  tripId: Id<"trips"> | null
+): UseDestinationContextResult {
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [countryName, setCountryName] = useState<string | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  // Get the trip data
+  const trip = useQuery(
+    api.trips.getTrip,
+    tripId ? { tripId } : "skip"
+  );
+
+  // Parse destination when trip changes
+  useEffect(() => {
+    if (!trip?.destination) {
+      setCountryCode(null);
+      setCountryName(null);
+      setParseError(null);
+      return;
+    }
+
+    try {
+      const parsed = parseDestinationCountry(trip.destination);
+      setCountryCode(parsed.countryCode);
+      setCountryName(parsed.country);
+      setParseError(null);
+    } catch (error) {
+      console.error('[useDestinationContext] Failed to parse destination:', trip.destination, error);
+      setParseError(`Could not parse destination: "${trip.destination}"`);
+      setCountryCode(null);
+      setCountryName(null);
+    }
+  }, [trip?.destination]);
+
+  // Use the shared internal hook
+  const result = useDestinationContextInternal(countryCode, countryName);
+
+  // Combine parse error with context error
+  return {
+    ...result,
+    error: parseError || result.error,
   };
 }
 
@@ -163,89 +202,6 @@ export function useDestinationContextByCountry(
   countryCode: string | null,
   countryName: string | null
 ): UseDestinationContextResult {
-  const [context, setContext] = useState<DestinationContext | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Get cached context
-  const cachedContext = useQuery(
-    api.destinationContexts.getByCountryCode,
-    countryCode ? { countryCode } : "skip"
-  );
-
-  // Action to generate context if not cached
-  const generateContext = useAction(api.destinationContexts.generateContext);
-
-  // Load context when country code changes
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!countryCode || !countryName) {
-      setContext(null);
-      return;
-    }
-
-    // If we have cached context, use it
-    if (cachedContext !== undefined && cachedContext !== null) {
-      setContext(cachedContext as DestinationContext);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
-
-    // If cache query returned null (not loading), generate new context
-    if (cachedContext === null) {
-      setIsLoading(true);
-      setError(null);
-
-      generateContext({ countryCode, countryName })
-        .then((generated) => {
-          if (!cancelled) {
-            setContext(generated as DestinationContext);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (!cancelled) {
-            console.error('Failed to generate destination context:', err);
-            setError(err instanceof Error ? err.message : 'Failed to generate context');
-            setIsLoading(false);
-          }
-        });
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [countryCode, countryName, cachedContext, generateContext]);
-
-  // Manual refresh function
-  const refresh = useCallback(() => {
-    if (!countryCode || !countryName) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    generateContext({ countryCode, countryName })
-      .then((generated) => {
-        setContext(generated as DestinationContext);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to refresh destination context:', err);
-        setError(err instanceof Error ? err.message : 'Failed to refresh context');
-        setIsLoading(false);
-      });
-  }, [countryCode, countryName, generateContext]);
-
-  return {
-    context,
-    isLoading: isLoading || (countryCode !== null && cachedContext === undefined),
-    error,
-    countryCode,
-    countryName,
-    refresh,
-  };
+  // Directly use the shared internal hook
+  return useDestinationContextInternal(countryCode, countryName);
 }

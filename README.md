@@ -194,10 +194,11 @@ bg-white/95 backdrop-blur-xl border border-slate-200/50
 
 ### Plan A/B System
 - **Plan A:** Primary itinerary (solid red route #FF1744)
-- **Plan B:** Backup/rainy day alternative (dashed sky blue route #00B0FF)
+- **Plan B:** Backup/rainy day alternative (dashed sky-blue route #00B0FF)
 - Auto-suggests Plan B when energy is low, toddler is tired/fussy, or weather is poor
 
 ### Energy-Based Theme System
+
 | Energy Level | Theme Colors | Suggested Mode |
 |--------------|--------------|----------------|
 | High | Vibrant sunset/ocean | Plan A |

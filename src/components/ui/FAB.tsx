@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSetAtom } from 'jotai';
-import { Menu, X, Map, CheckSquare, Filter, Users, Cloud, MapPin } from 'lucide-react';
+import { Menu, X, Map as MapIcon, CheckSquare, Filter, Users, Cloud, MapPin } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 import { openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
@@ -16,7 +16,7 @@ interface MenuItem {
 
 const MENU_ITEMS: MenuItem[] = [
   { id: 'addPlace', icon: MapPin, label: 'Add Place', isSpecial: true },
-  { id: 'tripPlanner', icon: Map, label: 'Planner' },
+  { id: 'tripPlanner', icon: MapIcon, label: 'Planner' },
   { id: 'checklist', icon: CheckSquare, label: 'Checklist' },
   { id: 'filters', icon: Filter, label: 'Filters' },
   { id: 'collaboration', icon: Users, label: 'Collaborate' },

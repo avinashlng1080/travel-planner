@@ -584,11 +584,11 @@ export function parseDestinationCountry(destination: string): ParsedDestination 
       };
     }
 
-    // If country not found in mapping, return with proper casing
+    // If country not found in mapping, return with proper casing and unknown code
     return {
       city: cityPart,
       country: toTitleCase(countryPart),
-      countryCode: countryPart.toUpperCase().slice(0, 2), // Fallback: first 2 chars
+      countryCode: 'XX', // Unknown country code - avoids generating potentially invalid ISO codes
     };
   }
 

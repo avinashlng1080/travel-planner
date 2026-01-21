@@ -60,7 +60,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
               accuracy: position.coords.accuracy,
-              timestamp: new Date(position.timestamp),
+              timestamp: position.timestamp,
             });
             resolve(true);
           },
@@ -105,7 +105,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          timestamp: new Date(position.timestamp),
+          timestamp: position.timestamp,
         });
       },
       (error) => {
@@ -148,7 +148,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
             accuracy: position.coords.accuracy,
-            timestamp: new Date(position.timestamp),
+            timestamp: position.timestamp,
           };
           updateLocation(location);
           resolve(location);

@@ -5,7 +5,8 @@ export interface UserLocation {
   lat: number;
   lng: number;
   accuracy: number;
-  timestamp: Date;
+  /** Unix timestamp in milliseconds (stored as number for JSON serialization compatibility) */
+  timestamp: number;
 }
 
 export interface UserContext {
@@ -44,7 +45,7 @@ const DEFAULT_CONTEXT: UserContext = {
 
 // Persisted user preferences
 export const userContextAtom = atomWithStorage<UserContext>(
-  'malaysia-trip-user-context',
+  'travel-planner-user-context',
   DEFAULT_CONTEXT
 );
 

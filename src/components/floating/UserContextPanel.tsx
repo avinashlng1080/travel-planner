@@ -135,7 +135,7 @@ export function UserContextPanel({ isOpen, onClose }: UserContextPanelProps) {
                 disabled={permission === 'denied'}
               >
                 {isTracking
-                  ? `Tracking (${currentLocation?.accuracy.toFixed(0)}m accuracy)`
+                  ? `Tracking (${currentLocation?.accuracy?.toFixed(0) ?? '...'}m accuracy)`
                   : permission === 'denied'
                   ? 'Location access denied'
                   : 'Enable location'}
