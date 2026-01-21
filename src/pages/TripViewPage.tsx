@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { api } from '../../convex/_generated/api';
 import { openPanelAtom } from '../atoms/floatingPanelAtoms';
-import { statusAtom, startOnboardingAtom } from '../atoms/onboardingAtoms';
+import { statusAtom, startOnboardingAtom, tripDestinationAtom } from '../atoms/onboardingAtoms';
 import {
   focusedActivityAtom,
   addDestinationModalOpenAtom,
@@ -66,6 +66,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   // Onboarding state
   const [onboardingStatus] = useAtom(statusAtom);
   const startOnboarding = useSetAtom(startOnboardingAtom);
+  const setTripDestination = useSetAtom(tripDestinationAtom);
 
   // Floating panel state
   const openPanel = useSetAtom(openPanelAtom);
@@ -85,6 +86,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
   const [deleteDestinationDialogOpen, setDeleteDestinationDialogOpen] = useAtom(deleteDestinationDialogOpenAtom);
   const [deletingDestinationId, setDeletingDestinationId] = useAtom(deletingDestinationIdAtom);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDestinationError, setDeleteDestinationError] = useState<string | null>(null);
 
   // Add Place instruction state
   const [showAddPlaceInstruction, setShowAddPlaceInstruction] = useState(false);
@@ -152,6 +154,13 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     ? commuteDestinations.find((dest) => dest._id === deletingDestinationId)
     : null;
 
+  // Set trip destination for onboarding when trip data loads
+  useEffect(() => {
+    if (tripData?.trip?.destination) {
+      setTripDestination(tripData.trip.destination);
+    }
+  }, [tripData?.trip?.destination, setTripDestination]);
+
   // Trigger onboarding when trip data loads for the first time
   useEffect(() => {
     if (tripData && onboardingStatus === 'pending') {
@@ -191,7 +200,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       lng: loc.customLng || loc.baseLocation?.lng || 0,
       category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as Location['category'],
       description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
+      city: loc.baseLocation?.city || '',
       toddlerRating: loc.baseLocation?.toddlerRating || 3,
       isIndoor: loc.baseLocation?.isIndoor || false,
       bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
@@ -227,13 +236,13 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     if (mapLocations.length > 0) {
       return { lat: mapLocations[0].lat, lng: mapLocations[0].lng };
     }
-    // Default fallback (Kuala Lumpur city center)
-    return { lat: 3.1390, lng: 101.6869 };
+    // No fallback - commute feature requires an origin to work
+    return null;
   }, [mapLocations]);
 
   // Filter out origin location from commute destinations to avoid showing "0 mins" commute to self
   const commuteDestinationsWithoutOrigin = useMemo(() => {
-    if (!commuteDestinations) {return [];}
+    if (!commuteDestinations || !commuteOrigin) {return [];}
     // Remove any destination that's the same as origin (within small tolerance)
     return commuteDestinations.filter((dest) => {
       const latDiff = Math.abs(dest.lat - commuteOrigin.lat);
@@ -256,10 +265,10 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
 
   // Calculate commute times for map display
   const { results: commuteResults } = useCommutes({
-    origin: commuteOrigin,
+    origin: commuteOrigin ?? { lat: 0, lng: 0 },
     destinations: commuteDestinationsForHook,
     travelMode,
-    enabled: commutesPanelOpen && commuteDestinationsForHook.length > 0,
+    enabled: commutesPanelOpen && commuteDestinationsForHook.length > 0 && commuteOrigin !== null,
   });
 
   // Loading state
@@ -308,16 +317,26 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
     if (!deletingDestinationId) {return;}
 
     setIsDeleting(true);
+    setDeleteDestinationError(null);
     try {
       await deleteDestination({ destinationId: deletingDestinationId as Id<'commuteDestinations'> });
-      // Close dialog and reset state
+      // Close dialog and reset state only on success
       setDeleteDestinationDialogOpen(false);
       setDeletingDestinationId(null);
     } catch (error) {
       console.error('Failed to delete destination:', error);
+      // Keep dialog open and show error
+      setDeleteDestinationError('Failed to delete destination. Please try again.');
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Handler for closing delete dialog
+  const handleCloseDeleteDialog = () => {
+    setDeleteDestinationDialogOpen(false);
+    setDeletingDestinationId(null);
+    setDeleteDestinationError(null);
   };
 
   return (
@@ -333,7 +352,13 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
         selectedPlanId={selectedPlanId}
         commutes={commuteResults}
         activeCommuteDestinationId={commutesPanelOpen ? activeCommuteDestination : null}
-        defaultCenter={trip.homeBase ? { lat: trip.homeBase.lat, lng: trip.homeBase.lng } : undefined}
+        defaultCenter={
+          trip.homeBase
+            ? { lat: trip.homeBase.lat, lng: trip.homeBase.lng }
+            : mapLocations.length > 0
+              ? { lat: mapLocations[0].lat, lng: mapLocations[0].lng }
+              : undefined
+        }
         onLocationSelect={(location) => { setSelectedLocation(location); }}
       />
 
@@ -429,7 +454,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       )}
 
       {/* Commutes Panel */}
-      {commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0 && (
+      {commutesPanelOpen && commuteDestinationsWithoutOrigin.length > 0 && commuteOrigin && (
         <div className="fixed bottom-32 sm:bottom-16 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-[600px] max-w-full z-30">
           <CommutesPanel
             tripId={tripId}
@@ -598,13 +623,11 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       {/* Delete Destination Dialog */}
       <DeleteDestinationDialog
         isOpen={deleteDestinationDialogOpen}
-        onClose={() => {
-          setDeleteDestinationDialogOpen(false);
-          setDeletingDestinationId(null);
-        }}
+        onClose={handleCloseDeleteDialog}
         destinationName={deletingDestination?.name || 'this destination'}
         onConfirm={handleDeleteDestination}
         isDeleting={isDeleting}
+        error={deleteDestinationError}
       />
     </div>
   );

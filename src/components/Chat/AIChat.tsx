@@ -30,10 +30,10 @@ export function AIChat() {
   };
 
   const suggestedQuestions = [
-    "What should we pack for Batu Caves with our toddler?",
-    "Is Aquaria KLCC stroller-friendly?",
-    "Best toddler-friendly restaurants near our hotel?",
-    "How do we get from M Vertica to KLCC?",
+    "What should we pack for our trip?",
+    "What are some kid-friendly activities nearby?",
+    "Best family restaurants in the area?",
+    "What's the best way to get around?",
   ];
 
   return (
@@ -60,7 +60,7 @@ export function AIChat() {
             AI
           </div>
           <div>
-            <h3 className="font-semibold text-white">Malaysia Travel AI</h3>
+            <h3 className="font-semibold text-white">Travel AI Assistant</h3>
             <p className="text-xs text-white/80">Powered by Claude</p>
           </div>
         </div>
@@ -91,7 +91,7 @@ export function AIChat() {
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">Hello!</div>
                 <h4 className="text-lg font-semibold text-slate-900 mb-2">
-                  Welcome to Malaysia Travel AI
+                  Welcome to Travel AI
                 </h4>
                 <p className="text-sm text-slate-600 mb-6">
                   Ask me anything about your family trip!
@@ -144,7 +144,7 @@ export function AIChat() {
                 value={input}
                 onChange={(e) => { setInput(e.target.value); }}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about your Malaysia trip..."
+                placeholder="Ask about your trip..."
                 className="flex-1 bg-white text-slate-900 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sunset-500 placeholder-slate-500 min-h-[44px] max-h-32"
                 rows={1}
                 disabled={loading}

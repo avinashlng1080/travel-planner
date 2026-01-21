@@ -189,7 +189,7 @@ export function TripPlannerApp({ onBack: _onBack }: TripPlannerAppProps = {}) {
             lng: pin.lng,
             category: (pin.category as any) || 'attraction',
             description: pin.description || pin.reason || 'AI-suggested location',
-            city: 'Malaysia',
+            city: '',
             toddlerRating: 3,
             isIndoor: false,
             bestTimeToVisit: [],

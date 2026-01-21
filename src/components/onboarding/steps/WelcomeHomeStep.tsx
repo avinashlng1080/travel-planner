@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Home, MessageCircle, ArrowRight, Compass } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-import { advanceToNextStepAtom, skipOnboardingAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import { advanceToNextStepAtom, skipOnboardingAtom, getFallbackMessage, STEP_CONFIGS, tripDestinationAtom } from '@/atoms/onboardingAtoms';
 
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
@@ -15,6 +15,7 @@ import { SpotlightOverlay } from '../SpotlightOverlay';
 export function WelcomeHomeStep() {
   const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
   const skipOnboarding = useSetAtom(skipOnboardingAtom);
+  const tripDestination = useAtomValue(tripDestinationAtom);
 
   // Get current step number for display
   const stepNumber = STEP_CONFIGS.findIndex(c => c.step === 'welcome') + 1;
@@ -23,7 +24,7 @@ export function WelcomeHomeStep() {
 
   // Simulate Claude "typing" the welcome message
   useEffect(() => {
-    const message = FALLBACK_MESSAGES.welcome;
+    const message = getFallbackMessage('welcome', tripDestination);
     let index = 0;
     setIsTyping(true);
 

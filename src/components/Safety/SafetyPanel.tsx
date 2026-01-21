@@ -15,7 +15,7 @@ export default function SafetyPanel() {
     <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
       <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-lg p-6 text-white">
         <h1 className="text-2xl font-bold mb-2">Safety & Emergency Information</h1>
-        <p className="text-red-100">Important contacts and safety tips for your Malaysia trip</p>
+        <p className="text-red-100">Important contacts and safety tips for your trip</p>
       </div>
 
       <EmergencyNumbers />

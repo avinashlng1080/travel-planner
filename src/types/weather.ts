@@ -112,20 +112,12 @@ export interface WeatherState {
   isLoading: boolean;
   error: string | null;
   lastFetch: Date | null;
-  location: WeatherLocation;
+  location: WeatherLocation | null;
 }
 
 // Weather hook return type
 export interface UseWeatherResult extends WeatherState {
   refresh: () => void;
-  setLocation: (location: WeatherLocation) => void;
+  setLocation: (location: WeatherLocation | null) => void;
 }
 
-// Malaysian locations for weather monitoring
-export const MALAYSIA_WEATHER_LOCATIONS: WeatherLocation[] = [
-  { lat: 3.1390, lng: 101.6869, name: 'Kuala Lumpur' },
-  { lat: 4.4725, lng: 101.3700, name: 'Cameron Highlands' },
-  { lat: 3.4240, lng: 101.7932, name: 'Genting Highlands' },
-  { lat: 2.9264, lng: 101.6964, name: 'Putrajaya' },
-  { lat: 3.2379, lng: 101.6840, name: 'Batu Caves' },
-];
