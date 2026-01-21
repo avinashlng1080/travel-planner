@@ -20,70 +20,56 @@ interface DestinationContextSchema {
   currency: { code: string; symbol: string };
 }
 
+// Validation helpers
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function hasStringFields(obj: Record<string, unknown>, fields: string[]): boolean {
+  return fields.every((field) => typeof obj[field] === 'string');
+}
+
 /**
  * Runtime validation for destination context structure.
  * Ensures AI-generated JSON matches expected schema before persisting.
  */
 function validateDestinationContext(data: unknown): DestinationContextSchema {
-  if (!data || typeof data !== 'object') {
+  if (!isObject(data)) {
     throw new Error('Invalid context: expected an object');
   }
 
-  const ctx = data as Record<string, unknown>;
+  const { country, emergency, safety, weather, currency } = data;
 
   // Validate country
-  if (!ctx.country || typeof ctx.country !== 'object') {
-    throw new Error('Invalid context: missing or invalid country field');
-  }
-  const country = ctx.country as Record<string, unknown>;
-  if (typeof country.name !== 'string' || typeof country.code !== 'string' || typeof country.timezone !== 'string') {
+  if (!isObject(country) || !hasStringFields(country, ['name', 'code', 'timezone'])) {
     throw new Error('Invalid context: country must have name, code, and timezone strings');
   }
 
   // Validate emergency
-  if (!ctx.emergency || typeof ctx.emergency !== 'object') {
-    throw new Error('Invalid context: missing or invalid emergency field');
-  }
-  const emergency = ctx.emergency as Record<string, unknown>;
-  if (typeof emergency.police !== 'string' || typeof emergency.ambulance !== 'string' || typeof emergency.fire !== 'string') {
+  if (!isObject(emergency) || !hasStringFields(emergency, ['police', 'ambulance', 'fire'])) {
     throw new Error('Invalid context: emergency must have police, ambulance, and fire strings');
   }
 
   // Validate safety
-  if (!ctx.safety || typeof ctx.safety !== 'object') {
-    throw new Error('Invalid context: missing or invalid safety field');
-  }
-  const safety = ctx.safety as Record<string, unknown>;
-  if (!Array.isArray(safety.healthTips) || !Array.isArray(safety.culturalEtiquette)) {
-    throw new Error('Invalid context: safety must have healthTips and culturalEtiquette arrays');
-  }
-  if (!safety.healthTips.every((tip: unknown) => typeof tip === 'string') ||
-      !safety.culturalEtiquette.every((tip: unknown) => typeof tip === 'string')) {
-    throw new Error('Invalid context: safety tips must be string arrays');
+  if (!isObject(safety) || !isStringArray(safety.healthTips) || !isStringArray(safety.culturalEtiquette)) {
+    throw new Error('Invalid context: safety must have healthTips and culturalEtiquette string arrays');
   }
 
   // Validate weather
-  if (!ctx.weather || typeof ctx.weather !== 'object') {
-    throw new Error('Invalid context: missing or invalid weather field');
-  }
-  const weather = ctx.weather as Record<string, unknown>;
-  if (typeof weather.climate !== 'string' || !Array.isArray(weather.packingTips)) {
-    throw new Error('Invalid context: weather must have climate string and packingTips array');
-  }
-  if (!weather.packingTips.every((tip: unknown) => typeof tip === 'string')) {
-    throw new Error('Invalid context: packingTips must be a string array');
+  if (!isObject(weather) || typeof weather.climate !== 'string' || !isStringArray(weather.packingTips)) {
+    throw new Error('Invalid context: weather must have climate string and packingTips string array');
   }
 
   // Validate currency
-  if (!ctx.currency || typeof ctx.currency !== 'object') {
-    throw new Error('Invalid context: missing or invalid currency field');
-  }
-  const currency = ctx.currency as Record<string, unknown>;
-  if (typeof currency.code !== 'string' || typeof currency.symbol !== 'string') {
+  if (!isObject(currency) || !hasStringFields(currency, ['code', 'symbol'])) {
     throw new Error('Invalid context: currency must have code and symbol strings');
   }
 
-  return data as DestinationContextSchema;
+  return data as unknown as DestinationContextSchema;
 }
 
 /**

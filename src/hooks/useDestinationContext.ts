@@ -52,82 +52,58 @@ function useDestinationContextInternal(
   // Action to generate context if not cached
   const generateContext = useAction(api.destinationContexts.generateContext);
 
-  // Load context when country code changes
-  useEffect(() => {
-    // Increment request ID to invalidate any in-flight requests
+  // Fetches context with race condition protection
+  const fetchContext = useCallback((code: string, name: string): void => {
     const requestId = ++currentRequestRef.current;
-
-    if (!countryCode || !countryName) {
-      setContext(null);
-      return;
-    }
-
-    // If we have cached context, use it
-    if (cachedContext !== undefined && cachedContext !== null) {
-      setContext(cachedContext as DestinationContext);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
-
-    // If cache query returned null (not loading), generate new context
-    if (cachedContext === null) {
-      setIsLoading(true);
-      setError(null);
-
-      generateContext({ countryCode, countryName })
-        .then((generated) => {
-          // Only update state if this is still the current request
-          if (requestId === currentRequestRef.current) {
-            setContext(generated as DestinationContext);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          // Only update state if this is still the current request
-          if (requestId === currentRequestRef.current) {
-            console.error('Failed to generate destination context:', err);
-            setError(err instanceof Error ? err.message : 'Failed to generate context');
-            setIsLoading(false);
-          }
-        });
-    }
-
-    // Cleanup: invalidate this request on unmount or dependency change
-    return () => {
-      // No need to explicitly cancel - the requestId check handles it
-    };
-  }, [countryCode, countryName, cachedContext, generateContext]);
-
-  // Manual refresh function with race condition protection
-  const refresh = useCallback(() => {
-    if (!countryCode || !countryName) {
-      return;
-    }
-
-    // Increment request ID to invalidate any in-flight requests
-    const requestId = ++currentRequestRef.current;
-
     setIsLoading(true);
     setError(null);
 
-    generateContext({ countryCode, countryName })
+    generateContext({ countryCode: code, countryName: name })
       .then((generated) => {
-        // Only update state if this is still the current request
         if (requestId === currentRequestRef.current) {
           setContext(generated as DestinationContext);
           setIsLoading(false);
         }
       })
       .catch((err) => {
-        // Only update state if this is still the current request
         if (requestId === currentRequestRef.current) {
-          console.error('Failed to refresh destination context:', err);
-          setError(err instanceof Error ? err.message : 'Failed to refresh context');
+          console.error('Failed to generate destination context:', err);
+          setError(err instanceof Error ? err.message : 'Failed to generate context');
           setIsLoading(false);
         }
       });
-  }, [countryCode, countryName, generateContext]);
+  }, [generateContext]);
+
+  // Load context when country code changes
+  useEffect(() => {
+    // Increment to invalidate any in-flight requests
+    ++currentRequestRef.current;
+
+    if (!countryCode || !countryName) {
+      setContext(null);
+      return;
+    }
+
+    // Use cached context if available
+    if (cachedContext) {
+      setContext(cachedContext as DestinationContext);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    // Generate new context if cache query returned null (not loading)
+    if (cachedContext === null) {
+      fetchContext(countryCode, countryName);
+    }
+  }, [countryCode, countryName, cachedContext, fetchContext]);
+
+  // Manual refresh function
+  const refresh = useCallback((): void => {
+    if (countryCode && countryName) {
+      fetchContext(countryCode, countryName);
+    }
+  }, [countryCode, countryName, fetchContext]);
 
   return {
     context,
