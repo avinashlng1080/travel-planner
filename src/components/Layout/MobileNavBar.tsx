@@ -1,5 +1,5 @@
 import { useAtom, useSetAtom } from 'jotai';
-import { Map, Calendar, Sparkles, MoreHorizontal } from 'lucide-react';
+import { Map as MapIcon, Calendar, Sparkles, MoreHorizontal } from 'lucide-react';
 
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
@@ -19,7 +19,7 @@ export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
 
   // PostHog-style navigation: 4 primary items
   const navItems: NavItem[] = [
-    { id: 'tripPlanner', icon: Map, label: 'Map' },
+    { id: 'tripPlanner', icon: MapIcon, label: 'Map' },
     { id: 'days', icon: Calendar, label: 'Days' },
     { id: 'chat', icon: Sparkles, label: 'AI' },
     { id: 'mobileMore', icon: MoreHorizontal, label: 'More' },
@@ -30,7 +30,8 @@ export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
       // Open chat through callback (handled by parent)
       onChatClick?.();
     } else {
-      openPanel(item.id);
+      // Type assertion: we know item.id is PanelId here since 'chat' is handled above
+      openPanel(item.id as PanelId);
     }
   };
 

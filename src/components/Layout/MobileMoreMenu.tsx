@@ -8,6 +8,7 @@ import {
   CloudSun,
   Settings,
 } from 'lucide-react';
+import { useRef, useEffect } from 'react';
 
 import { panelsAtom, openPanelAtom, closePanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
@@ -22,8 +23,18 @@ export function MobileMoreMenu() {
   const [panels] = useAtom(panelsAtom);
   const openPanel = useSetAtom(openPanelAtom);
   const closePanel = useSetAtom(closePanelAtom);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const isOpen = panels.mobileMore?.isOpen && !panels.mobileMore?.isMinimized;
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const menuItems: MenuItem[] = [
     { id: 'checklist', icon: CheckSquare, label: 'Tasks', description: 'Manage your travel checklist' },
@@ -36,7 +47,7 @@ export function MobileMoreMenu() {
   const handleItemClick = (itemId: PanelId) => {
     closePanel('mobileMore');
     // Small delay to allow menu to close before opening panel
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       openPanel(itemId);
     }, 100);
   };
@@ -50,6 +61,9 @@ export function MobileMoreMenu() {
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-50 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mobile-more-menu-title"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -83,7 +97,7 @@ export function MobileMoreMenu() {
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 pb-3 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">More Options</h2>
+              <h2 id="mobile-more-menu-title" className="text-lg font-semibold text-slate-900">More Options</h2>
               <button
                 onClick={handleClose}
                 className="p-2 -mr-2 text-slate-500 hover:text-slate-700 transition-colors"

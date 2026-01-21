@@ -94,6 +94,7 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController>();
 
   const isOpen = panels.mobileChat?.isOpen && !panels.mobileChat?.isMinimized;
 
@@ -120,9 +121,20 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
     }
   }, [isOpen]);
 
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const sendMessage = useCallback(async (message: string) => {
+    // Abort any in-flight request
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     const userMsg: ChatMessage = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       role: 'user',
       content: message,
       timestamp: new Date(),
@@ -138,6 +150,7 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
       const response = await fetch(`${convexUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           messages: [
             ...messages.map((m) => ({ role: m.role, content: m.content })),
@@ -156,7 +169,7 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
           || 'I couldn\'t process that request. Please try again.';
 
         const assistantMsg: ChatMessage = {
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36).substring(2, 11),
           role: 'assistant',
           content: assistantMessage,
           timestamp: new Date(),
@@ -171,7 +184,7 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
         const errorMessage = errorData.error || 'Something went wrong. Please try again.';
 
         const errorMsg: ChatMessage = {
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36).substring(2, 11),
           role: 'assistant',
           content: errorMessage,
           timestamp: new Date(),
@@ -179,8 +192,12 @@ export function MobileChatSheet({ tripId }: MobileChatSheetProps) {
         setMessages(prev => [...prev, errorMsg]);
       }
     } catch (error) {
+      // Ignore abort errors - these are expected when unmounting or starting a new request
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       const errorMsg: ChatMessage = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.random().toString(36).substring(2, 11),
         role: 'assistant',
         content: 'Unable to connect. Please check your internet connection.',
         timestamp: new Date(),
