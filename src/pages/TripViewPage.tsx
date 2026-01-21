@@ -20,6 +20,8 @@ import {
 import { TripPlannerPanel, ChecklistFloatingPanel, FiltersPanel, CollaborationPanel, WeatherFloatingPanel } from '../components/floating';
 import { AIChatWidget } from '../components/Layout/AIChatWidget';
 import { FloatingHeader } from '../components/Layout/FloatingHeader';
+import { MobileChatSheet } from '../components/Layout/MobileChatSheet';
+import { MobileMoreMenu } from '../components/Layout/MobileMoreMenu';
 import { MobileNavBar } from '../components/Layout/MobileNavBar';
 import { NavigationDock } from '../components/Layout/NavigationDock';
 import { RightDetailPanel } from '../components/Layout/RightDetailPanel';
@@ -439,7 +441,15 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       )}
 
       {/* Mobile Navigation Bar */}
-      <MobileNavBar />
+      <MobileNavBar
+        onChatClick={() => openPanel('mobileChat')}
+      />
+
+      {/* Mobile More Menu */}
+      <MobileMoreMenu />
+
+      {/* Mobile Chat Sheet */}
+      <MobileChatSheet tripId={tripId} />
 
       {/* Mobile FAB */}
       <FAB onAddPlace={handleShowAddPlaceInstruction} />
