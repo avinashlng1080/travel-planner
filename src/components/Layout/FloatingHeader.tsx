@@ -22,7 +22,7 @@ export function FloatingHeader({
   totalDays,
   activePlan,
   onPlanChange,
-  tripName = 'Malaysia Dec 21 - Jan 6',
+  tripName = 'My Trip',
   onBack,
 }: FloatingHeaderProps) {
   const isOnTrip = currentDay > 0 && currentDay <= totalDays;

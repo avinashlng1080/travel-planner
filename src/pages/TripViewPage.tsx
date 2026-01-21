@@ -199,7 +199,7 @@ export function TripViewPage({ tripId, onBack }: TripViewPageProps) {
       lng: loc.customLng || loc.baseLocation?.lng || 0,
       category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as Location['category'],
       description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
+      city: loc.baseLocation?.city || '',
       toddlerRating: loc.baseLocation?.toddlerRating || 3,
       isIndoor: loc.baseLocation?.isIndoor || false,
       bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],

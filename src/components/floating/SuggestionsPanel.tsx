@@ -103,9 +103,9 @@ export function SuggestionsPanel() {
         id: 'time-early-bird',
         type: 'time',
         icon: Sun,
-        title: 'Perfect time for Batu Caves!',
+        title: 'Perfect time for outdoor activities!',
         description:
-          'Early morning is the best time to visit Batu Caves - cooler temperatures and fewer crowds. Beat the heat!',
+          'Early morning is the best time for outdoor attractions - cooler temperatures and fewer crowds. Beat the heat!',
       });
     }
 
@@ -115,9 +115,9 @@ export function SuggestionsPanel() {
         id: 'time-evening',
         type: 'time',
         icon: MapPin,
-        title: 'Great time for KLCC Park',
+        title: 'Great time for evening activities',
         description:
-          'Evening is perfect for KLCC Park. Enjoy the fountain show at 8pm, 9pm, and 10pm with stunning views of Petronas Towers!',
+          'Evening is perfect for parks, waterfront strolls, and enjoying local nightlife with cooler temperatures!',
       });
     }
 
@@ -170,7 +170,7 @@ export function SuggestionsPanel() {
       }
     }
 
-    // Hardcoded helpful tips
+    // Helpful tips
     const hardcodedTips: Suggestion[] = [
       {
         id: 'tip-hydration',
@@ -178,23 +178,23 @@ export function SuggestionsPanel() {
         icon: Info,
         title: 'Stay hydrated!',
         description:
-          "Malaysia is hot and humid (24-32°C). Carry water bottles and take AC breaks. Toddler's comfort is priority!",
+          "Carry water bottles and take breaks in air-conditioned spots. Your toddler's comfort is priority!",
       },
       {
-        id: 'tip-grab',
+        id: 'tip-transport',
         type: 'tip',
         icon: Info,
-        title: 'Use Grab for transport',
+        title: 'Use local rideshare apps',
         description:
-          'Avoid taxis without meters. Grab is reliable, safe, and shows upfront pricing. Most trips around KL are RM 12-25.',
+          'Check for local rideshare apps for safe, reliable transport with upfront pricing.',
       },
       {
-        id: 'tip-monkeys',
+        id: 'tip-wildlife',
         type: 'tip',
         icon: Zap,
-        title: 'Beware of monkeys',
+        title: 'Watch for wildlife',
         description:
-          'At Batu Caves and some parks, monkeys can be aggressive. Hide food, drinks, and secure phones and bags!',
+          'At nature spots, some animals may approach for food. Secure belongings and avoid feeding wildlife.',
       },
       {
         id: 'tip-baby-carrier',
@@ -202,7 +202,7 @@ export function SuggestionsPanel() {
         icon: Info,
         title: 'Baby carrier essential',
         description:
-          'Aquaria KLCC is NOT stroller-friendly. Bring a baby carrier! Also helpful at Batu Caves and nature trails.',
+          'Some attractions may not be stroller-friendly. Bring a baby carrier for flexibility on nature trails!',
       },
     ];
 
