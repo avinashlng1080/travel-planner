@@ -24,6 +24,30 @@ interface FormData {
   homeBaseLng: string;
 }
 
+// Geocode a destination string to coordinates using Google Geocoding API
+async function geocodeDestination(destination: string): Promise<{ lat: number; lng: number } | null> {
+  if (!destination.trim() || typeof google === 'undefined') {
+    return null;
+  }
+
+  try {
+    const geocoder = new google.maps.Geocoder();
+    const result = await geocoder.geocode({ address: destination });
+
+    if (result.results && result.results.length > 0) {
+      const location = result.results[0].geometry.location;
+      return {
+        lat: location.lat(),
+        lng: location.lng(),
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to geocode destination:', error);
+  }
+
+  return null;
+}
+
 interface FormErrors {
   tripName?: string;
   startDate?: string;
@@ -151,14 +175,28 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
 
     try {
       // Prepare homeBase data if provided
-      const homeBase = showHomeBase && formData.homeBaseName.trim() && formData.homeBaseLat.trim() && formData.homeBaseLng.trim()
+      let homeBase = showHomeBase && formData.homeBaseName.trim() && formData.homeBaseLat.trim() && formData.homeBaseLng.trim()
         ? {
             name: formData.homeBaseName,
             lat: parseFloat(formData.homeBaseLat),
             lng: parseFloat(formData.homeBaseLng),
-            city: '', // TODO: Add city field or extract from name
+            city: '',
           }
         : undefined;
+
+      // If no homeBase but destination provided, geocode the destination
+      // This ensures the map centers on the destination when the trip is viewed
+      if (!homeBase && formData.destination.trim()) {
+        const geocoded = await geocodeDestination(formData.destination);
+        if (geocoded) {
+          homeBase = {
+            name: formData.destination,
+            lat: geocoded.lat,
+            lng: geocoded.lng,
+            city: formData.destination,
+          };
+        }
+      }
 
       // Call Convex mutation
       const tripId = await createTrip({
