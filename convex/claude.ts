@@ -34,6 +34,8 @@ function buildLegacySystemPrompt(): string {
 
   return `You are a helpful travel assistant for a family trip to Malaysia (Dec 21, 2025 - Jan 6, 2026).
 
+IMPORTANT: Always respond in English only. Do not use Malay, Mandarin, or any other language in your responses.
+
 TRIP CONTEXT:
 - Travelers: 2 adults + 1 toddler (19 months old)
 - Base: M Vertica Residence, Cheras, Kuala Lumpur
@@ -111,6 +113,8 @@ function buildDynamicSystemPrompt(trip: TripContext, locations: TripLocation[]):
     : "No locations added yet.";
 
   return `You are an expert travel planner helping plan a trip${trip.destination ? ` to ${trip.destination}` : ''}.
+
+IMPORTANT: Always respond in English only. Even if the destination is in a non-English speaking country, communicate with the user in English.
 
 ## Trip Details
 - **Trip Name**: ${trip.name}
@@ -330,7 +334,9 @@ export const chat = httpAction(async (_ctx, request) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      JSON.stringify({
+        error: "AI assistant is not configured. Please ask the administrator to set up the ANTHROPIC_API_KEY in the Convex dashboard."
+      }),
       { status: 500, headers: corsHeaders }
     );
   }
@@ -383,9 +389,22 @@ export const chat = httpAction(async (_ctx, request) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
+      const errorText = await response.text();
+      let errorMessage = "Unable to process your request. Please try again.";
+
+      // Parse specific error types for better user feedback
+      if (response.status === 429) {
+        errorMessage = "Too many requests. Please wait a moment and try again.";
+      } else if (response.status === 401) {
+        errorMessage = "Authentication error. Please contact support.";
+      } else if (response.status === 500) {
+        errorMessage = "The AI service is temporarily unavailable. Please try again later.";
+      }
+
+      console.error(`Claude API error (${response.status}):`, errorText);
+
       return new Response(
-        JSON.stringify({ error: `Claude API error: ${error}` }),
+        JSON.stringify({ error: errorMessage }),
         { status: response.status, headers: corsHeaders }
       );
     }
@@ -393,9 +412,13 @@ export const chat = httpAction(async (_ctx, request) => {
     const data = await response.json();
     return new Response(JSON.stringify(data), { headers: corsHeaders });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetail = error instanceof Error ? error.message : String(error);
+    console.error("Chat network error:", errorDetail);
+
     return new Response(
-      JSON.stringify({ error: `Network error: ${errorMessage}` }),
+      JSON.stringify({
+        error: "Unable to connect to the AI service. Please check your internet connection and try again."
+      }),
       { status: 500, headers: corsHeaders }
     );
   }

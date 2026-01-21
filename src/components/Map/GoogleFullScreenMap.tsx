@@ -614,6 +614,44 @@ function DynamicPinMarker({ pin, onClick }: DynamicPinMarkerProps) {
   );
 }
 
+// Controller to auto-fit bounds to all locations on initial load
+interface InitialBoundsControllerProps {
+  locations: Location[];
+  defaultCenter?: { lat: number; lng: number };
+}
+
+function InitialBoundsController({ locations, defaultCenter }: InitialBoundsControllerProps) {
+  const map = useMap();
+  const hasFittedRef = useRef(false);
+
+  useEffect(() => {
+    if (!map || hasFittedRef.current) return;
+
+    // If we have locations, fit bounds to show all of them
+    if (locations.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      locations.forEach(loc => bounds.extend({ lat: loc.lat, lng: loc.lng }));
+
+      if (locations.length === 1) {
+        // Single location: center on it with a reasonable zoom
+        map.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+        map.setZoom(14);
+      } else {
+        // Multiple locations: fit bounds with padding
+        map.fitBounds(bounds, { top: 100, right: 100, bottom: 100, left: 100 });
+      }
+      hasFittedRef.current = true;
+    } else if (defaultCenter) {
+      // No locations but we have a default center (e.g., from homeBase)
+      map.setCenter(defaultCenter);
+      map.setZoom(12);
+      hasFittedRef.current = true;
+    }
+  }, [map, locations, defaultCenter]);
+
+  return null;
+}
+
 interface GoogleFullScreenMapProps {
   locations: Location[];
   selectedLocation: Location | null;
@@ -628,6 +666,7 @@ interface GoogleFullScreenMapProps {
   selectedPlanId?: Id<'tripPlans'> | null;
   commutes?: Map<string, CommuteResult>;
   activeCommuteDestinationId?: string | null;
+  defaultCenter?: { lat: number; lng: number };
   onLocationSelect: (location: Location) => void;
   onDynamicPinSelect?: (pin: DynamicPin) => void;
   onNewPinsFocused?: () => void;
@@ -647,6 +686,7 @@ export function GoogleFullScreenMap({
   selectedPlanId = null,
   commutes,
   activeCommuteDestinationId,
+  defaultCenter,
   onLocationSelect,
   onDynamicPinSelect,
   onNewPinsFocused,
@@ -715,7 +755,7 @@ export function GoogleFullScreenMap({
       <style>{MARKER_ANIMATION_STYLES}</style>
 
       <Map
-        defaultCenter={{ lat: 3.1089, lng: 101.7279 }}
+        defaultCenter={defaultCenter ?? { lat: 3.1089, lng: 101.7279 }}
         defaultZoom={13}
         mapId={mapId}
         gestureHandling="greedy"
@@ -736,6 +776,7 @@ export function GoogleFullScreenMap({
         onClick={handleMapClick}
       >
         {/* Map Controllers */}
+        <InitialBoundsController locations={locations} defaultCenter={defaultCenter} />
         <MapController selectedLocation={selectedLocation} />
         <MapBoundsController planRoute={planRoute} selectedLocation={selectedLocation} />
         <MapBoundsTracker onBoundsChange={handleBoundsChange} />

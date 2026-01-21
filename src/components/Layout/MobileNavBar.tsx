@@ -1,64 +1,87 @@
 import { useAtom, useSetAtom } from 'jotai';
-import { Map, CheckSquare, Filter, Calendar, Lightbulb, AlertTriangle } from 'lucide-react';
+import { Map as MapIcon, Calendar, Sparkles, MoreHorizontal } from 'lucide-react';
 
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
 
 interface NavItem {
-  id: PanelId;
+  id: PanelId | 'chat';
   icon: React.ElementType;
   label: string;
 }
 
-export function MobileNavBar() {
+interface MobileNavBarProps {
+  onChatClick?: () => void;
+}
+
+export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
   const [panels] = useAtom(panelsAtom);
   const openPanel = useSetAtom(openPanelAtom);
 
+  // PostHog-style navigation: 4 primary items
   const navItems: NavItem[] = [
-    { id: 'tripPlanner', icon: Map, label: 'Plan' },
+    { id: 'tripPlanner', icon: MapIcon, label: 'Map' },
     { id: 'days', icon: Calendar, label: 'Days' },
-    { id: 'checklist', icon: CheckSquare, label: 'Tasks' },
-    { id: 'collaboration', icon: Lightbulb, label: 'Tips' },
-    { id: 'filters', icon: Filter, label: 'Filters' },
-    { id: 'weather', icon: AlertTriangle, label: 'Alerts' },
+    { id: 'chat', icon: Sparkles, label: 'AI' },
+    { id: 'mobileMore', icon: MoreHorizontal, label: 'More' },
   ];
 
-  const handleNavClick = (panelId: PanelId) => {
-    openPanel(panelId);
+  const handleNavClick = (item: NavItem) => {
+    if (item.id === 'chat') {
+      // Open chat through callback (handled by parent)
+      onChatClick?.();
+    } else {
+      // Type assertion: we know item.id is PanelId here since 'chat' is handled above
+      openPanel(item.id as PanelId);
+    }
+  };
+
+  const isActive = (item: NavItem): boolean => {
+    if (item.id === 'chat') {
+      return panels.mobileChat?.isOpen && !panels.mobileChat?.isMinimized;
+    }
+    const panelState = panels[item.id];
+    return panelState?.isOpen && !panelState?.isMinimized;
   };
 
   return (
     <nav
-      className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/50 safe-area-inset-x safe-area-inset-bottom"
+      className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom, 0)',
+      }}
       role="navigation"
       aria-label="Mobile navigation"
     >
-      <div className="flex items-center justify-around h-16">
+      <div className="flex items-center justify-around h-14">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const panelState = panels[item.id];
-          const isActive = panelState.isOpen && !panelState.isMinimized;
+          const active = isActive(item);
 
           return (
             <button
               key={item.id}
-              onClick={() => { handleNavClick(item.id); }}
+              onClick={() => { handleNavClick(item); }}
               className={`
                 flex flex-col items-center justify-center
-                min-w-[48px] min-h-[48px] px-1.5 py-1.5
-                rounded-lg transition-all duration-200
-                focus:outline-none focus:ring-2 focus:ring-sunset-500 focus:ring-offset-2 focus:ring-offset-white
-                ${
-                  isActive
-                    ? 'text-sunset-600 bg-sunset-50'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 active:scale-95'
+                flex-1 h-full
+                transition-colors duration-150
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-sunset-500 focus-visible:ring-inset
+                ${active
+                  ? 'text-sunset-600'
+                  : 'text-slate-500 active:text-slate-700'
                 }
               `}
-              aria-label={`${item.label}${isActive ? ' (active)' : ''}`}
-              aria-pressed={isActive}
-              aria-current={isActive ? 'page' : undefined}
+              aria-label={`${item.label}${active ? ' (active)' : ''}`}
+              aria-pressed={active}
             >
-              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-              <span className="text-[9px] font-medium mt-0.5 leading-tight">{item.label}</span>
+              <Icon
+                className={`w-6 h-6 ${item.id === 'chat' ? 'mb-0.5' : ''}`}
+                strokeWidth={active ? 2.5 : 2}
+                aria-hidden="true"
+              />
+              <span className={`text-[10px] font-medium ${active ? 'font-semibold' : ''}`}>
+                {item.label}
+              </span>
             </button>
           );
         })}
