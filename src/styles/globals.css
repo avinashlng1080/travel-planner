@@ -109,6 +109,70 @@
 
 /* Custom utility classes */
 @layer utilities {
+  /* Fluid typography using CSS clamp() */
+  /* These scale smoothly between viewport sizes */
+  .text-fluid-xs {
+    font-size: clamp(0.625rem, 0.5rem + 0.5vw, 0.75rem); /* 10-12px */
+  }
+
+  .text-fluid-sm {
+    font-size: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem); /* 12-14px */
+  }
+
+  .text-fluid-base {
+    font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem); /* 14-16px */
+  }
+
+  .text-fluid-lg {
+    font-size: clamp(1rem, 0.875rem + 0.5vw, 1.125rem); /* 16-18px */
+  }
+
+  .text-fluid-xl {
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.25rem); /* 18-20px */
+  }
+
+  .text-fluid-2xl {
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.5rem); /* 20-24px */
+  }
+
+  .text-fluid-3xl {
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem); /* 24-30px */
+  }
+
+  .text-fluid-4xl {
+    font-size: clamp(1.875rem, 1.5rem + 1.5vw, 2.25rem); /* 30-36px */
+  }
+
+  /* Fluid spacing utilities */
+  .gap-fluid {
+    gap: clamp(0.5rem, 0.25rem + 1vw, 1rem);
+  }
+
+  .p-fluid {
+    padding: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+  }
+
+  .px-fluid {
+    padding-left: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+    padding-right: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+  }
+
+  .py-fluid {
+    padding-top: clamp(0.5rem, 0.25rem + 1vw, 1rem);
+    padding-bottom: clamp(0.5rem, 0.25rem + 1vw, 1rem);
+  }
+
+  /* Touch target utilities - ensures WCAG compliance */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .touch-target-lg {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
   /* Glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-lg;
@@ -315,8 +379,8 @@
   border-top-color: #ffffff;
 }
 
-/* Mobile map controls */
-@media (max-width: 767px) {
+/* Mobile map controls (< 640px) */
+@media (max-width: 639px) {
   .leaflet-control-zoom a {
     width: 44px !important;
     height: 44px !important;
@@ -331,5 +395,73 @@
   .leaflet-popup-content {
     font-size: 14px !important;
     margin: 12px !important;
+  }
+}
+
+/* Tablet portrait map controls (640-1024px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .leaflet-control-zoom a {
+    width: 48px !important;
+    height: 48px !important;
+    line-height: 48px !important;
+    font-size: 22px !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    max-width: 400px !important;
+  }
+}
+
+/* Tablet landscape and desktop (≥ 1024px) */
+@media (min-width: 1024px) {
+  .leaflet-control-zoom a {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* Device-specific responsive utilities */
+@layer utilities {
+  /* Show only on specific device categories */
+  .mobile-only {
+    @apply block;
+  }
+
+  .tablet-only {
+    @apply hidden;
+  }
+
+  .desktop-only {
+    @apply hidden;
+  }
+
+  @media (min-width: 640px) and (max-width: 1365px) {
+    .mobile-only {
+      @apply hidden;
+    }
+
+    .tablet-only {
+      @apply block;
+    }
+
+    .desktop-only {
+      @apply hidden;
+    }
+  }
+
+  @media (min-width: 1366px) {
+    .mobile-only {
+      @apply hidden;
+    }
+
+    .tablet-only {
+      @apply hidden;
+    }
+
+    .desktop-only {
+      @apply block;
+    }
   }
 }

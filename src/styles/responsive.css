@@ -1,0 +1,530 @@
+/**
+ * Responsive CSS Utilities
+ *
+ * This file contains global responsive styles and utilities for the travel planner app.
+ * Import this in your main.tsx or App.tsx after your Tailwind imports.
+ */
+
+/* ============================================
+   CSS Custom Properties for Responsive Design
+   ============================================ */
+:root {
+  /* Breakpoint reference variables (for JS access if needed) */
+  --breakpoint-xs: 475px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 1920px;
+
+  /* Fluid spacing scale */
+  --space-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+  --space-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --space-md: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
+  --space-lg: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --space-xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --space-2xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  --space-3xl: clamp(3rem, 2rem + 5vw, 5rem);
+
+  /* Fluid font sizes */
+  --font-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --font-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-lg: clamp(1.125rem, 1rem + 0.65vw, 1.25rem);
+  --font-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --font-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --font-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);
+
+  /* Touch target sizes */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  --touch-target-large: 56px;
+
+  /* Safe area insets (for notched devices) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Header and navigation heights */
+  --header-height: 56px;
+  --header-height-lg: 64px;
+  --navbar-height: 56px;
+  --bottom-bar-height: 64px;
+
+  /* Sidebar widths */
+  --sidebar-width: 280px;
+  --sidebar-width-lg: 320px;
+  --sidebar-width-collapsed: 72px;
+
+  /* Panel widths */
+  --panel-width-sm: 320px;
+  --panel-width-md: 400px;
+  --panel-width-lg: 480px;
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+}
+
+/* ============================================
+   Touch Device Optimizations
+   ============================================ */
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Momentum scrolling for iOS */
+.scroll-momentum {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Enable text selection */
+.select-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* ============================================
+   Viewport Height Fix for Mobile Browsers
+   ============================================ */
+
+@supports (height: 100dvh) {
+  .h-screen-safe {
+    height: calc(100dvh - var(--safe-area-top) - var(--safe-area-bottom));
+  }
+
+  .min-h-screen-safe {
+    min-height: calc(100dvh - var(--safe-area-top) - var(--safe-area-bottom));
+  }
+}
+
+@supports not (height: 100dvh) {
+  .h-screen-safe {
+    height: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
+  }
+
+  .min-h-screen-safe {
+    min-height: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
+  }
+}
+
+/* ============================================
+   Responsive Layout Utilities
+   ============================================ */
+
+/* Fluid container */
+.container-fluid {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .container-fluid {
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-fluid {
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+}
+
+/* Responsive grid gaps */
+.gap-responsive {
+  gap: var(--space-sm);
+}
+
+@media (min-width: 768px) {
+  .gap-responsive {
+    gap: var(--space-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .gap-responsive {
+    gap: var(--space-lg);
+  }
+}
+
+/* ============================================
+   Responsive Typography
+   ============================================ */
+
+/* Fluid heading sizes */
+.heading-fluid-1 {
+  font-size: var(--font-3xl);
+  line-height: 1.2;
+}
+
+.heading-fluid-2 {
+  font-size: var(--font-2xl);
+  line-height: 1.3;
+}
+
+.heading-fluid-3 {
+  font-size: var(--font-xl);
+  line-height: 1.4;
+}
+
+/* Responsive body text */
+.text-fluid {
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+.text-fluid-sm {
+  font-size: var(--font-sm);
+  line-height: 1.5;
+}
+
+/* ============================================
+   Safe Area Utilities (for notched devices)
+   ============================================ */
+
+/* Apply safe area to all sides */
+.safe-area-all {
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+}
+
+/* Safe area padding for fixed headers */
+.safe-area-top-header {
+  padding-top: calc(var(--header-height) + var(--safe-area-top));
+}
+
+@media (min-width: 1024px) {
+  .safe-area-top-header {
+    padding-top: calc(var(--header-height-lg) + var(--safe-area-top));
+  }
+}
+
+/* Safe area padding for bottom navigation */
+.safe-area-bottom-nav {
+  padding-bottom: calc(var(--navbar-height) + var(--safe-area-bottom));
+}
+
+/* ============================================
+   Responsive Visibility
+   ============================================ */
+
+/* Hide on mobile (show on md and up) */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+/* Show only on mobile (hide on md and up) */
+.show-mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+/* Hide on tablet and up */
+.hide-tablet-up {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .hide-tablet-up {
+    display: none;
+  }
+}
+
+/* Show on tablet and up */
+.show-tablet-up {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .show-tablet-up {
+    display: block;
+  }
+}
+
+/* Hide on desktop */
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* Show on desktop only */
+.show-desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .show-desktop-only {
+    display: block;
+  }
+}
+
+/* ============================================
+   Responsive Flexbox & Grid
+   ============================================ */
+
+/* Responsive flex direction */
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+  }
+}
+
+/* Responsive grid columns */
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.grid-responsive-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================
+   Card & Panel Responsive Styles
+   ============================================ */
+
+/* Responsive card padding */
+.card-padding {
+  padding: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .card-padding {
+    padding: var(--space-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-padding {
+    padding: var(--space-xl);
+  }
+}
+
+/* Responsive panel width */
+.panel-responsive {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .panel-responsive {
+    width: var(--panel-width-sm);
+    max-width: var(--panel-width-sm);
+  }
+}
+
+@media (min-width: 1024px) {
+  .panel-responsive {
+    width: var(--panel-width-md);
+    max-width: var(--panel-width-md);
+  }
+}
+
+@media (min-width: 1280px) {
+  .panel-responsive {
+    width: var(--panel-width-lg);
+    max-width: var(--panel-width-lg);
+  }
+}
+
+/* ============================================
+   Modal & Overlay Responsive Styles
+   ============================================ */
+
+/* Responsive modal sizing */
+.modal-responsive {
+  width: calc(100% - var(--space-lg));
+  max-width: 500px;
+  max-height: calc(100vh - var(--space-xl));
+  margin: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .modal-responsive {
+    width: 90%;
+    max-width: 600px;
+    margin: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-responsive {
+    max-width: 700px;
+  }
+}
+
+/* Full-screen modal on mobile */
+.modal-full-mobile {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+@media (min-width: 640px) {
+  .modal-full-mobile {
+    width: auto;
+    height: auto;
+    max-width: 500px;
+    max-height: calc(100vh - var(--space-xl));
+    margin: var(--space-md);
+    border-radius: 0.75rem;
+  }
+}
+
+/* Bottom sheet style for mobile */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: 90vh;
+  border-radius: 1rem 1rem 0 0;
+  transform: translateY(0);
+  transition: transform 0.3s ease-out;
+}
+
+.bottom-sheet.closed {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .bottom-sheet {
+    position: relative;
+    width: auto;
+    max-height: none;
+    border-radius: 0.75rem;
+    transform: none;
+  }
+}
+
+/* ============================================
+   Animation & Transition Utilities
+   ============================================ */
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Smooth transitions for responsive changes */
+.responsive-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-full-width {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

@@ -2,6 +2,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { Map as MapIcon, Calendar, Sparkles, MoreHorizontal } from 'lucide-react';
 
 import { panelsAtom, openPanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 interface NavItem {
   id: PanelId | 'chat';
@@ -16,6 +17,10 @@ interface MobileNavBarProps {
 export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
   const [panels] = useAtom(panelsAtom);
   const openPanel = useSetAtom(openPanelAtom);
+  const { category, minTouchTarget } = useDeviceType();
+
+  // Show bottom nav for mobile and tablet-portrait only
+  const shouldShow = category === 'mobile' || category === 'tablet-portrait';
 
   // PostHog-style navigation: 4 primary items
   const navItems: NavItem[] = [
@@ -43,9 +48,13 @@ export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
     return panelState?.isOpen && !panelState?.isMinimized;
   };
 
+  if (!shouldShow) {
+    return null;
+  }
+
   return (
     <nav
-      className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0)',
       }}
@@ -71,6 +80,10 @@ export function MobileNavBar({ onChatClick }: MobileNavBarProps) {
                   : 'text-slate-500 active:text-slate-700'
                 }
               `}
+              style={{
+                minWidth: minTouchTarget,
+                minHeight: minTouchTarget,
+              }}
               aria-label={`${item.label}${active ? ' (active)' : ''}`}
               aria-pressed={active}
             >

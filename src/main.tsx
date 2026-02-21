@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client';
 
 import App from './App';
 import './styles/globals.css';
+import './styles/responsive.css';
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
