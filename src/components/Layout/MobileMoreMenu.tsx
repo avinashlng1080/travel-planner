@@ -11,6 +11,7 @@ import {
 import { useRef, useEffect } from 'react';
 
 import { panelsAtom, openPanelAtom, closePanelAtom, type PanelId } from '../../atoms/floatingPanelAtoms';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 interface MenuItem {
   id: PanelId;
@@ -24,8 +25,11 @@ export function MobileMoreMenu() {
   const openPanel = useSetAtom(openPanelAtom);
   const closePanel = useSetAtom(closePanelAtom);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const { category, minTouchTarget } = useDeviceType();
 
-  const isOpen = panels.mobileMore?.isOpen && !panels.mobileMore?.isMinimized;
+  // Show for mobile and tablet-portrait only
+  const shouldRender = category === 'mobile' || category === 'tablet-portrait';
+  const isOpen = shouldRender && panels.mobileMore?.isOpen && !panels.mobileMore?.isMinimized;
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -126,6 +130,7 @@ export function MobileMoreMenu() {
                         : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100'
                       }
                     `}
+                    style={{ minHeight: minTouchTarget }}
                   >
                     <div className={`
                       w-10 h-10 rounded-xl flex items-center justify-center
