@@ -66,6 +66,9 @@ export function useWeather(enabled = true): UseWeatherResult {
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
 
+  // Check if location is available
+  const hasLocation = location !== null;
+
   // Cache for API responses
   const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
 
@@ -164,7 +167,7 @@ export function useWeather(enabled = true): UseWeatherResult {
           hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,rain,showers',
           daily:
             'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset',
-          timezone: 'Asia/Kuala_Lumpur',
+          timezone: 'auto',
           forecast_days: '7',
         });
 
@@ -198,7 +201,7 @@ export function useWeather(enabled = true): UseWeatherResult {
           isLoading: false,
           error: null,
           lastFetch: new Date(),
-          location: { lat, lng, name: location.name },
+          location: { lat, lng, name: location?.name ?? 'Unknown' },
         });
 
         if (import.meta.env.DEV) {
@@ -215,17 +218,24 @@ export function useWeather(enabled = true): UseWeatherResult {
         setIsLoading(false);
       }
     },
-    [location.name, setLastWeatherData]
+    [location?.name, setLastWeatherData]
   );
 
-  // Manual refresh function
-  const refresh = useCallback(() => {
+  // Manual refresh function - returns true if refresh was triggered
+  const refresh = useCallback((): boolean => {
+    if (!location) {
+      if (import.meta.env.DEV) {
+        console.warn('[useWeather] Refresh called but no location is set');
+      }
+      return false;
+    }
     fetchWeather(location.lat, location.lng, true);
-  }, [fetchWeather, location.lat, location.lng]);
+    return true;
+  }, [fetchWeather, location]);
 
   // Set location function
   const setLocation = useCallback(
-    (newLocation: WeatherLocation) => {
+    (newLocation: WeatherLocation | null) => {
       setLocationAtom(newLocation);
     },
     [setLocationAtom]
@@ -233,7 +243,7 @@ export function useWeather(enabled = true): UseWeatherResult {
 
   // Initial fetch and location change handling (debounced)
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !hasLocation || !location) {
       return;
     }
 
@@ -242,11 +252,11 @@ export function useWeather(enabled = true): UseWeatherResult {
     }, DEBOUNCE_DELAY);
 
     return () => { clearTimeout(timeoutId); };
-  }, [enabled, location.lat, location.lng, fetchWeather]);
+  }, [enabled, hasLocation, location, fetchWeather]);
 
   // Auto-refresh interval
   useEffect(() => {
-    if (!enabled || !autoRefresh) {
+    if (!enabled || !autoRefresh || !hasLocation || !location) {
       return;
     }
 
@@ -255,7 +265,7 @@ export function useWeather(enabled = true): UseWeatherResult {
     }, REFRESH_INTERVAL);
 
     return () => { clearInterval(intervalId); };
-  }, [enabled, autoRefresh, location.lat, location.lng, fetchWeather]);
+  }, [enabled, autoRefresh, hasLocation, location, fetchWeather]);
 
   return {
     current,

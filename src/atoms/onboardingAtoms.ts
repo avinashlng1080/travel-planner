@@ -85,19 +85,26 @@ export const STEP_CONFIGS: StepConfig[] = [
 const STEP_ORDER: OnboardingStep[] = ['flight', 'welcome', 'map', 'chat', 'plans', 'complete'];
 
 /**
- * Fallback messages for Claude when API is unavailable
+ * Get fallback messages for Claude when API is unavailable.
+ * Messages are dynamic based on the trip destination.
  */
-export const FALLBACK_MESSAGES: Record<OnboardingStep, string> = {
-  flight: '',
-  welcome:
-    "Selamat datang! I'm your travel companion for this Malaysian adventure. This is your home base - everything starts and ends here. Ready for me to show you around?",
-  map: 'See those markers on the map? Each shape tells a different story. Hearts are toddler-friendly spots, cameras are attractions, and pagodas are temples. Try tapping one to learn more!',
-  chat: "I'm always here to help plan your perfect trip. Ask me anything - like 'What should we do if it rains?' or 'Where's the best laksa near us?' I can even suggest new places right on the map!",
-  plans:
-    'Traveling with a toddler means always having a backup plan! Plan A is your adventure route. Plan B is for rainy days or tired little legs. Toggle between them anytime to see different options.',
-  complete:
-    "You're all set! Your passport has 5 stamps already, and your real adventure is about to begin. I'll be here whenever you need me. Selamat jalan - safe travels!",
-};
+export function getFallbackMessage(step: OnboardingStep, destination?: string | null): string {
+  const dest = destination || 'your destination';
+
+  const messages: Record<OnboardingStep, string> = {
+    flight: '',
+    welcome:
+      `Welcome! I'm your travel companion for this adventure to ${dest}. This is your home base - everything starts and ends here. Ready for me to show you around?`,
+    map: 'See those markers on the map? Each shape tells a different story. Hearts are toddler-friendly spots, cameras are attractions, and pagodas are temples. Try tapping one to learn more!',
+    chat: "I'm always here to help plan your perfect trip. Ask me anything - like 'What should we do if it rains?' or 'What are the best local restaurants?' I can even suggest new places right on the map!",
+    plans:
+      'Traveling with a toddler means always having a backup plan! Plan A is your adventure route. Plan B is for rainy days or tired little legs. Toggle between them anytime to see different options.',
+    complete:
+      "You're all set! Your passport has 5 stamps already, and your real adventure is about to begin. I'll be here whenever you need me. Safe travels!",
+  };
+
+  return messages[step];
+}
 
 // Persisted state atoms
 const statusStorageAtom = atomWithStorage<OnboardingStatus>(
@@ -117,6 +124,9 @@ export const hasInteractedWithChatAtom = atom<boolean>(false);
 export const hasToggledPlanAtom = atom<boolean>(false);
 export const isPassportExpandedAtom = atom<boolean>(false);
 export const showSkipConfirmAtom = atom<boolean>(false);
+
+/** Trip destination for onboarding - set by TripViewPage when trip loads */
+export const tripDestinationAtom = atom<string | null>(null);
 
 // Persisted atoms (exported for direct use)
 export const statusAtom = atom(

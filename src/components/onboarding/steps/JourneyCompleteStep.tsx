@@ -3,7 +3,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import { Check, BookOpen, Sparkles, PartyPopper } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { stampsAtom, completeOnboardingAtom, STEP_CONFIGS, FALLBACK_MESSAGES } from '@/atoms/onboardingAtoms';
+import { stampsAtom, completeOnboardingAtom, STEP_CONFIGS, getFallbackMessage } from '@/atoms/onboardingAtoms';
 
 import { PassportStamp } from '../PassportStamp';
 
@@ -176,7 +176,7 @@ export function JourneyCompleteStep() {
                   </div>
                   <div className="bg-slate-100 rounded-xl rounded-tl-none p-3 flex-1">
                     <p className="text-slate-700 text-sm">
-                      {FALLBACK_MESSAGES.complete}
+                      {getFallbackMessage('complete')}
                     </p>
                   </div>
                 </div>

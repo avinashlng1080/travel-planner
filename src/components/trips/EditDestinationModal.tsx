@@ -104,9 +104,7 @@ export default function EditDestinationModal({
   const updateDestination = useMutation(api.commuteDestinations.updateDestination);
 
   // Places Autocomplete
-  const { predictions, isLoading, search, getPlaceDetails, clearPredictions } = usePlacesAutocomplete({
-    componentRestrictions: { country: 'my' }, // Malaysia
-  });
+  const { predictions, isLoading, search, getPlaceDetails, clearPredictions } = usePlacesAutocomplete({});
 
   // Pre-fill form data when destination changes
   useEffect(() => {

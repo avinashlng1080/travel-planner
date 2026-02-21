@@ -10,6 +10,7 @@ export interface DeleteDestinationDialogProps {
   destinationName: string;
   onConfirm: () => Promise<void>;
   isDeleting: boolean;
+  error?: string | null;
 }
 
 export default function DeleteDestinationDialog({
@@ -18,6 +19,7 @@ export default function DeleteDestinationDialog({
   destinationName,
   onConfirm,
   isDeleting,
+  error,
 }: DeleteDestinationDialogProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -44,13 +46,8 @@ export default function DeleteDestinationDialog({
   }, [isOpen, isDeleting, onClose]);
 
   const handleConfirm = async () => {
-    try {
-      await onConfirm();
-      onClose();
-    } catch (error) {
-      console.error('Failed to delete destination:', error);
-      // Error handling is managed by parent component
-    }
+    // Parent component handles success/error state and closing
+    await onConfirm();
   };
 
   return (
@@ -113,12 +110,19 @@ export default function DeleteDestinationDialog({
               {/* Description */}
               <p
                 id="delete-destination-description"
-                className="text-sm text-slate-600 text-center mb-6"
+                className="text-sm text-slate-600 text-center mb-4"
               >
                 Are you sure you want to delete{' '}
                 <span className="font-semibold text-slate-900">"{destinationName}"</span>?
                 This action cannot be undone.
               </p>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600 text-center">{error}</p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3">

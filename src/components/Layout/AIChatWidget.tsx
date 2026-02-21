@@ -30,12 +30,12 @@ interface AIChatWidgetProps {
   onOpenImport?: (initialText: string) => void;
 }
 
-// Default questions for legacy Malaysia trip
+// Default questions for trips without dynamic context
 const LEGACY_SUGGESTED_QUESTIONS = [
-  "What should I bring to Batu Caves?",
-  "Best time to visit KLCC Park with a toddler?",
+  "What should I bring on my trip?",
+  "Best time to visit popular attractions?",
   "Indoor activities for rainy days?",
-  "Where can I find good nursing rooms?",
+  "Where can I find good family-friendly restaurants?",
 ];
 
 // Dynamic questions for user-created trips
@@ -494,7 +494,7 @@ export function AIChatWidget({
                     ? tripData?.trip?.destination
                       ? `I'll help you discover amazing places in ${tripData.trip.destination}. Ask me anything!`
                       : 'Tell me about your trip and I\'ll suggest places to visit!'
-                    : 'Ask me anything about your Malaysia trip!'
+                    : 'Ask me anything about your trip!'
                   }
                 </p>
                 <div className="space-y-2.5">

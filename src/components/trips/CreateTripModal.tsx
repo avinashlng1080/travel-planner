@@ -304,7 +304,7 @@ export function CreateTripModal({ isOpen, onClose, onSuccess }: CreateTripModalP
                     id="tripName"
                     ref={firstInputRef}
                     type="text"
-                    placeholder="Malaysia Family Adventure"
+                    placeholder="My Family Adventure"
                     value={formData.tripName}
                     onChange={(e) => { handleChange('tripName', e.target.value); }}
                     className={`w-full bg-white backdrop-blur-lg border rounded-xl px-4 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sunset-500/50 focus:border-sunset-500/50 transition-all duration-200 disabled:opacity-50 ${errors.tripName ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200'}`}

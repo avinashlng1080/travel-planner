@@ -32,7 +32,7 @@ const DEFAULT_CHECKLISTS: ChecklistCategory[] = [
     color: '#8B5CF6',
     items: [
       { id: 'v1', text: 'Valid passport (6+ months validity)', checked: false },
-      { id: 'v2', text: 'Malaysia visa requirements checked', checked: false },
+      { id: 'v2', text: 'Visa requirements checked', checked: false },
       { id: 'v3', text: 'Return flight tickets booked', checked: false },
       { id: 'v4', text: 'Hotel booking confirmations saved', checked: false },
     ],
@@ -68,11 +68,11 @@ const DEFAULT_CHECKLISTS: ChecklistCategory[] = [
     icon: Package,
     color: '#10B981',
     items: [
-      { id: 'p1', text: 'Baby carrier (for Batu Caves)', checked: false },
+      { id: 'p1', text: 'Baby carrier for attractions', checked: false },
       { id: 'p2', text: 'Stroller for malls', checked: false },
-      { id: 'p3', text: 'Warm clothes for Cameron Highlands', checked: false },
-      { id: 'p4', text: 'Modest clothing for temples', checked: false },
-      { id: 'p5', text: 'Swim gear for KLCC wading pool', checked: false },
+      { id: 'p3', text: 'Weather-appropriate clothing', checked: false },
+      { id: 'p4', text: 'Modest clothing for religious sites', checked: false },
+      { id: 'p5', text: 'Swim gear if needed', checked: false },
     ],
   },
 ];

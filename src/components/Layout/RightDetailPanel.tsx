@@ -26,7 +26,7 @@ export function RightDetailPanel({ location, days, selectedDayId, onClose, onAdd
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlanType, setSelectedPlanType] = useState<'A' | 'B'>('A');
 
-  // Get weather data (defaults to Kuala Lumpur)
+  // Get weather data
   const { current: currentWeather, daily: weatherForecast, isLoading: weatherLoading } = useWeather();
 
   // Get today's forecast

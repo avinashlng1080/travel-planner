@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
 import { Map, MousePointer, ArrowRight } from 'lucide-react';
 
-import { hasInteractedWithMarkerAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import { hasInteractedWithMarkerAtom, advanceToNextStepAtom, getFallbackMessage, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
@@ -48,7 +48,7 @@ export function DiscoverMapStep() {
                 Explore the Map
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                {FALLBACK_MESSAGES.map}
+                {getFallbackMessage('map')}
               </p>
             </div>
           </div>

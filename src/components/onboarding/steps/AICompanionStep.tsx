@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useAtom, useSetAtom } from 'jotai';
 import { Sparkles, MessageCircle, Send, ArrowRight } from 'lucide-react';
 
-import { hasInteractedWithChatAtom, advanceToNextStepAtom, FALLBACK_MESSAGES, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
+import { hasInteractedWithChatAtom, advanceToNextStepAtom, getFallbackMessage, STEP_CONFIGS } from '@/atoms/onboardingAtoms';
 
 import { SpotlightOverlay } from '../SpotlightOverlay';
 
@@ -48,7 +48,7 @@ export function AICompanionStep() {
                 Meet Your AI Companion
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                {FALLBACK_MESSAGES.chat}
+                {getFallbackMessage('chat')}
               </p>
             </div>
           </div>

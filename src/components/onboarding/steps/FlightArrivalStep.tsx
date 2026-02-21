@@ -1,6 +1,6 @@
-import { useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 
-import { advanceToNextStepAtom } from '@/atoms/onboardingAtoms';
+import { advanceToNextStepAtom, tripDestinationAtom } from '@/atoms/onboardingAtoms';
 
 import { FlightPathAnimation } from '../FlightPathAnimation';
 
@@ -11,10 +11,12 @@ import { FlightPathAnimation } from '../FlightPathAnimation';
  */
 export function FlightArrivalStep() {
   const advanceToNextStep = useSetAtom(advanceToNextStepAtom);
+  const [tripDestination] = useAtom(tripDestinationAtom);
 
   return (
     <FlightPathAnimation
       duration={3.5}
+      destination={tripDestination || undefined}
       onComplete={() => {
         // Small delay before advancing to let the landing animation settle
         setTimeout(() => {

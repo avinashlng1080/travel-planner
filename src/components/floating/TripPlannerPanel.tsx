@@ -58,7 +58,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
   // Get energy theme for visual styling
   const energyTheme = useEnergyTheme();
 
-  // Get weather data (defaults to Kuala Lumpur)
+  // Get weather data
   const { daily: weatherForecast } = useWeather();
 
   // Fetch data from Convex
@@ -90,7 +90,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
       lng: loc.customLng || loc.baseLocation?.lng || 0,
       category: (loc.customCategory || loc.baseLocation?.category || 'attraction') as any,
       description: loc.customDescription || loc.baseLocation?.description || '',
-      city: loc.baseLocation?.city || 'Malaysia',
+      city: loc.baseLocation?.city || '',
       toddlerRating: loc.toddlerRating || loc.baseLocation?.toddlerRating || 3,
       isIndoor: loc.baseLocation?.isIndoor || false,
       bestTimeToVisit: loc.baseLocation?.bestTimeToVisit || [],
@@ -278,7 +278,7 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
         id: 'time-early',
         type: 'time',
         icon: Sun,
-        title: 'Perfect for Batu Caves!',
+        title: 'Perfect for outdoor activities!',
         description: 'Early morning = cooler, fewer crowds.',
       });
     }
@@ -288,17 +288,17 @@ export function TripPlannerPanel({ tripId, selectedPlanId, onActivityClick }: Tr
         id: 'time-evening',
         type: 'time',
         icon: MapPin,
-        title: 'KLCC Park time',
-        description: 'Fountain shows at 8pm, 9pm, 10pm!',
+        title: 'Evening stroll time',
+        description: 'Great for parks and waterfront areas!',
       });
     }
 
     // Tips
     const tips: Suggestion[] = [
-      { id: 'tip-hydration', type: 'tip', icon: Info, title: 'Stay hydrated!', description: 'Malaysia is hot (24-32°C). Carry water!' },
-      { id: 'tip-grab', type: 'tip', icon: Info, title: 'Use Grab', description: 'Safe & reliable. RM 12-25 around KL.' },
-      { id: 'tip-monkeys', type: 'tip', icon: Zap, title: 'Beware of monkeys', description: 'At Batu Caves - hide food & phones!' },
-      { id: 'tip-carrier', type: 'tip', icon: Info, title: 'Baby carrier', description: 'Essential for Aquaria (no strollers).' },
+      { id: 'tip-hydration', type: 'tip', icon: Info, title: 'Stay hydrated!', description: 'Carry water bottles, especially in warm climates.' },
+      { id: 'tip-rideshare', type: 'tip', icon: Info, title: 'Use local rideshare', description: 'Check local apps for safe, reliable transport.' },
+      { id: 'tip-photos', type: 'tip', icon: Info, title: 'Charge devices', description: 'Keep phones charged for maps & photos!' },
+      { id: 'tip-carrier', type: 'tip', icon: Info, title: 'Baby carrier', description: 'Great for crowded attractions & nature trails.' },
     ];
 
     if (result.length < 4) {

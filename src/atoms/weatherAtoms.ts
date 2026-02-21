@@ -12,15 +12,11 @@ import type { WeatherLocation, WeatherState } from '../types/weather';
 
 /**
  * Weather location preference (persisted)
- * Default: Kuala Lumpur city center
+ * Default: null (will be set when trip loads)
  */
-export const weatherLocationAtom = atomWithStorage<WeatherLocation>(
-  'malaysia-trip-weather-location',
-  {
-    lat: 3.1390,
-    lng: 101.6869,
-    name: 'Kuala Lumpur',
-  }
+export const weatherLocationAtom = atomWithStorage<WeatherLocation | null>(
+  'travel-planner-weather-location',
+  null
 );
 
 /**
@@ -28,7 +24,7 @@ export const weatherLocationAtom = atomWithStorage<WeatherLocation>(
  * Shows/hides the floating weather badge on the map
  */
 export const weatherIndicatorVisibleAtom = atomWithStorage<boolean>(
-  'malaysia-trip-weather-indicator-visible',
+  'travel-planner-weather-indicator-visible',
   true
 );
 
@@ -37,7 +33,7 @@ export const weatherIndicatorVisibleAtom = atomWithStorage<boolean>(
  * true = Celsius, false = Fahrenheit
  */
 export const useCelsiusAtom = atomWithStorage<boolean>(
-  'malaysia-trip-weather-celsius',
+  'travel-planner-weather-celsius',
   true
 );
 
@@ -52,7 +48,7 @@ export const lastWeatherDataAtom = atom<WeatherState | null>(null);
  * When enabled, weather refreshes every 15 minutes
  */
 export const weatherAutoRefreshAtom = atomWithStorage<boolean>(
-  'malaysia-trip-weather-autorefresh',
+  'travel-planner-weather-autorefresh',
   true
 );
 
@@ -61,7 +57,7 @@ export const weatherAutoRefreshAtom = atomWithStorage<boolean>(
  */
 export const setWeatherLocationAtom = atom(
   null,
-  (_get, set, location: WeatherLocation) => {
+  (_get, set, location: WeatherLocation | null) => {
     set(weatherLocationAtom, location);
     // Clear cached weather data when location changes
     set(lastWeatherDataAtom, null);
